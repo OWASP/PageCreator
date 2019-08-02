@@ -8,9 +8,9 @@ class OWASPGitHub:
     apitoken = os.environ["APITOKEN"]
     user = "harold.blankenship@owasp.com"
     gh_endpoint = "https://api.github.com/"
-    org_fragment = "orgs/TangSooDo/repos"
-    content_fragment = "repos/TangSooDo/:repo/contents/:path"
-    pages_fragment = "repos/TangSooDo/:repo/pages"
+    org_fragment = "orgs/OWASP/repos"
+    content_fragment = "repos/OWASP/:repo/contents/:path"
+    pages_fragment = "repos/OWASP/:repo/pages"
 
     def CreateRepository(self, repoName):
         groupName = repoName
