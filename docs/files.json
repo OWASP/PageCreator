@@ -1,0 +1,16 @@
+{
+    "files" : [
+        {
+            "path" : "docs/_includes/header.html"
+        },
+        {
+            "path" : "docs/_includes/footer.html"
+        },
+        {
+            "path" : "docs/_layouts/owasptest.html"
+        },
+        {
+            "path" : "docs/index.html"
+        }
+    ]
+}
