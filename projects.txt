@@ -1,144 +1,148 @@
-OWASP Security Integration System
-OWASP Amass Project
-OWASP DevSecOps Maturity Model
-OWASP PyTM
-OWASP Patton
-OWASP Little Web Application Firewall
-OWASP Damn Vulnerable Crypto Wallet
-OWASP Security Busters
-OWASP Best Practices in Vulnerability Disclosure and Bug Bounty Programs
-OWASP Attack Surface Detector
-OWASP Software Component Verification Standard
-OWASP ThreatSpec
-OWASP Vulnerability Management Guide
-OWASP Docker Top 10
-OWASP Information Security Metrics Bank
-OWASP Software Security 5D Framework
-OWASP Container Security Verification Standard
-OWASP Find Security Bugs
-OWASP Maryam Project
-OWASP Cloud-Native Application Security Top 10
-OWASP Lock It
-OWASP Threat Model Cookbook
-OWASP IOT Analytics 4Industry4
-OWASP Application Security Curriculum
-OWASP Software Composition Security
-OWASP D4N155
-OWASP Secure Coding Dojo
-OWASP Jupiter
-OWASP Go Secure Coding Practices Guide
-OWASP Serverless Goat
-OWASP Revelo Project
-OWASP SEDATED
-OWASP Top 10 Card Game
-OWASP Vulnerable Web Application
-OWASP wpBullet
-OWASP Voice Automated Application Security
-OWASP Cloud Security Mentor
-OWASP Risk Assessment Framework
-OWASP Machine Learning Security Top 10
-OWASP Glue Tool Project
-OWASP Cloud Security
-OWASP Online Academy
-OWASP QRLJacker
-OWASP SamuraiWTF
-OWASP PHP Project
-OWASP Enterprise Security API
-OWASP API Security Project
-OWASP Nettacker Project
-OWASP Zezengorri Code Project
-OWASP Learning Gateway Project
-OWASP SecLists Project
-OWASP Security Pins
-OWASP Serverless Top 10 Project
-OWASP Blockchain Security Framework
-OWASP Security Shepherd
-OWASP OWTF
-OWASP Application Security Verification Standard Project
-OWASP Top Ten Project
-OWASP Code Review Guide Project
-OWASP WebGoat Project
-OWASP Cheat Sheets Project
-OWASP CSRFGuard Project
-OWASP ModSecurity Core Rule Set Project
-OWASP SAMM
-OWASP Testing Project
-OWASP Proactive Controls
-OWASP Hackademic Challenges Project
-OWASP EnDe Project
-OWASP O2 Platform
-OWASP Security Knowledge Framework
-OWASP Top 10 Privacy Risks Project
-OWASP Secure Coding Practices-Quick Reference Guide
-OWASP Passfault
-OWASP Java Encoder Project
-OWASP iGoat Tool Project
-OWASP RFP-Criteria
-OWASP Web Testing Environment Project
-OWASP AppSensor Project
-OWASP JSON Sanitizer
-OWASP Java HTML Sanitizer Project
-OWASP University Challenge
-OWASP WAFEC Project
-OWASP Hacking-Lab
-OWASP Bug Logging Tool
-OWASP Cornucopia
-OWASP Top 10 Fuer Entwickler
-OWASP Juice Shop Project
-OWASP Media Project
-OWASP Dependency Track Project
-WebGoat PhP
-OWASP Vulnerable Web Applications Directory Project
-OWASP Benchmark Project
-OWASP Node.js Goat Project
-OWASP Automated Threats to Web Applications
-OWASP BELVA Project
-OWASP RAT
-OWASP ZSC Tool Project
-OWASP DefectDojo Project
-OWASP Security Logging Project
-OWASP Threat Dragon
-OWASP Game Security Framework Project
-OWASP WebSpa Project
-OWASP Student Chapters Project
-OWASP Off the record 4 Java Project
-OWASP Web Mapper Project
-OWASP DeepViolet TLS/SSL Scanner
-OWASP VBScan Project
-OWASP Speakers Project
-OWASP Internet of Things Top 10 Project
-OWASP Education Project
-OWASP Code Pulse Project
-OWASP Secure Medical Device Deployment Standard
-OWASP JOTP Project
-OWASP Incident Response Project
-OWASP Pyttacker Project
-OWASP AppSec Pipeline
-OWASP Risk Rating Management
-OWASP Secure Headers Project
-OWASP PHP Security Training Project
-OWASP Mobile Security Testing Guide
-OWASP Mth3l3m3nt Framework Project
-OWASP SeraphimDroid Project
-O-Saft
-OWASP Reverse Engineering and Code Modification Prevention Project
-OWASP Snakes and Ladders
-OWASP Python Security Project
-OWASP Knowledge Based Authentication Performance Metrics Project
-OWASP Dependency Check
-OWASP Web Application Security Quick Reference Guide Project
-OWASP Anti-Ransomware Guide Project
-OWASP Embedded Application Security
-OWASP Podcast Project
-OWASP Broken Web Applications Project
-OWASP Virtual Patching Best Practices
-OWASP Vicnum Project
-OWASP CTF Project
-OWASP .NET Project
-OWASP Mobile Security Project
-OWASP Python Honeypot
-OWASP DVSA
-OWASP Cloud Testing Guide
-OWASP Intelligent Intrusion Detection System
-OWASP Auth
-OWASP secureCodeBox
+OWASP Security Integration System Tool Project
+OWASP Amass Project	Tool Project
+OWASP DevSecOps Maturity Model Documentation Project
+OWASP PyTM	Tool Project
+OWASP Patton	Tool Project
+OWASP Little Web Application Firewall	Code Project
+OWASP Damn Vulnerable Crypto Wallet	Tool Project
+OWASP Security Busters	Documentation Project
+OWASP Best Practices in Vulnerability Disclosure and Bug Bounty Programs	Documentation Project
+OWASP Attack Surface Detector	Tool Project
+OWASP Software Component Verification Standard	Documentation Project
+OWASP ThreatSpec	Code Project
+OWASP DevSlop Project	Tool Project
+OWASP Vulnerability Management Guide	Documentation Project
+OWASP Docker Top 10	Documentation Project
+OWASP Information Security Metrics Bank	Documentation Project
+OWASP Google Assistant	Tool Project
+OWASP Software Security 5D Framework	Documentation Project
+OWASP Container Security Verification Standard	Documentation Project
+OWASP Find Security Bugs	Code Project
+OWASP Maryam Project	Tool Project
+OWASP Cloud-Native Application Security Top 10	Documentation Project
+OWASP Lock It	Code Project
+OWASP Threat Model Cookbook	Documentation Project
+OWASP IOT Analytics 4Industry4	Documentation Project
+OWASP Application Security Curriculum	Documentation Project
+OWASP Software Composition Security	Documentation Project
+OWASP D4N155	Tool Project
+OWASP Secure Coding Dojo	Code Project
+OWASP Jupiter	Tool Project
+OWASP Go Secure Coding Practices Guide	Documentation Project
+OWASP Serverless Goat	Tool Project
+OWASP Revelo Project	Tool Project
+OWASP SEDATED	Code Project
+OWASP Top 10 Card Game	Documentation Project
+OWASP Vulnerable Web Application	Code Project
+OWASP wpBullet	Tool Project
+OWASP Voice Automated Application Security	Tool Project
+OWASP Cloud Security Mentor	Code Project
+OWASP Risk Assessment Framework	Documentation Project
+OWASP Machine Learning Security Top 10	Documentation Project
+OWASP Glue Tool Project	Tool Project
+OWASP Cloud Security	Documentation Project
+OWASP Online Academy	Code Project
+OWASP QRLJacker	Tool Project
+OWASP SamuraiWTF	Code Project
+OWASP PHP Project	Documentation Project
+OWASP Enterprise Security API	Code Project
+OWASP API Security Project	Documentation Project
+OWASP Nettacker Project	Tool Project
+OWASP SecurityRAT Project	Tool Project
+OWASP Zezengorri Code Project	Code Project
+OWASP Learning Gateway Project	Code Project
+OWASP SecLists Project	Documentation Project
+OWASP Security Pins	Documentation Project
+OWASP Serverless Top 10 Project	Documentation Project
+OWASP Blockchain Security Framework	Documentation Project
+OWASP ZAP	Tool Project
+OWASP Security Shepherd	Tool Project
+OWASP OWTF	Tool Project
+OWASP Application Security Verification Standard Project	Documentation Project
+OWASP Top Ten Project	Documentation Project
+OWASP Code Review Guide Project	Documentation Project
+OWASP WebGoat Project	Tool Project
+OWASP Cheat Sheets Project	Documentation Project
+OWASP CSRFGuard Project	Code Project
+OWASP ModSecurity Core Rule Set Project	Code Project
+OWASP SAMM	Documentation Project
+OWASP Testing Project	Documentation Project
+OWASP Proactive Controls	Documentation Project
+OWASP Hackademic Challenges Project	Tool Project
+OWASP EnDe Project	Tool Project
+OWASP O2 Platform	Tool Project
+OWASP Security Knowledge Framework	Tool Project
+OWASP Top 10 Privacy Risks Project	Documentation Project
+OWASP Secure Coding Practices Quick Reference Guide	Documentation Project
+OWASP Passfault	Tool Project
+OWASP Java Encoder Project	Code Project
+OWASP iGoat Tool Project	Tool Project
+OWASP RFP-Criteria	Documentation Project
+OWASP Web Testing Environment Project	Tool Project
+OWASP AppSensor Project	Documentation Project
+OWASP JSON Sanitizer	Code Project
+OWASP Java HTML Sanitizer Project	Tool Project
+OWASP University Challenge	Documentation Project
+OWASP Web Application Firewall Evaluation Criteria Project	Documentation Project
+OWASP Hacking-Lab	Documentation Project
+OWASP Bug Logging Tool	Tool Project
+OWASP Cornucopia	Documentation Project
+OWASP Top 10 Fuer Entwickler	Documentation Project
+OWASP Juice Shop Project	Tool Project
+OWASP Media Project	Other Project
+OWASP Dependency Track Project	Tool Project
+WebGoat PhP	Tool Project
+OWASP Vulnerable Web Applications Directory Project	Documentation Project
+OWASP Benchmark Project	Tool Project
+OWASP Node.js Goat Project	Code Project
+OWASP Automated Threats to Web Applications	Documentation Project
+OWASP BELVA Project	Tool Project
+OWASP RAT Tool Project
+OWASP ZSC Tool Project	Tool Project
+OWASP DefectDojo Project	Tool Project
+OWASP Security Logging Project	Code Project
+OWASP Threat Dragon	Tool Project
+OWASP Game Security Framework Project	Documentation Project
+OWASP WebSpa Project	Tool Project
+OWASP Student Chapters Project	Documentation Project
+OWASP Off the record 4 Java Project	Code Project
+OWASP Web Mapper Project	Documentation Project
+OWASP DeepViolet TLS/SSL Scanner	Code Project
+OWASP VBScan Project	Tool Project
+OWASP Speakers Project	Documentation Project
+OWASP Internet of Things Top 10 Project	Documentation Project
+OWASP Education Project	Documentation Project
+OWASP Code Pulse Project	Tool Project
+OWASP Secure Medical Device Deployment Standard	Documentation Project
+OWASP JOTP Project	Tool Project
+OWASP Incident Response Project	Documentation Project
+OWASP Pyttacker Project	Tool Project
+OWASP AppSec Pipeline	Documentation Project
+OWASP Risk Rating Management	Tool Project
+OWASP Secure Headers Project	Code Project
+OWASP PHP Security Training Project	Tool Project
+OWASP Mobile Security Testing Guide	Documentation Project
+OWASP Mth3l3m3nt Framework Project	Tool Project
+OWASP SeraphimDroid Project	Tool Project
+O-Saft	Tool Project
+OWASP Reverse Engineering and Code Modification Prevention Project	Documentation Project
+OWASP Snakes and Ladders	Documentation Project
+OWASP Python Security Project	Tool Project
+OWASP Knowledge Based Authentication Performance Metrics Project	Documentation Project
+OWASP Dependency Check	Tool Project
+OWASP Web Application Security Quick Reference Guide Project	Documentation Project
+OWASP Anti-Ransomware Guide Project	Documentation Project
+OWASP Embedded Application Security	Documentation Project
+OWASP Podcast Project	Other Project
+OWASP Broken Web Applications Project	Tool Project
+OWASP Virtual Patching Best Practices	Documentation Project
+OWASP Vicnum Project	Tool Project
+OWASP CTF Project	Documentation Project
+OWASP .NET Project	Documentation Project
+OWASP Mobile Security Project	Documentation Project
+OWASP Python Honeypot	Tool Project
+OWASP DVSA	Code Project
+OWASP Cloud Testing Guide	Documentation Project
+OWASP Intelligent Intrusion Detection System	Tool Project
+OWASP Auth	Code Project
+OWASP secureCodeBox	Tool Project

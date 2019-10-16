@@ -128,3 +128,33 @@ class OWASPGitHub:
                         r = requests.post(url = url + "/builds", headers=headers)
 
         return r
+
+    def GetFile(self, repo, filepath):
+        url = self.gh_endpoint + self.content_fragment
+        url = url.replace(":repo", repo)
+        url = url.replace(":path", filepath)
+        
+        #bytestosend = base64.b64encode(filecstr.encode())   
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.get(url = url, headers=headers)
+        return r
+
+    def UpdateFile(self, repo, filepath, contents, sha):
+        url = self.gh_endpoint + self.content_fragment
+        url = url.replace(":repo", repo)
+        url = url.replace(":path", filepath)
+
+        bytestosend = base64.b64encode(contents.encode())   
+        committer = {
+            "name" : "OWASP Foundation",
+            "email" : "owasp.foundation@owasp.org"
+        }
+        data = {
+            "message" : "remote update file",
+            "committer" : committer,
+            "content" : bytestosend.decode(),
+            "sha" : sha
+        }
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.put(url = url, headers=headers, data=json.dumps(data))
+        return r
