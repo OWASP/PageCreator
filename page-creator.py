@@ -110,6 +110,9 @@ def main():
     # else:
     #     print(r.text)
     #create_all_pages()
-    update_project_pages()
+    #update_project_pages()
+    github = OWASPGitHub()
+    repos = github.GetPublicRepositories("www-project")
+    print(json.dumps(repos))
     
 main()
