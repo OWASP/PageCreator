@@ -89,7 +89,7 @@ def update_project_pages():
             if github.TestResultCode(r.status_code):
                 print("Update success\n")
             else:
-                print(f"Update filed {r.text}")
+                print(f"Update failed {r.text}")
         else:
             print(f"Failed to get index.md for {group}: {r.text}")
 
@@ -111,8 +111,19 @@ def main():
     #     print(r.text)
     #create_all_pages()
     #update_project_pages()
-    github = OWASPGitHub()
-    repos = github.GetPublicRepositories("www-project")
-    print(json.dumps(repos))
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-project')
+    sha = ''
+    r = gh.GetFile('owasp.github.io', '_data/projects.json')
+    if gh.TestResultCode(r.status_code):
+        doc = json.loads(r.text)
+        sha = doc['sha']
+
+    contents = json.dumps(repos)
+    r = gh.UpdateFile('owasp.github.io', '_data/projects.json', contents, sha)
+    if gh.TestResultCode(r.status_code):
+        print('Success!')
+    else:
+        print(f"Failed: {r.text}")
     
 main()
