@@ -1,270 +1,273 @@
-Space Coast
-Nagoya
-Lome
-Worcestershire
-Barranquilla
-Dnipro
-Cape Coast
-Tegucigalpa
-South Sweden
-Seoul
-Amman
-San Pedro Sula
-Syracuse
-Guayaquil
-Nainital
-Hereford
-Sibiu
-St. George
-Halifax
-Huntington
-Cairo
-Ghana
-Morocco
-Johannesburg
-Tunisia
-Burkina Faso
-Nigeria
-Tripoli
-Cotonou
-Bulawayo
-Cape Town
-Albuquerque
-Kuwait City
-Bikaner
-Mysuru
-St. Cloud State University
-JKPG
-Kharkiv
-Las Vegas
-Meerut
-Edmonton
-Montreal
-Ottawa
-Quebec City
-Toronto
-Vancouver
-Riviera Maya
-Mexicali
-Patagonia
-Trinidad and Tobago
-Aguascalientes Mexico
-Argentina
-Belo Horizonte
-Bogota
-Bolivia
-Brasilia
-Chile
-Costa Rica
-Cuiaba
-Guatemala
-Mexico City
-Natal
-Panama City
-Peru
-Recife
-Rio de Janeiro
-Sao Paulo
-Uruguay
-Venezuela
-Vitoria
-Paraguay
-El Salvador
-Cali
-Dominican Republic
-Medellin
-Kyushu
-Okinawa
-Gwalior
-Hokushinetsu
-China-Mainland
-Hong Kong
-Japan
-Kolkata
-Malaysia
-Nepal
-Singapore
-Thailand
-Jakarta
-Sendai
-Indore
-Fukushima
-Kansai
-Natori
-Da Nang
-Madurai
-Bhopal
-Bilbao
-Tulsa
-Dindigul
-Port Louis
-Lincoln
-Copenhagen
-Santa Barbara
-Seattle
-Sioux Falls
-South Florida
-Tampa
-Northern Virginia
-Washington DC
-Northeastern University
-Hampton Roads
-Oklahoma City
-Iowa City
-Chattanooga
-Knoxville
-UW Bothell
-Southern Maryland
-Little Rock
-Colorado Springs
-Brisbane
-Melbourne
-New Zealand
-Perth
-Sydney
-Varanasi
-Richmond
-Inland Empire
-Albany
-Atlanta
-Austin
-Baltimore
-Bay Area
-Birmingham AL
-Boston
-Boulder
-Charlotte
-Chicago
-Cincinnati
-Cleveland
-Columbus
-Dallas
-Delaware
-Denver
-Detroit
-Hartford
-Hawaii
-Houston
-Indianapolis
-Jacksonville
-Kansas City
-Long Island
-Los Angeles
-Louisville
-Madison
-Maine
-Memphis
-Minneapolis St Paul
-Nashville
-New Jersey North
-New York City
-Omaha
-Orange County
-Orlando
-Pittsburgh
-Philadelphia
-Phoenix
-Portland
-Triangle-NC
-Rhode Island
-Rochester
-Sacramento
-Saint Louis
-Salt Lake
-San Antonio
-San Diego
-Abu Dhabi
-Surat
-Bangalore
-Dhaka
-Chennai
-Delhi
-Hyderabad
-Iran
-Islamabad
-Israel
-Kerala
-Mumbai
-Pune
-Riyadh
-Vellore
-Coimbatore
-Chandigarh
-Nagpur
-Noida
-Cuttack
-Kumaun Region
-East Sweden
-Lithuania
-Cluj
-Canary Islands
-Malta
-Suffolk
-Armenia
-Belgium
-Birmingham UK
-Bristol UK
-Cambridge
-Cyprus
-Czech Republic
-Aarhus
-France
-Geneva
-Germany
-Gothenburg
-Greece
-Helsinki
-Hungary
-Dublin
-Italy
-Latvia
-Leeds UK
-London
-Luxembourg
-Lviv
-Manchester
-Netherlands
-Newcastle UK
-Norway
-Poland
-Bucharest
-Scotland
-Turkey
-Ukraine
-Switzerland
-Tbilisi
-North Sweden
-Timisoara
-Ankara
-Stockholm
-Sofia
-Sevilla
-Kyiv
-Macedonia
-Cork
-Odessa
-Madrid
-Belfast
-Dorset
-Cusco
-Oakland County
-Zaragoza
-Cartagena
-Waterloo
-Letterkenny
-Vienna
-Central Pennsylvania
-Biloxi-Gulfport
-Zhytomyr
-Quito
-Almeria
-Sanaa
-Miami
-Warwick
-Vina del Mar
-Nashua
-Liverpool
-Doha
-Marquette
-San Fernando Valley
-West Delhi
+Space Coast	REGION: United States
+Ranchi	REGION: Middle East
+Nagoya	REGION: Asia/Pacific
+Lome	REGION: Africa
+Worcestershire	REGION: Europe
+Barranquilla	REGION: Latin America
+Dnipro	REGION: Europe
+Cape Coast	REGION: Middle East
+Tegucigalpa	REGION: Latin America
+South Sweden	REGION: Europe
+Seoul	REGION: Middle East
+Amman	REGION: Asia/Pacific
+San Pedro Sula	REGION: Latin America
+Syracuse	REGION: United States
+Guayaquil	REGION: Latin America
+Nainital	REGION: Middle East
+Hereford	REGION: Europe
+Sibiu	REGION: Europe
+St. George	REGION: United States
+Halifax	REGION: Canada
+Huntington	REGION: United States
+Cairo	REGION: Africa
+Ghana	REGION: Africa
+Morocco	REGION: Africa
+Johannesburg	REGION: Africa
+Tunisia	REGION: Africa
+Burkina Faso	REGION: Africa
+Nigeria	REGION: Africa
+Tripoli	REGION: Africa
+Cotonou	REGION: Africa
+Bulawayo	REGION: Africa
+Cape Town	REGION: Africa
+Albuquerque	REGION: United States
+Kuwait City	REGION: Middle East
+Bikaner	REGION: Middle East
+Mysuru	REGION: Middle East
+St. Cloud State University	REGION: United States
+JKPG	REGION: Europe
+Kharkiv	REGION: Europe
+Las Vegas	REGION: United States
+Meerut	REGION: Middle East
+Edmonton	REGION: Canada
+Montreal	REGION: Canada
+Ottawa	REGION: Canada
+Quebec City	REGION: Canada
+Toronto	REGION: Canada
+Vancouver	REGION: Canada
+Riviera Maya	REGION: Latin America
+Mexicali	REGION: Latin America
+Patagonia	REGION: Latin America
+Trinidad and Tobago	REGION: Caribbean
+Aguascalientes Mexico	REGION: Latin America
+Argentina	REGION: Latin America
+Belo Horizonte	REGION: Latin America
+Bogota	REGION: Latin America
+Bolivia	REGION: Latin America
+Brasilia	REGION: Latin America
+Chile	REGION: Latin America
+Costa Rica	REGION: Latin America
+Cuiaba	REGION: Latin America
+Guatemala	REGION: Latin America
+Mexico City	REGION: Latin America
+Natal	REGION: Latin America
+Panama City	REGION: Latin America
+Paraiba	REGION: Latin America
+Peru	REGION: Latin America
+Recife	REGION: Latin America
+Rio de Janeiro	REGION: Latin America
+Sao Paulo	REGION: Latin America
+Uruguay	REGION: Latin America
+Venezuela	REGION: Latin America
+Vitoria	REGION: Latin America
+Paraguay	REGION: Latin America
+El Salvador	REGION: Latin America
+Cali	REGION: Latin America
+Dominican Republic	REGION: Caribbean
+Medellin	REGION: Latin America
+Kyushu	REGION: Asia/Pacific
+Okinawa	REGION: Asia/Pacific
+Gwalior	REGION: Asia/Pacific
+Hokushinetsu	REGION: Asia/Pacific
+China-Mainland	REGION: Asia/Pacific
+Hong Kong	REGION: Asia/Pacific
+Japan	REGION: Asia/Pacific
+Kolkata	REGION: Asia/Pacific
+Malaysia	REGION: Asia/Pacific
+Nepal	REGION: Asia/Pacific
+Singapore	REGION: Asia/Pacific
+Thailand	REGION: Asia/Pacific
+Jakarta	REGION: Asia/Pacific
+Sendai	REGION: Asia/Pacific
+Indore	REGION: Asia/Pacific
+Fukushima	REGION: Asia/Pacific
+Kansai	REGION: Asia/Pacific
+Natori	REGION: Asia/Pacific
+Da Nang	REGION: Asia/Pacific
+Madurai	REGION: Asia/Pacific
+Bhopal	REGION: Asia/Pacific
+Bilbao	REGION: Latin America
+Tulsa	REGION: United States
+Dindigul	REGION: Middle East
+Port Louis	REGION: Africa
+Lincoln	REGION: United States
+Copenhagen	REGION: Europe
+Santa Barbara	REGION: United States
+Seattle	REGION: United States
+Sioux Falls	REGION: United States
+South Florida	REGION: United States
+Tampa	REGION: United States
+Northern Virginia	REGION: United States
+Washington DC	REGION: United States
+Northeastern University	REGION: United States
+Hampton Roads	REGION: United States
+Oklahoma City	REGION: United States
+Iowa City	REGION: United States
+Chattanooga	REGION: United States
+Knoxville	REGION: United States
+UW Bothell	REGION: United States
+Southern Maryland	REGION: United States
+Little Rock	REGION: United States
+Colorado Springs	REGION: United States
+Brisbane	REGION: Asia/Pacific
+Melbourne	REGION: Asia/Pacific
+New Zealand	REGION: Asia/Pacific
+Perth	REGION: Asia/Pacific
+Sydney	REGION: Asia/Pacific
+Varanasi	REGION: Middle East
+Richmond	REGION: United States
+Inland Empire	REGION: United States
+Albany	REGION: United States
+Atlanta	REGION: United States
+Austin	REGION: United States
+Baltimore	REGION: United States
+Bay Area	REGION: United States
+Birmingham AL	REGION: United States
+Boston	REGION: United States
+Boulder	REGION: United States
+Charlotte	REGION: United States
+Chicago	REGION: United States
+Cincinnati	REGION: United States
+Cleveland	REGION: United States
+Columbus	REGION: United States
+Dallas	REGION: United States
+Delaware	REGION: United States
+Denver	REGION: United States
+Detroit	REGION: United States
+Hartford	REGION: United States
+Hawaii	REGION: United States
+Houston	REGION: United States
+Indianapolis	REGION: United States
+Jacksonville	REGION: United States
+Kansas City	REGION: United States
+Long Island	REGION: United States
+Los Angeles	REGION: United States
+Madison	REGION: United States
+Portland, Maine	REGION: United States
+Memphis	REGION: United States
+Minneapolis St Paul	REGION: United States
+Nashville	REGION: United States
+New Jersey North	REGION: United States
+New York City	REGION: United States
+Omaha	REGION: United States
+Orange County	REGION: United States
+Orlando	REGION: United States
+Pittsburgh	REGION: United States
+Philadelphia	REGION: United States
+Phoenix	REGION: United States
+Portland	REGION: United States
+Triangle-NC	REGION: United States
+Rhode Island	REGION: United States
+Rochester	REGION: United States
+Sacramento	REGION: United States
+Saint Louis	REGION: United States
+Salt Lake City	REGION: United States
+San Antonio	REGION: United States
+San Diego	REGION: United States
+Abu Dhabi	REGION: Middle East
+Surat	REGION: Middle East
+Bangalore	REGION: Middle East
+Dhaka	REGION: Middle East
+Chennai	REGION: Middle East
+Delhi	REGION: Middle East
+Hyderabad	REGION: Middle East
+Iran	REGION: Middle East
+Islamabad	REGION: Middle East
+Israel	REGION: Europe
+Kerala	REGION: Middle East
+Mumbai	REGION: Middle East
+Pune	REGION: Middle East
+Riyadh	REGION: Middle East
+Vellore	REGION: Middle East
+Coimbatore	REGION: Middle East
+Chandigarh	REGION: Middle East
+Nagpur	REGION: Middle East
+Noida	REGION: Middle East
+Cuttack	REGION: Middle East
+Kumaun Region	REGION: Middle East
+East Sweden	REGION: Europe
+Lithuania	REGION: Europe
+Cluj	REGION: Europe
+Canary Islands	REGION: Europe
+Malta	REGION: Europe
+Suffolk	REGION: Europe
+Armenia	REGION: Europe
+Belgium	REGION: Europe
+Birmingham UK	REGION: Europe
+Bristol UK	REGION: Europe
+Cambridge	REGION: Europe
+Cyprus	REGION: Europe
+Czech Republic	REGION: Europe
+Aarhus	REGION: Europe
+France	REGION: Europe
+Geneva	REGION: Europe
+Germany	REGION: Europe
+Gothenburg	REGION: Europe
+Greece	REGION: Europe
+Helsinki	REGION: Europe
+Hungary	REGION: Europe
+Dublin	REGION: Europe
+Italy	REGION: Europe
+Latvia	REGION: Europe
+Leeds UK	REGION: Europe
+London	REGION: Europe
+Luxembourg	REGION: Europe
+Lviv	REGION: Europe
+Manchester	REGION: Europe
+Netherlands	REGION: Europe
+Newcastle UK	REGION: Europe
+Norway	REGION: Europe
+Poland	REGION: Europe
+Bucharest, Romania	REGION: Europe
+Scotland	REGION: Europe
+Turkey	REGION: Europe
+Ukraine	REGION: Europe
+Switzerland	REGION: Europe
+Tbilisi	REGION: Asia/Pacific
+North Sweden	REGION: Europe
+Timisoara	REGION: Europe
+Ankara	REGION: Europe
+Stockholm	REGION: Europe
+Sofia	REGION: Europe
+Sevilla	REGION: Europe
+Kyiv	REGION: Europe
+Macedonia	REGION: Europe
+Cork	REGION: Europe
+Odessa	REGION: Europe
+Madrid	REGION: Europe
+Belfast	REGION: Europe
+Dorset	REGION: Europe
+Cusco	REGION: Latin America
+Oakland County	REGION: United States
+Zaragoza	REGION: Europe
+Cartagena	REGION: Latin America
+Waterloo	REGION: Canada
+Letterkenny	REGION: Europe
+Vienna	REGION: Europe
+Central Pennsylvania	REGION: United States
+Biloxi-Gulfport	REGION: United States
+Calgary	REGION: United States
+Zhytomyr	REGION: Europe
+Quito	REGION: Latin America
+Almeria	REGION: Europe
+Sanaa	REGION: Asia/Pacific
+Miami	REGION: United States
+Warwick	REGION: Europe
+Vina del Mar	REGION: Latin America
+Nashua	REGION: United States
+Liverpool	REGION: Europe
+Doha	REGION: Middle East
+Marquette	REGION: United States
+San Fernando Valley	REGION: United States
+West Delhi	REGION: Middle East
+

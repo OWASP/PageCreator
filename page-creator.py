@@ -63,7 +63,6 @@ def create_all_pages():
 def update_project_pages():    
     fp = open("projects.txt")
 
-    #github = OWASPGitHub()
     msglist = []
     msg = ""
     group = fp.readline()
@@ -97,6 +96,42 @@ def update_project_pages():
         
     fp.close()
 
+def update_chapter_pages():    
+    fp = open("chapters.txt")
+    msglist = []
+    msg = ""
+    group = fp.readline()
+    while group:
+        sp_index = group.find("REGION:") + 7
+        gtype = group[sp_index + 1:]
+        gtype = gtype.strip()
+        group = group[:group.find("REGION:")]
+        group = group.lower().replace("owasp ", "").replace(" chapter","").replace("\n","").replace("/", "-").replace("\t", " ").replace("\r", "")
+        group = group.strip()
+        msg = f"GROUP: {group} \nREGION: {gtype}\n"
+        print(msg)
+        msglist.append(msg)
+        github = OWASPGitHub()
+        r = github.GetFile(github.FormatRepoName(group, 1), 'index.md')
+        if github.TestResultCode(r.status_code):
+            doc = json.loads(r.text)
+            content = base64.b64decode(doc["content"]).decode()
+
+            front_ndx = content.find("---", content.find("---") + 3) # second instance of ---
+            content = content[:front_ndx] + 'region: ' + gtype + '\n\n' + content[front_ndx:]
+            
+            r = github.UpdateFile(github.FormatRepoName(group, 1), 'index.md', content, doc["sha"])
+            if github.TestResultCode(r.status_code):
+                print("Update success\n")
+            else:
+                print(f"Update failed {r.text}")
+        else:
+            print(f"Failed to get index.md for {group}: {r.text}")
+
+        group = fp.readline()
+        
+    fp.close()
+
 def main():
     # github = OWASPGitHub()
     # group = "deepviolet-tls-ssl-scanner"
@@ -111,19 +146,34 @@ def main():
     #     print(r.text)
     #create_all_pages()
     #update_project_pages()
-    gh = OWASPGitHub()
-    repos = gh.GetPublicRepositories('www-project')
-    sha = ''
-    r = gh.GetFile('owasp.github.io', '_data/projects.json')
-    if gh.TestResultCode(r.status_code):
-        doc = json.loads(r.text)
-        sha = doc['sha']
 
-    contents = json.dumps(repos)
-    r = gh.UpdateFile('owasp.github.io', '_data/projects.json', contents, sha)
-    if gh.TestResultCode(r.status_code):
-        print('Success!')
-    else:
-        print(f"Failed: {r.text}")
+    update_chapter_pages()
+    # gtype = 'United States'
+    # teststr = '---\n\ntext1: john\ntext2: steven\ntext3:homer\n\n---\n\n'
+    # front_ndx = teststr.find("---", teststr.find("---") + 3)
+    # content = teststr[:front_ndx] + 'region: ' + gtype + '\n\n' + teststr[front_ndx:]
+    # print(content)
+
+    # gh = OWASPGitHub()
+    # repos = gh.GetPublicRepositories('www-project')
+    # repos.sort(key=lambda x: x['name'])
+    # repos.sort(key=lambda x: x['level'], reverse=True)
+   
+    # for repo in repos:
+    #     repo['name'] = repo['name'].replace('www-project-','').replace('-', ' ')
+    #     repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+
+    # sha = ''
+    # r = gh.GetFile('owasp.github.io', '_data/projects.json')
+    # if gh.TestResultCode(r.status_code):
+    #     doc = json.loads(r.text)
+    #     sha = doc['sha']
+
+    # contents = json.dumps(repos)
+    # r = gh.UpdateFile('owasp.github.io', '_data/projects.json', contents, sha)
+    # if gh.TestResultCode(r.status_code):
+    #     print('Success!')
+    # else:
+    #     print(f"Failed: {r.text}")
     
 main()
