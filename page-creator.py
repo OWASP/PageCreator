@@ -299,15 +299,15 @@ def get_project_milestones(content, pname):
 
     milestr = content[sndx:endx]
     milestr = milestr.replace('\n','')
-    if milestr.startswith('*'):
-        milestr = milestr.replace('[ ]','')
-        milestr = milestr.replace('[x]', '')
-    else:
-        milestr = milestr.replace('[ ]', '*')
-        milestr = milestr.replace('[x]', '*')
+    if not milestr.startswith('*'):
+        milestr = milestr.replace('[ ]', '* [ ]')
+        milestr = milestr.replace('[x]', '* [x]')
 
     mls = milestr.split('*')
     for ms in mls:
+        if '[x]' in ms:
+            continue
+        ms = ms.replace('[ ]', '')
         date, owner, desc = get_milestone_parts(ms)
         if date:
             milestone = Milestone(date)
