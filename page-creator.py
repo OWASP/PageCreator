@@ -273,10 +273,11 @@ def get_milestone_desc(milestone):
     else:
         endx = len(milestone)
 
-    if sndx > 0 and endx > sndx + 11:
-        desc = milestone[sndx + 11:endx]
-    desc = desc.strip()
+    if sndx > 0 and endx > sndx + 10:
+        desc = milestone[sndx + 10:endx]
+    desc = desc.strip(',')
     desc = desc.rstrip(',')
+    desc = desc.strip()
     return desc
 
 def get_milestone_parts(milestone):
@@ -299,6 +300,8 @@ def get_project_milestones(content, pname):
 
     milestr = content[sndx:endx]
     milestr = milestr.replace('\n','')
+    milestr = milestr.replace('- [', '* [')
+    
     if not milestr.startswith('*'):
         milestr = milestr.replace('[ ]', '* [ ]')
         milestr = milestr.replace('[x]', '* [x]')
