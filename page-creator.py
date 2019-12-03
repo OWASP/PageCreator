@@ -7,6 +7,7 @@ import json
 from github import *
 import base64
 import datetime
+from wufoo import *
 
 class Leader:
     def __init__(self, name, email):
@@ -19,6 +20,7 @@ class Milestone:
         self.description = ''
         self.owner = ''
         self.project_name = ''
+        self.status = 'on-time'
 
     def SetDescription(self, desc):
         self.description = desc
@@ -28,6 +30,9 @@ class Milestone:
 
     def SetProjectName(self, pname):
         self.project_name = pname
+    
+    def SetProjectStatus(self, status):
+        self.status = status
 
 class StaffProject:
     def __init__(self, name):
@@ -290,6 +295,18 @@ def get_milestone_parts(milestone):
 
     return date, owner, desc
 
+def get_milestone_status(date):
+    status = 'on-time'
+    d = datetime.date(*(int(s) for s in date.split('-')))
+    td = datetime.date.today()
+    delta = d - td
+    if delta.days <= -5:
+        status = 'overdue'
+    elif delta.days > 30:
+        status = 'future'
+
+
+    return status
 
 def get_project_milestones(content, pname):
     milestones = []
@@ -317,7 +334,10 @@ def get_project_milestones(content, pname):
             milestone.owner = owner
             milestone.description = desc
             milestone.project_name = pname
+            milestone.status = get_milestone_status(date)
             milestones.append(milestone)
+            
+
                     
     return milestones
 
@@ -388,9 +408,21 @@ def build_staff_project_json():
     else:
         print(f"Failed to update www-staff/_data/projects.json: {r.text}")
 
-def main():
-    build_staff_project_json()
+def AddChaptersToChapterTeam():
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-chapter')
+    for repo in repos:
+        repoName = repo['name']
+        r = gh.AddRepoToTeam('chapter-administration', repoName)
+        if not r.ok:
+            print(f'Failed to add repo: {r.text}')
 
+def main():
+    
+    AddChaptersToChapterTeam()
+    
+    #build_staff_project_json()
+    #print('Hello')
     # github = OWASPGitHub()
     # group = "deepviolet-tls-ssl-scanner"
     # grouptype = 0
