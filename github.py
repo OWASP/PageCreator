@@ -13,6 +13,13 @@ class OWASPGitHub:
     pages_fragment = "repos/OWASP/:repo/pages"
     team_addrepo_fragment = "teams/:team_id/repos/OWASP/:repo"
     team_getbyname_fragment = "orgs/OWASP/teams/:team_slug"
+    
+    of_org_fragment = "orgs/OWASP-Foundation/repos"
+    of_content_fragment = "repos/OWASP-Foundation/:repo/contents/:path"
+    of_pages_fragment = "repos/OWASP-Foundation/:repo/pages"
+    of_team_addrepo_fragment = "teams/:team_id/repos/OWASP-Foundation/:repo"
+    of_team_getbyname_fragment = "orgs/OWASP-Foundation/teams/:team_slug"
+    
 
     def CreateRepository(self, repoName, rtype):
         repoName = self.FormatRepoName(repoName, rtype)
@@ -136,7 +143,15 @@ class OWASPGitHub:
         url = url.replace(":repo", repo)
         url = url.replace(":path", filepath)
         
-        #bytestosend = base64.b64encode(filecstr.encode())   
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.get(url = url, headers=headers)
+        return r
+    
+    def GetOFFile(self, repo, filepath):
+        url = self.gh_endpoint + self.of_content_fragment
+        url = url.replace(":repo", repo)
+        url = url.replace(":path", filepath)
+         
         headers = {"Authorization": "token " + self.apitoken}
         r = requests.get(url = url, headers=headers)
         return r
@@ -259,5 +274,30 @@ class OWASPGitHub:
             data = { "permission" : "admin"}
             jsonData = json.dumps(data)
             r = requests.put(url = url, headers=headers, data=jsonData)
+
+        return r
+
+    def MoveFromOFtoOWASP(self, frompath, topath):
+        r = self.GetOFFile('OWASP-wiki-md', frompath)
+        r2 = self.GetFile('www-community', topath)
+        if r.ok and not r2.ok: # exists in 1, not in other
+            doc = json.loads(r.text)
+            content = base64.b64decode(doc["content"]).decode()
+            fcontent = '---\n\n'
+            fcontent += 'layout: col-sidebar\n'
+            fcontent += f"title: {frompath.replace('_', ' ')}\n"
+            fcontent += f'author: \n'
+            fcontent += f'contributors: \n'
+            if 'attacks/' in topath:
+                fcontent += f"permalink: /attacks/{frompath.replace('.md','')}\n"
+                fcontent += f"tag: attack, {frompath.replace('_', ' ')}\n"
+            else :
+                fcontent += f"permalink: /vulnerabilities/{frompath.replace('.md','')}\n"
+                fcontent += f"tag: vulnerability, {frompath.replace('_', ' ')}\n"
+
+            fcontent += 'auto-migrated: 1\n\n---\n\n'
+            fcontent += content
+
+            r = self.UpdateFile('www-community', topath, fcontent, '')
 
         return r

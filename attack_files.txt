@@ -1,0 +1,62 @@
+Cache Poisoning
+Cash Overflow
+Code Injection
+Command Injection
+Comment Injection Attack
+Content Security Policy
+Content Spoofing
+Cornucopia - Ecommerce Website Edition - Wiki Deck
+CORS OriginHeaderScrutiny
+CORS RequestPreflighScrutiny
+Credential stuffing
+Cross Frame Scripting
+Cross Site History Manipulation (XSHM)
+Cross Site Tracing
+Cross-Site Request Forgery (CSRF)
+Cross-site Scripting (XSS)
+Cross-User Defacement
+Cryptanalysis
+CSV Injection
+Custom Special Character Injection
+Denial of Service
+Direct Dynamic Code Evaluation ('Eval Injection')
+Execution After Redirect (EAR)
+Forced browsing
+Form action hijacking
+Format string attack
+Full Path Disclosure
+Function Injection
+HTTP Response Splitting
+Log Injection
+Man-in-the-browser attack
+Man-in-the-middle attack
+Mobile code: invoking untrusted mobile code
+Mobile code: non-final public field
+Mobile code: object hijack
+One-Click Attack
+OWASP Cornucopia
+Parameter Delimiter
+Path Traversal
+Qrljacking
+Reflected DOM Injection
+Regular expression Denial of Service - ReDoS
+Repudiation Attack
+Resource Injection
+Reverse Tabnabbing
+Server-Side Includes (SSI) Injection
+Session fixation
+Session hijacking attack
+Session Prediction
+Setting Manipulation
+Special Element Injection
+Spyware
+SQL Injection
+Traffic flood
+Trojan Horse
+Unicode Encoding
+Web Parameter Tampering
+Windows ::DATA alternate data stream
+XPATH Injection
+XSRF
+XSS Filter Evasion Cheat Sheet
+Xss in subtitle

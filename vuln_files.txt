@@ -1,0 +1,63 @@
+Allowing Domains or Accounts to Expire
+Buffer Overflow
+Business logic vulnerability
+Catch NullPointerException
+Covert storage channel
+CRLF Injection
+Cross Site Scripting Flaw
+CSV Injection
+Deserialization of untrusted data
+Directory Restriction Error
+Doubly freeing memory
+Empty Catch Block
+Empty String Password
+Expression Language Injection
+Full Trust CLR Verification issue: Exploiting Passing Reference Types by Reference
+Heartbleed Bug
+Improper Data Validation
+Improper pointer subtraction
+Information exposure through query strings in url
+Insecure Compiler Optimization
+Insecure Randomness
+Insecure Temporary File
+Insecure Third Party Domain Access
+Insecure Transport
+Insufficient Entropy
+Insufficient Session-ID Length
+Least Privilege Violation
+Leftover Debug Code
+Memory leak
+Missing Error Handling
+Missing XML Validation
+Multiple admin levels
+Null Dereference
+Overly Permissive Regular Expression
+OWASP .NET Vulnerability Research
+Password Management: Hardcoded Password
+Password Plaintext Storage
+PHP File Inclusion
+PHP Object Injection
+Poor Logging Practice
+Portability Flaw
+Privacy Violation
+PRNG Seed Error
+Process Control
+Return Inside Finally Block
+Session Variable Overloading
+String Termination Error
+Unchecked Error Condition
+Unchecked Return Value: Missing Check against Null
+Undefined Behavior
+Unreleased Resource
+Unrestricted File Upload
+Unsafe function call from a signal handler
+Unsafe JNI
+Unsafe Mobile Code
+Unsafe use of Reflection
+Use of hard-coded password
+Use of Obsolete Methods
+Using a broken or risky cryptographic algorithm
+Using freed memory
+Template:Vulnerability
+Vulnerability template
+XML External Entity (XXE) Processing

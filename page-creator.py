@@ -417,9 +417,31 @@ def AddChaptersToChapterTeam():
         if not r.ok:
             print(f'Failed to add repo: {r.text}')
 
+def MigrateSelectedPages(filepath):
+    f = open(filepath)
+    gh = OWASPGitHub()
+
+    for line in f.readlines():
+        line = line.replace(' ', '_')
+        line = line.strip('\n')
+        frompath = f"{line}.md"
+        if 'attack' in filepath:
+            topath = f'pages/attacks/{frompath}' #same file name
+        else:
+            topath = f'pages/vulnerabilities/{frompath}'
+
+        r = gh.MoveFromOFtoOWASP(frompath, topath)
+        if r.ok:
+            print('Page moved')
+        else:
+            print(f'{frompath} failed to move: {r.text}')
+
+    f.close()
+
 def main():
-    
-    AddChaptersToChapterTeam()
+    MigrateSelectedPages('attack_files.txt')
+    MigrateSelectedPages('vuln_files.txt')
+    #AddChaptersToChapterTeam()
     
     #build_staff_project_json()
     #print('Hello')
