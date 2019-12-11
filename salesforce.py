@@ -30,14 +30,14 @@ class OWASPSalesforce:
     sf_token_id = ""
     sf_query_url = sf_instance_url + sf_api_url + "query"
 
-    ONE_YEAR_MEMBERSHIP = os.environ['SF_ONE_YEAR_MEMBERSHIP']
-    STUDENT_MEMBERSHIP = os.environ['SF_STUDENT_MEMBERSHIP']
-    STUDENT_WORKFLOW = os.environ['SF_STUDENT_WORKFLOW']
-    STUDENT_BADGE = os.environ['SF_STUDENT_BADGE']
-    UNKNOWN_ACCOUNT = os.environ['SF_UNKNOWN_ACCOUNT']
-    ITEM_CLASS_MEMBERSHIP = os.environ['SF_ITEM_CLASS_MEMBERSHIP']
-    GL_ACCOUNT = os.environ['SF_GL_ACCOUNT']
-    PAYMENT_GATEWAY = os.environ['SF_PAYMENT_GATEWAY']
+    ONE_YEAR_MEMBERSHIP = ''#os.environ['SF_ONE_YEAR_MEMBERSHIP']
+    STUDENT_MEMBERSHIP = ''#os.environ['SF_STUDENT_MEMBERSHIP']
+    STUDENT_WORKFLOW = ''#os.environ['SF_STUDENT_WORKFLOW']
+    STUDENT_BADGE = ''#os.environ['SF_STUDENT_BADGE']
+    UNKNOWN_ACCOUNT = ''#os.environ['SF_UNKNOWN_ACCOUNT']
+    ITEM_CLASS_MEMBERSHIP = ''#os.environ['SF_ITEM_CLASS_MEMBERSHIP']
+    GL_ACCOUNT = ''#os.environ['SF_GL_ACCOUNT']
+    PAYMENT_GATEWAY = ''#os.environ['SF_PAYMENT_GATEWAY']
 
     def Login(self):
         data = dict(grant_type='password',
@@ -110,12 +110,21 @@ class OWASPSalesforce:
         for record in records:
             res += "Contact: " + record["Name"]
             res += "\n\tEmail: %s" % record["Email"]
+            today = datetime.date.today().strftime('%Y-%m-%d')
+            queryString = "Select Id,  OrderApi__Contact__r.Name, OrderApi__Item__r.Name  from OrderApi__Subscription__c Where OrderApi__Contact__r.Name = '" + record['Name'].strip() + f"' and OrderApi__Current_Term_End_Date__c > {today}"
+            crecords = self.Query(queryString)
+            if len(crecords) == 1:
+                res += "\n\tMembership: %s" % crecords[0]['OrderApi__Item__r']['Name']
+            else:
+                res += "\n\tMembership: Not found"
             res += "\n"
         
         if(len(records) <= 0):
             res = "No contact with name " + contactName + " found"
 
         return res
+
+        
     
     def FindContactRecord(self, contactName, email):
         contactName = contactName.replace("+", " ")

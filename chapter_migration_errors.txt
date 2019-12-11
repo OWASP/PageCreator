@@ -1,0 +1,13 @@
+Ranchi
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Sibiu
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}St. Cloud State University
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Paraiba
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Northeastern University
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Birmingham AL
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Portland, Maine
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Triangle-NC
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Birmingham UK
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Bristol UK
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Bucharest, Romania
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}Calgary
+ failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}West Delhi failed to migrate: {"message":"Not Found","documentation_url":"https://developer.github.com/v3/repos/contents/#get-contents"}

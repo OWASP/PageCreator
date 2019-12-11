@@ -8,7 +8,7 @@ from github import *
 import base64
 import datetime
 from wufoo import *
-
+from salesforce import *
 class Leader:
     def __init__(self, name, email):
         self.name = name
@@ -438,9 +438,309 @@ def MigrateSelectedPages(filepath):
 
     f.close()
 
+def clean_of_project(content):
+    rescontent = ''
+    td_count = 0
+    for line in content.split('\n'):
+        if '{{' in line:
+            line = line.replace('{{','')
+
+        if '<td>' in line:
+            td_count = td_count + 1
+        else:
+            rescontent += line
+            rescontent += '\n'
+
+        if td_count == 2:
+            rescontent += line
+            rescontent += '\n'    
+    return rescontent
+
+def clean_of_chapter(content):
+    rescontent = ''
+    for line in content.split('\n'):
+        if '{{' in line:
+            line = line.replace('{{','')
+
+        rescontent += line
+        rescontent += '\n'
+
+    return rescontent
+
+def ReplaceLeaderFile(gh, repo):
+    r = gh.GetFile(repo, 'leaders.md', gh.content_fragment)
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+        content = '<!--### Leaders\n-->'
+        gh.UpdateFile(repo, 'leaders.md', content, sha)
+
+def ReplaceProjectInfoLeaderFile(gh, repo):
+    r = gh.GetFile(repo, 'info.md', gh.content_fragment)
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+        content = '<!--### Project Information\n* Project Level\n* Project Type\n* Version, etc\n\n### Downloads or Social Links\n* [Download](#)\n* [Social Link](#)\n\n### Code Repository\n* [repo](#)-->'
+        gh.UpdateFile(repo, 'info.md', content, sha)
+    ReplaceLeaderFile(gh, repo)
+
+def ReplaceChapterInfoLeaderFile(gh, repo):
+    r = gh.GetFile(repo, 'info.md', gh.content_fragment)
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+        content = '<!--### Chapter Information\n* Chapter Region\n\n### Social Links\n* [Meetup](#)\n* [Social Link](#)-->\n'
+        gh.UpdateFile(repo, 'info.md', content, sha)
+    ReplaceLeaderFile(gh, repo)
+
+
+def MigrateProjectPages():
+    f = open('proj_migration.txt')
+    gh = OWASPGitHub()
+    err_lines = []
+    repo = ''
+    sha = ''
+    for line in f.readlines():
+        frompath = line.replace(' ', '_')
+        frompath = frompath.strip('\n')
+        frompath = frompath + '.md'
+        if 'OWASP_Top_Ten' in frompath:
+            frompath='Category:OWASP_Top_Ten_Project.md'
+        elif 'Container_Security_Verification_Standard' in frompath:
+            frompath='OWASP_Container_Security_Verification_Standard_(CSVS).md'
+        elif 'Little_Web_Application_Firewall' in frompath:
+            frompath='OWASP_LWAF.md'
+        elif 'OWASP_PHP_Project' in frompath:
+            frompath = 'Category:PHP.md'
+        elif 'Enterprise_Security_API' in frompath:
+            frompath = 'Category:OWASP_Enterprise_Security_API.md'
+        elif 'OWASP_Security_Pins' in frompath:
+            frompath = 'OWASP_Security_Pins_Project.md'
+        elif 'OWASP_Code_Review_Guide' in frompath:
+            frompath = 'Category:OWASP_Code_Review_Project.md'
+        elif 'OWASP_EnDe_Project' in frompath:
+            frompath = 'Category:OWASP_EnDe.md'
+        elif 'OWASP_Secure_Coding_Practices_Quick_Reference' in frompath:
+            frompath = 'OWASP_Secure_Coding_Practices_-_Quick_Reference_Guide.md'
+        elif 'OWASP_Web_Application_Firewall_Evaluation' in frompath:
+            frompath = 'WASC_OWASP_Web_Application_Firewall_Evaluation_Criteria_Project.md'
+        elif 'Top_10_Fuer_Entwickler' in frompath:
+            frompath = 'Category:OWASP_Top_10_fuer_Entwickler.md'
+        elif 'Benchmark_Projeect' in frompath:
+            frompath = 'Benchmark.md'
+        elif 'OWASP_Node.js_Goat' in frompath:
+            frompath = 'OWASP_Node_js_Goat_Project.md'
+        elif 'BELVA' in frompath:
+            frompath = 'OWASP_Basic_Expression_%26_Lexicon_Variation_Algorithms_(BELVA)_Project.md'
+        elif 'DeepViolet' in frompath:
+            frompath = 'OWASP_DeepViolet_TLS/SSL_Scanner.md'
+        elif 'Internet_of_Things_Top_10' in frompath:
+            frompath = 'OWASP_Internet_of_Things_Top_Ten_Project.md'
+        elif 'Podcast' in frompath:
+            frompath = 'OWASP_Podcast.md'
+        elif 'Virtual_Patching_Best_Practices' in frompath:
+            frompath = 'Virtual_Patching_Best_Practices.md'
+        elif 'OWASP_CTF_Project' in frompath:
+            frompath = 'Category:OWASP_CTF_Project.md'
+
+        r = gh.GetFile('owasp-wiki-md', frompath, gh.of_content_fragment)
+        if r.ok:
+            doc = json.loads(r.text)
+            repo = f"www-project-{line.replace('OWASP ', '').replace(' Project', '').replace(' ', '-').lower()}"
+            repo = repo.replace('\n','')
+            topath = 'index.md'
+            r = gh.GetFile(repo, topath, gh.content_fragment)
+            if r.ok:
+                idoc = json.loads(r.text)
+                icontent = base64.b64decode(idoc['content']).decode()
+                sha = idoc['sha']
+                if 'an example of a Project or Chapter' in icontent and "<div style='color:red;'>" in icontent: # a non-edited page that isn't a new chapter recently created
+                    continue # do not process this file...
+                elif 'an example of a Project or Chapter' not in icontent: # this is not a default page
+                    continue
+            
+        if r.ok:# grab the index.md content and update with new header info
+            content = base64.b64decode(doc["content"]).decode()
+            fcontent = ''
+            frontmatter = 0
+            for iline in icontent.split('\n'):
+                if frontmatter < 2:
+                    if 'level: ' in iline:
+                        iline =  'level: 0'
+                    if iline == '---' and frontmatter == 1:
+                        fcontent += 'auto-migrated: 1\n\n'
+                    fcontent += iline
+                    fcontent += '\n'
+                    
+                    if iline == '---':
+                        frontmatter += 1
+                else:
+                    break
+            base_index = open('base_index.md')
+            base_content = ''
+            for baseline in base_index.readlines():
+                base_content += baseline
+            tindex = fcontent.find('title:')
+            if tindex > -1:
+                oldtitle = fcontent[tindex + 7:fcontent.find('\n', tindex + 7)]
+                newtitle = oldtitle.title()
+                newtitle = newtitle.replace('Owasp', 'OWASP')
+                fcontent = fcontent.replace(oldtitle, newtitle)
+
+            migrated_frontmatter = fcontent.replace('auto-migrated: 1\n\n', '')
+        
+            fcontent += base_content #The index.md file should be the base_index.md + front-matter
+            r = gh.UpdateFile(repo, topath, fcontent, sha)
+            if r.ok:
+                mr = gh.GetFile(repo, 'migrated_content.md', gh.content_fragment)
+                msha = ''
+                if mr.ok:
+                    mdoc = json.loads(mr.text)
+                    msha = mdoc['sha']
+
+                content = clean_of_project(content)
+                migrated_content = migrated_frontmatter + content
+                r = gh.UpdateFile(repo, 'migrated_content.md', migrated_content, msha)    
+
+        if r.ok:
+            ReplaceProjectInfoLeaderFile(gh, repo)
+            print(f'{repo} page migrated')
+        else:
+            err = f'{line} failed to migrate: {r.text}'
+            err_lines.append(err)
+            print(err)
+
+    f.close()
+
+    errf = open('proj_migration_errors.txt', 'w')
+    errf.writelines(err_lines)
+    errf.close()
+
+def MigrateChapterPages():
+    f = open('chap_migration.txt')
+    gh = OWASPGitHub()
+    err_lines = []
+    repo = ''
+    sha = ''
+    for line in f.readlines():
+        frompath = line.replace(' ', '_')
+        frompath = frompath.strip('\n')
+        frompath = frompath + '.md'
+       
+        r = gh.GetFile('owasp-wiki-md', frompath, gh.of_content_fragment)
+        if r.ok:
+            doc = json.loads(r.text)
+            repo = f"www-chapter-{line.replace('OWASP ', '').replace(' Chapter', '').replace(' ', '-').lower()}"
+            repo = repo.replace('\n','')
+            topath = 'index.md'
+            r = gh.GetFile(repo, topath, gh.content_fragment)
+            if r.ok:
+                idoc = json.loads(r.text)
+                icontent = base64.b64decode(idoc['content']).decode()
+                sha = idoc['sha']
+                if 'an example of a Project or Chapter' in icontent and "<div style='color:red;'>" in icontent: # a non-edited page that isn't a new chapter recently created
+                    continue # do not process this file...
+                elif 'an example of a Project or Chapter' not in icontent: # this is not a default page
+                    continue
+            
+        if r.ok: # grab the index.md content and update with new header info
+            content = base64.b64decode(doc["content"]).decode()
+            fcontent = ''
+            frontmatter = 0
+            for iline in icontent.split('\n'):
+                if frontmatter < 2:
+                    if 'level: ' in iline:
+                        iline =  'level: 0'
+                    if iline == '---' and frontmatter == 1:
+                        fcontent += 'auto-migrated: 1\n\n'
+                    fcontent += iline    
+                    fcontent += '\n'
+                        
+                    if iline == '---':
+                        frontmatter += 1
+                    
+                else:
+                    break
+            
+            base_index = open('base_index.md')
+            base_content = ''
+            for baseline in base_index.readlines():
+                base_content += baseline
+            tindex = fcontent.find('title:')
+            if tindex > -1:
+                oldtitle = fcontent[tindex + 7:fcontent.find('\n', tindex + 7)]
+                newtitle = oldtitle.title()
+                newtitle = newtitle.replace('Owasp', 'OWASP')
+                fcontent = fcontent.replace(oldtitle, newtitle)
+
+            migrated_frontmatter = fcontent.replace('auto-migrated: 1\n\n', '\n')
+        
+            fcontent += base_content #The index.md file should be the base_index.md + front-matter
+            r = gh.UpdateFile(repo, topath, fcontent, sha)
+            if r.ok:
+                mr = gh.GetFile(repo, 'migrated_content.md', gh.content_fragment)
+                msha = ''
+                if mr.ok:
+                    mdoc = json.loads(mr.text)
+                    msha = mdoc['sha']
+
+                content = clean_of_chapter(content)
+                migrated_content = migrated_frontmatter + content
+                r = gh.UpdateFile(repo, 'migrated_content.md', migrated_content, msha)
+
+        if r.ok:
+            ReplaceChapterInfoLeaderFile(gh, repo)
+            print(f'{repo} page migrated')
+        else:
+            err = f'{line} failed to migrate: {r.text}'
+            err_lines.append(err)
+            print(err)
+
+    f.close()
+
+    errf = open('chapter_migration_errors.txt', 'w')
+    errf.writelines(err_lines)
+    errf.close()
+
+def CreateProjectPageList():
+    f = open('proj_migration.txt')
+    #gh = OWASPGitHub()
+    out_lines = []
+    lines = f.readlines()
+    total = len(lines)
+    current = 1
+    for line in lines:
+        print(f'Processing {current} of {total}\n')
+        current += 1
+        frompath = line.replace(' ', '_')
+        frompath = frompath.strip('\n')
+        frompath = frompath + '.md'
+        if 'OWASP_Top_Ten' in frompath:
+            frompath='Category:OWASP_Top_Ten_Project.md'
+        #r = gh.GetFile('owasp-wiki-md', frompath, gh.of_content_fragment)
+        #if r.ok:
+        out_lines.append(f"{frompath.replace('.md', '')}\n")
+        #else:
+        #    out_lines.append(f"Not found: {frompath.replace('md','')}\n")
+
+    f.close()
+    f = open('proj_pages.txt','w')
+    f.writelines(out_lines)
+    f.close()
+    print('completed\n')
+
 def main():
-    MigrateSelectedPages('attack_files.txt')
-    MigrateSelectedPages('vuln_files.txt')
+    #sf = OWASPSalesforce()
+    #if sf.Login().ok:
+    #    res = sf.FindContact('Berman')
+
+    #print(res)
+    #MigrateProjectPages()
+    MigrateChapterPages()
+
+    #CreateProjectPageList()
+    #MigrateSelectedPages('attack_files.txt')
+    #MigrateSelectedPages('vuln_files.txt')
     #AddChaptersToChapterTeam()
     
     #build_staff_project_json()

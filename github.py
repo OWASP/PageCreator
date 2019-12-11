@@ -138,23 +138,17 @@ class OWASPGitHub:
 
         return r
 
-    def GetFile(self, repo, filepath):
-        url = self.gh_endpoint + self.content_fragment
+    def GetFile(self, repo, filepath, content_fragment = "repos/OWASP/:repo/contents/:path"):
+        url = self.gh_endpoint + content_fragment
         url = url.replace(":repo", repo)
         url = url.replace(":path", filepath)
         
         headers = {"Authorization": "token " + self.apitoken}
         r = requests.get(url = url, headers=headers)
         return r
-    
+
     def GetOFFile(self, repo, filepath):
-        url = self.gh_endpoint + self.of_content_fragment
-        url = url.replace(":repo", repo)
-        url = url.replace(":path", filepath)
-         
-        headers = {"Authorization": "token " + self.apitoken}
-        r = requests.get(url = url, headers=headers)
-        return r
+        return self.GetFile(repo, filepath, self.of_content_fragment)
 
     def UpdateFile(self, repo, filepath, contents, sha):
         url = self.gh_endpoint + self.content_fragment
