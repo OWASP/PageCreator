@@ -729,14 +729,75 @@ def CreateProjectPageList():
     f.close()
     print('completed\n')
 
+def process_group_leaders(group, leaders, emails):
+    gh = OWASPGitHub()
+    www_group = gh.FormatRepoName(group, 0)
+    www_cgroup = gh.FormatRepoName(group, 1)
+    r = gh.RepoExists(www_group)
+    if not r.ok:
+        www_group = www_cgroup
+    r = gh.RepoExists(www_group)
+    if not r.ok:
+        print(f'{www_group} does not exist.\n')
+    else:
+        r = gh.GetFile(www_group, 'leaders.md')
+        if r.ok:
+            doc = json.loads(r.text)
+            sha = doc['sha']
+            content = base64.b64decode(doc['content']).decode()
+            if (not ('@' in content) and not ('www.owasp.org' in content)) or ('leader.email@owasp.org' in content):
+                # we can replace the contents of this file
+                content = '### Leaders\n\n'
+                ndx = 0
+                for leader in leaders:
+                    email = f'mailto://{emails[ndx].strip()}'
+                    if not '@owasp.org' in email:
+                        email = 'mailto://' # no email, needs update
+                    content += f'* [{leader.strip()}]({email})'
+                    ndx = ndx + 1
+                
+                r = gh.UpdateFile(www_group, 'leaders.md', content, sha)
+                if r.ok:
+                    print('Updated leaders file\n')
+                else:
+                    print(f'FAILED to update {www_group}\n')
+    
+def add_leaders():
+    curr_group = ''
+    leaders = []
+    emails = []
+        
+    f = open('all_leaders.csv')
+    for line in f.readlines():
+        keys = line.split(',')
+        if curr_group == '':
+            curr_group = keys[0]
+            
+        if curr_group != keys[0]:
+            print(f'Processing {curr_group}:\n')
+            ndx = 0
+            for leader in leaders:
+                print(f'\tLeader: {leader}, {emails[ndx]}\n')
+                ndx = ndx + 1
+            curr_group = keys[0]
+            leaders.append(keys[2])
+            emails.append(keys[1])
+            process_group_leaders(curr_group, leaders, emails)
+            leaders.clear()
+            emails.clear()
+        else:
+            leaders.append(keys[2])
+            emails.append(keys[1])
+
 def main():
+    add_leaders()
     #sf = OWASPSalesforce()
     #if sf.Login().ok:
     #    res = sf.FindContact('Berman')
 
     #print(res)
     #MigrateProjectPages()
-    MigrateChapterPages()
+    #MigrateChapterPages()
 
     #CreateProjectPageList()
     #MigrateSelectedPages('attack_files.txt')

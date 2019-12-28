@@ -9,6 +9,7 @@ class OWASPGitHub:
     user = "harold.blankenship@owasp.com"
     gh_endpoint = "https://api.github.com/"
     org_fragment = "orgs/OWASP/repos"
+    repo_fragment = "repos/OWASP/:repo"
     content_fragment = "repos/OWASP/:repo/contents/:path"
     pages_fragment = "repos/OWASP/:repo/pages"
     team_addrepo_fragment = "teams/:team_id/repos/OWASP/:repo"
@@ -91,7 +92,10 @@ class OWASPGitHub:
         return False
 
     def FormatRepoName(self, repoName, rtype):
-        
+        repoName = repoName.lower()
+        repoName = repoName.replace('owasp', '')
+        repoName = repoName.replace('project', '')
+        repoName = repoName.strip()
         resName = ""
         if rtype == 0:
             resName = "www-project-"
@@ -294,4 +298,14 @@ class OWASPGitHub:
 
             r = self.UpdateFile('www-community', topath, fcontent, '')
 
+        return r
+
+    def RepoExists(self, repoName):
+        repofrag = self.repo_fragment.replace(':repo', repoName)
+        headers = {"Authorization": "token " + self.apitoken,
+                "Accept":"application/vnd.github.nebula-preview+json"
+            }
+
+        url = self.gh_endpoint + repofrag
+        r = requests.get(url = url, headers=headers)
         return r

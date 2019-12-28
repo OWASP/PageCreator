@@ -1,0 +1,747 @@
+O-Saft,achim@owasp.org,Achim Hoffmann
+OWASP .NET Project,bill.sempf@owasp.org,Bill Sempf
+OWASP Amass Project,jeff.foley@owasp.org,Jeff Foley
+OWASP Anti-Ransomware Guide Project,chrizdv@hotmail.com,Christian Diaz
+OWASP Anti-Ransomware Guide Project,cfrenz@gmail.com,Christopher Frenz
+OWASP AntiSamy Project,arshan.dabirsiaghi@contrastsecurity.com,Arshan Dabirsiaghi
+OWASP API Security Project,erez.yalon@owasp.org,Erez Yalon
+OWASP Application Security Curriculum,adrian.winckles@owasp.org,Adrian Winckles
+OWASP Application Security Curriculum,john.dileo@owasp.org,John DiLeo
+OWASP Application Security Verification Standard Project,daniel.cuthbert@owasp.org,daniel cuthbert
+OWASP Application Security Verification Standard Project,vanderaj@owasp.org,Andrew Van der Stock
+OWASP AppSec Pipeline,aaron.weaver2@gmail.com,Aaron Weaver
+OWASP AppSec Pipeline,matt.tesauro@owasp.org,Matt Tesauro
+OWASP AppSensor Project,jtmelton@gmail.com,John Melton
+OWASP AppSensor Project,dennis.groves@owasp.org,Dennis Groves
+OWASP AppSensor Project,michael.coates@owasp.org,Michael Coates
+OWASP Attack Surface Detector,ken.prole@codedx.com,Ken Prole
+OWASP Auth,abiusx@owasp.org,Abbas Naderi
+OWASP Automated Threats to Web Applications,tin.zaw@owasp.org,Tin Zaw
+OWASP Automated Threats to Web Applications,colin.watson@owasp.org,Colin Watson
+OWASP Basic Expression & Lexicon Variation Algorithms (BELVA) Project,ken.belva@owasp.org,Ken Belva
+OWASP Benchmark Project,dave.wichers@owasp.org,David Wichers
+OWASP Best Practices in Vulnerability Disclosure and Bug Bounty Programs,deborah@hackerone.com,Deborah Chang
+OWASP Blockchain Security Framework,matthew.pahl@owasp.org,Matthew Pahl
+OWASP Broken Web Applications Project,chuck.willis@mandiant.com,Chuck Willis
+OWASP Bug Logging Tool,souravbadami@gmail.com,Sourav Badami
+OWASP Bug Logging Tool,sean.auritii@owasp.org,Sean Auriti
+OWASP Cheat Sheets Project,jim@manicode.com,Jim Manico
+OWASP Cheat Sheets Project,eliesaad7@gmail.com,Elie Saad
+OWASP Cloud-Native Application Security Top 10,ory@puresec.io,Ory Segal
+OWASP Cloud Security,fraser.scott@owasp.org,Fraser Scott
+OWASP Cloud Security Mentor,kurmiashish@gmail.com,Ashish Kurmi
+OWASP Cloud Testing Guide,stefano@owasp.org,Stefano DiPaola
+OWASP Code Pulse Project,ken.prole@codedx.com,Ken Prole
+OWASP Code Review Guide Project,larry.conklin@owasp.org,Larry Conklin
+OWASP Code Review Guide Project,gary.robinson@owasp.org,Gary Robinson
+OWASP Container Security Verification Standard,sven.vetsch@owasp.org,Sven Vetsch
+OWASP Cornucopia,dariodefilippis@gmail.com,Dario De Filippis
+OWASP Cornucopia,colin.watson@owasp.org,Colin Watson
+OWASP CSRFGuard Project,sebastien.gloria@owasp.org,Sebastien Gloria
+OWASP CSRFGuard Project,azzeddine.ramrami@owasp.org,Azzeddine RAMRAMI Azzeddine
+OWASP CTF Project,steven.van.der.baan@owasp.org,Steven Van der Baan
+OWASP D4N155,julio.lira@owasp.org,Julio Pedro de Lira Neto
+OWASP Damn Vulnerable Crypto Wallet,riveros.walter@gmail.com,Walter Riveros
+OWASP DeepViolet TLS/SSL Scanner,milton.smith.rr@gmail.com,Milton Smith
+OWASP DefectDojo Project,aaron.weaver2@gmail.com,Aaron Weaver
+OWASP DefectDojo Project,matt.tesauro@owasp.org,Matt Tesauro
+OWASP DefectDojo Project,greg.anderson@owasp.org,Greg Anderson
+OWASP Dependency Check,steve.springett@owasp.org,Steve Springett
+OWASP Dependency Check,jeremy.long@owasp.org,Jeremy Long
+OWASP Dependency Track Project,steve.springett@owasp.org,Steve Springett
+OWASP DevSecOps Maturity Model,timo.pagel@owasp.org,Timo Pagel
+OWASP DevSlop Project,nancy.gariche@owasp.org,Nancy Gariche
+OWASP DevSlop Project,nicole.becher@owasp.org,Nicole Becher
+OWASP Docker Top 10,dirk@owasp.org,Dirk Wetter
+OWASP DVSA,tal.melamed@owasp.org,Tal Melamed
+OWASP Education Project,vsvlachos@gmail.com,Vasileios Vlachos
+OWASP Education Project,konstantinos@owasp.org,Konstantinos Papapanagiotou
+OWASP Embedded Application Security,aaron.guzman@owasp.org,Aaron Guzman
+OWASP Embedded Application Security,alex.lafrenz@owasp.org,Alex Lafrenz
+OWASP EnDe Project,achim@owasp.org,Achim Hoffmann
+OWASP Enterprise Security API,chris.schmidt@owasp.org,Chris Schmidt
+OWASP Enterprise Security API,kevin.w.wall@gmail.com,Kevin Wall
+OWASP Find Security Bugs,philippe.arteau@gmail.com,Philippe Arteau
+OWASP Game Security Framework Project,daniel@hp.com,Daniel Miessler
+OWASP Glue Tool Project,omer.levihevroni@owasp.org,Omer Levi Hevroni
+OWASP Glue Tool Project,matt.konda@owasp.org,Matt Konda
+OWASP Google Assistant,johanna.curiel@owasp.org,Johanna Curiel
+OWASP Go Secure Coding Practices Guide,paulo.silva@jscrambler.com,Paulo Silva
+OWASP Go Secure Coding Practices Guide,erez.yalon@owasp.org,Erez Yalon
+OWASP Hackademic Challenges Project,konstantinos@owasp.org,Konstantinos Papapanagiotou
+OWASP Hackademic Challenges Project,spyros.gasteratos@owasp.org,Spyros Gasteratos
+OWASP Hacking-Lab,mateo.martinez@owasp.org,Mateo Martinez
+OWASP Hacking-Lab,ivan.buetler@owasp.org,Ivan Buetler
+OWASP Honeypot,adrian.winckles@owasp.org,Adrian Winckles
+OWASP iGoat Tool Project,swaroop.yermalker@owasp.org,Swaroop Yermalkar
+OWASP Incident Response Project,tomb@owasp.org,Tom Brennan
+OWASP Information Security Metrics Bank,0xfouda@gmail.com,Ahmed Fouda
+OWASP Intelligent Intrusion Detection System,soham.marik@gmail.com,Soham Marik
+OWASP Intelligent Intrusion Detection System,sriharsha.g@owasp.org,Sri Harsha Sri Harsha Gajavalli
+OWASP Internet of Things Project,daniel@hp.com,Daniel Miessler
+OWASP Internet of Things Project,aaron.guzman@owasp.org,Aaron Guzman
+OWASP Internet of Things Project,craig.smith@owasp.org,Craig Smith
+OWASP Internet of Things Top 10 Project,daniel@hp.com,Daniel Miessler
+OWASP Internet of Things Top 10 Project,craig.smith@owasp.org,Craig Smith
+OWASP IOT Analytics 4Industry4,carlos.allendes@owasp.org,Carlos Allendes
+OWASP Java Encoder Project,jim@manicode.com,Jim Manico
+OWASP Java Encoder Project,jeff.ichnowski@owasp.org,Jeff Ichnowski
+OWASP Java HTML Sanitizer Project,jim@manicode.com,Jim Manico
+OWASP Java HTML Sanitizer Project,msamuel@google.com,Mike Samuel
+OWASP JOTP Project,robert.upcraft@securian.com,Robert Upcraft
+OWASP JSON Sanitizer,jim@manicode.com,Jim Manico
+OWASP JSON Sanitizer,msamuel@google.com,Mike Samuel
+OWASP Juice Shop Project,bjoern.kimminich@owasp.org,Bjoern Kimminich
+OWASP Jupiter,matthew_stanchek@homedepot.com,Matt Stanchek
+OWASP Knowledge Based Authentication Performance Metrics Project,bev.corwin@owasp.org,Bev Corwin
+OWASP Knowledge Based Authentication Performance Metrics Project,luis.enriquez@owasp.org,Luis Enriquez
+OWASP Learning Gateway Project,daniela.pirrera@owasp.org,Daniela Pirrera
+OWASP Learning Gateway Project,bev.corwin@owasp.org,Bev Corwin
+OWASP Little Web Application Firewall,alefiori3@gmail.com,Alessandro Fiori
+OWASP Lock It,dheerud69@gmail.com,Srirama Dheeraj
+OWASP Machine Learning Security Top 10,abraham.kang@owasp.org,Abraham Kang
+OWASP Maryam Project,saeed.dehghan@owasp.org,Saeed Dehghan
+OWASP Media Project,yvanboily@gmail.com,Yvan Boily
+OWASP Media Project,jonathan.marcil@owasp.org,Jonathan Marcil
+OWASP Mobile Security Testing Guide,jeroen.willemsen@owasp.org,Jeroen Willemsen
+OWASP Mobile Security Testing Guide,carlos.holguera@owasp.org,Carlos Holguera
+OWASP Mobile Security Testing Guide,sven.schleier@owasp.org,Sven Schleier
+OWASP Mobile Top 10,milan@owasp.org,Milan Singh Thakur
+OWASP Mobile Top 10,jonathan.carter@owasp.org,Jonathan Carter
+OWASP ModSecurity Core Rule Set Project,christian.folini@netnea.com,Christian Folini
+OWASP ModSecurity Core Rule Set Project,crs@spam.lifeforms.nl,Walter Hop
+OWASP ModSecurity Core Rule Set Project,csanders@sparsa.org,Chaim Sanders
+OWASP Mth3l3m3nt Framework Project,munir.njiru@owasp.org,Munir Nijur
+OWASP Nettacker Project,reza.espargham@owasp.org,Mohammad Reza Espargham
+OWASP Nettacker Project,ali.razmjoo@owasp.org,Ali Razmjoo Qalaei
+OWASP Node.js Goat Project,chetan.karande@owasp.org,Chetan Karande
+OWASP O2 Platform,dinis.cruz@owasp.org,Dinis Cruz
+OWASP Off the record 4 Java Project,jigarjm@gmail.com,Jigar Joshi
+OWASP Online Academy,john.patrick.lita@owasp.org,John Patrick Lita
+OWASP OWTF,bharadwaj.machiraju@gmail.com,V S Bharadwaj Machiraju
+OWASP OWTF,abraham.aranguren@owasp.org,Abraham Aranguren
+OWASP Passfault,cam.morris@owasp.org,Cam Morris
+OWASP Patton,daniel.garcia@owasp.org,Daniel Garcia
+OWASP PHP Project,dan.ehrlich@owasp.org,Dan Ehrlich
+OWASP PHP Security Training Project,timo.pagel@owasp.org,Timo Pagel
+OWASP PHP Security Training Project,timo.pagel@owasp.org,Timo Pagel
+OWASP Podcast Project,mark.miller@owasp.org,Mark Miller
+OWASP Proactive Controls,jimbird@shaw.ca,Jim Bird
+OWASP Proactive Controls,katy.anton@owasp.org,Katy Anton
+OWASP Proactive Controls,jim@manicode.com,Jim Manico
+OWASP Python Honeypot,ehsan.nezami@owasp.org,Ehsan Nezami
+OWASP Python Honeypot,ali.razmjoo@owasp.org,Ali Razmjoo Qalaei
+OWASP Python Security Project,enrico.branca@awebof.info,Enrico Branca
+OWASP Python Security Project,enrico.branca@awebof.info,Enrico Branca
+OWASP PyTM,izar.tarandach@gmail.com,Izar Tarandach
+OWASP Pyttacker Project,mario.robles@owasp.org,Mario Robles
+OWASP Pyttacker Project,mario.robles@owasp.org,Mario Robles
+OWASP QRLJacker,symbian2010@gmail.com,Mohamed Abdelbasset Elnouby Abouelwaffa
+OWASP Revelo Project,tushar.kulkarni@owasp.org,Tushar Kulkarni
+OWASP Reverse Engineering and Code Modification Prevention Project,jonathan.carter@owasp.org,Jonathan Carter
+OWASP Reverse Engineering and Code Modification Prevention Project,jonathan.carter@owasp.org,Jonathan Carter
+OWASP RFP-Criteria,tomb@owasp.org,Tom Brennan
+OWASP Risk Assessment Framework,ade.putra@owasp.org,Ade Yoseman Putra
+OWASP Risk Assessment Framework,rejah.rehim@owasp.org,Rejah Rehim
+OWASP SamuraiWTF,kevin@secureideas.com,Kevin Johnson
+OWASP SamuraiWTF,justin.searle@owasp.org,Justin Searle
+OWASP SecLists Project,daniel@hp.com,Daniel Miessler
+OWASP secureCodeBox,robert.seedorff@owasp.org,Robert Seedorff
+OWASP Secure Coding Dojo,paul.ionescu@owasp.org,Paul Ionescu
+OWASP Secure Coding Practices - Quick Reference Guide,keith.n.turpin@boeing.com,Keith Turpin
+OWASP Secure Coding Practices - Quick Reference Guide,keith.n.turpin@boeing.com,Keith Turpin
+OWASP Secure Headers Project,ricardo.iramar@owasp.org,Ricardo Iramar
+OWASP Secure Medical Device Deployment Standard,bev.corwin@owasp.org,Bev Corwin
+OWASP Secure Medical Device Deployment Standard,cfrenz@gmail.com,Christopher Frenz
+OWASP SecureTea Project,ade.putra@owasp.org,Ade Yoseman Putra
+OWASP SecureTea Project,rejah.rehim@owasp.org,Rejah Rehim
+OWASP Security Busters,stefano.belloro@gmail.com,Stefano Belloro
+OWASP Security Busters,alexios.mylonas@owasp.org,Alexios Mylonas
+OWASP Security Busters,shruti.kulkarni@owasp.org,Shruti Kulkarni
+OWASP Security Integration System,netblue4@googlemail.com,Michael Bergman
+OWASP Security Knowledge Framework,riccardo.ten.cate@owasp.org,Riccardo ten Cate
+OWASP Security Knowledge Framework,glenn.ten.cate@owasp.org,Glenn Ten Cate
+OWASP Security Logging Project,sytze.vankoningsveld@owasp.org,Sytze Van Koningsveld
+OWASP Security Logging Project,augustd@codemagi.com,August Detlefsen
+OWASP Security Logging Project,sytze.vankoningsveld@owasp.org,Sytze Van Koningsveld
+OWASP Security Pins,timo.pagel@owasp.org,Timo Pagel
+OWASP SecurityRAT Project,daniel@kefer.cz,Daniel Kefer
+OWASP SecurityRAT Project,reuter.rene@gmail.com,René Reuter
+OWASP Security Shepherd,sean.duggan4@gmail.com,Sean Duggan
+OWASP Security Shepherd,mark.denihan@owasp.org,Mark Denihan
+OWASP Security Shepherd,mark.denihan@owasp.org,Mark Denihan
+OWASP Seeker,bigorigor.ua@gmail.com,Igor Bakalo
+OWASP SeraphimDroid Project,nikola.milosevic@owasp.org,Nikola Milosevic
+OWASP SeraphimDroid Project,kartik.kholi@owasp.org,Kartik Kholi
+OWASP SeraphimDroid Project,nikola.milosevic@owasp.org,Nikola Milosevic
+OWASP Serverless Goat,ory@puresec.io,Ory Segal
+OWASP Serverless Top 10 Project,tal.melamed@owasp.org,Tal Melamed
+OWASP Serverless Top 10 Project,marcin.hoppe@owasp.org,Marcin Hoppe
+OWASP Snakes and Ladders,katy.anton@owasp.org,Katy Anton
+OWASP Snakes and Ladders,colin.watson@owasp.org,Colin Watson
+OWASP Software Assurance Maturity Model (SAMM),bart.dewin@owasp.org,Bart De Win
+OWASP Software Assurance Maturity Model (SAMM),seba@owasp.org,sebastien deleersnyder
+OWASP Software Component Verification Standard,steve.springett@owasp.org,Steve Springett
+OWASP Software Composition Security,erez.yalon@owasp.org,Erez Yalon
+OWASP Software Security 5D Framework,matteo.meucci@owasp.org,Matteo Meucci
+OWASP Student Chapters Project,antonis.manaras@owasp.org,Antonis Manaras
+OWASP Student Chapters Project,mateo.martinez@owasp.org,Mateo Martinez
+OWASP Testing Project,rick.mitchell@owasp.org,Rick Mitchell
+OWASP Testing Project,matteo.meucci@owasp.org,Matteo Meucci
+OWASP Testing Project,eliesaad7@gmail.com,Elie Saad
+OWASP Threat Dragon,mike.goodwin@owasp.org,Mike Goodwin
+OWASP Threat Model Cookbook,jonathan.marcil@owasp.org,Jonathan Marcil
+OWASP Threat Model Cookbook,tashjnorris@gmail.com,Tash Norris
+OWASP ThreatSpec,fraser.scott@owasp.org,Fraser Scott
+OWASP Top 10 Card Game,dennis.johnson@owasp.org,Dennis Johnson
+OWASP Top 10 Fuer Entwickler,torsten.gigler@owasp.org,Sven-Torsten Gigler
+OWASP Top 10 Fuer Entwickler,torsten.gigler@owasp.org,Sven-Torsten Gigler
+OWASP Top 10 Privacy Risks Project,stefan.burgmair@owasp.org,Stefan Burgmair
+OWASP Top 10 Privacy Risks Project,florian.stahl@owasp.org,Florian Stahl
+OWASP Top Ten Project,neil.smithline@owasp.org,Neil Smithline
+OWASP Top Ten Project,vanderaj@owasp.org,Andrew van der Stock
+OWASP Top Ten Project,sven-torsten.gigler@bayernlb.de,Torsten Gigler
+OWASP University Challenge,ivan.buetler@owasp.org,Ivan Buetler
+OWASP University Challenge,mateo.martinez@owasp.org,Mateo Martinez
+OWASP University Challenge,ivan.buetler@owasp.org,Ivan Buetler
+OWASP VBScan Project,reza.espargham@owasp.org,Mohammad Reza Espargham
+OWASP Vicnum Project,mordecai.kraushar@owasp.org,Mordecai kraushar
+OWASP Vicnum Project,nicole.becher@owasp.org,Nicole Becher
+OWASP Vicnum Project,mordecai.kraushar@owasp.org,Mordecai kraushar
+OWASP Virtual Patching Best Practices,ryan.barnett@owasp.org,Ryan Barnett
+OWASP Voice Automated Application Security,ade.putra@owasp.org,Ade Yoseman Putra
+OWASP Vulnerability Management Guide,eliz.belousov@gmail.com,Elizabeth Frenz
+OWASP Vulnerable Web Application,fcelik.ft@gmail.com,Fatih Çelik
+OWASP Vulnerable Web Applications Directory Project,rick.mitchell@owasp.org,Rick Mitchell
+OWASP Vulnerable Web Applications Directory Project,simon.bennetts@owasp.org,Simon Bennetts
+OWASP Vulnerable Web Applications Directory Project,raul.siles@gmail.com,Raul Siles
+OWASP Web Application Firewall Evaluation Criteria Project,sam@step9consulting.com,Sam Stepanyan
+OWASP Web Application Firewall Evaluation Criteria Project,tony.turner@owasp.org,Tony Turner
+OWASP Web Application Security Quick Reference Guide Project,marek.zmyslowski@owasp.org,Marek Zmyslowski
+OWASP Web Application Security Quick Reference Guide Project,marek.zmyslowski@owasp.org,Marek Zmyslowski
+OWASP WebGoat Project,nanne.baars@owasp.org,Nanne Baars
+OWASP WebGoat Project,webgoat@owasp.org,Bruce Mayhew
+OWASP Web Mapper Project,yang.li@owasp.org,Yang Li
+OWASP WebSpa Project,yiannis@owasp.org,Yiannis Pavlosoglou
+OWASP WebSpa Project,oliver.merki@owasp.org,Oliver Merki
+OWASP WebSpa Project,oliver.merki@owasp.org,Oliver Merki
+OWASP Web Testing Environment Project,matt.tesauro@owasp.org,Matt Tesauro
+OWASP Web Testing Environment Project,matt.tesauro@owasp.org,Matt Tesauro
+OWASP wpBullet,luka@sikic.eu,Luka Sikic
+OWASP ZAP-Zed Attack Proxy,rick.mitchell@owasp.org,Richard Mitchell
+OWASP ZAP-Zed Attack Proxy,simon.bennetts@owasp.org,Simon Bennetts
+OWASP Zezengorri Code Project,gustavo.nievesarreaza@owasp.org,Gustavo Nieves Arreaza
+OWASP ZSC Tool Project,ali.razmjoo@owasp.org,Ali Razmjoo Qalaei
+OWASP ZSC Tool Project,johanna.curiel@owasp.org,Johanna Curiel
+OWASP ZSC Tool Project,ali.razmjoo@owasp.org,Ali Razmjoo
+WebGoat PhP,shivam.dixit@owasp.org,Shivam Dixit
+WebGoat PhP,johanna.curiel@owasp.org,Johanna Curiel
+WebGoat PhP,johanna.curiel@owasp.org,Johanna Curiel
+Aarhus,dennis.perto@owasp.org,Dennis Perto
+Aarhus,thomas.kristensen@owasp.org,Thomas Ljungberg Kristensen
+Abu Dhabi,khalifa.alshamsi@owasp.org,Khalifa Alshamsi
+Abu Dhabi,zayed.aljaberi@owasp.org,Zayed AlJaberi
+Aguascalientes Mexico,aldo.salas@owasp.org,Aldo Salas
+Aguascalientes Mexico,juan.gama@owasp.org,Juan Gama
+Albany,alsayyed.hussain@owasp.org,Alsayyed Hussain
+Albany,joseph.scaperrotta@owasp.org,Joseph Scaperrotta
+Albany,jon.briccetti@owasp.org,Jon Briccetti
+Albuquerque,angela.rivas@owasp.org,Angela Rivas
+Albuquerque,vincent.urias@owasp.org,Vincent Urias
+Almeria,jesus.garcia@owasp.org,Jesús Marín Garcia
+Amman,mohammad.khreesha@owasp.org,Mohammad Khreesha
+Amman,raad.haddad@owasp.org,Raad Haddad
+Ankara,alper.basaran@owasp.org,Alper Basaran
+Argentina,alejandro.iacobelli@owasp.org,Alejandro Federico Iacobelli
+Argentina,pablo.garbossa@owasps.org,Pablo Garbossa
+Argentina,martin.tartarelli@owasp.org,Martin Tartarelli
+Atlanta,andrew.hamilton@owasp.org,Andrew Hamilton
+Atlanta,zakiya.bailey@owasp.org,Zakiya Bailey
+Austin,kyle.smith@owasp.org,Kyle Smith
+Baltimore,csanders@sparsa.org,Chaim Sanders
+Baltimore,ann.grove@owasp.org,Ann Grove
+Bangalore,kvprashant@owasp.org,Prashant Venkatesh
+Bangalore,riyaz.walikar@owasp.org,Riyaz Walikar
+Bangalore,vandana.verma@owasp.org,Vandana Verma
+Barranquilla,rodrigo.valero@owasp.org,Rodrigo Valero
+Barranquilla,nahum.deavila@owasp.org,Nahum Deavila
+Bay Area,travis.mcpeak@owasp.org,Travis McPeak
+Belagavi,nitin.bhuyyar@owasp.org,Nitin Bhuyyar
+Belagavi,ganesh.chate@owasp.org,Ganesh Chate
+Belagavi,gajendra.deshpande@owasp.org,Gajendra Deshpande
+Belfast,philip.okane@owasp.org,Philip O'Kane
+Belfast,michelle.simpson@owasp.org,Michelle Simpson
+Belfast,siobhan.gallagher@owasp.org,Siobhan Gallagher
+Belgium,bart.dewin@owasp.org,Bart De Win
+Belgium,seba@owasp.org,sebastien deleersnyder
+Belgium,lieven.desmet@owasp.org,Lieven Desmet
+Belo Horizonte,raphael.santos@owasp.org,Ralphael Santos
+Belo Horizonte,bruno.barbosa@owasp.org,Bruno Augusto Vieira Barbosa
+Belo Horizonte,eduardo.bellis@owasp.org,Eduardo Felipe de Bellis Pinto
+Bhopal,saurabh.chaudhary@owasp.org,Saurabh Chaudhary
+Bhopal,anant.shrivastava@owasp.org,Anant Shrivastava
+Bikaner,harsh.bothra@owasp.org,Harsh Bothra
+Bilbao,daniel.conderodriguez@owasp.org,Daniel Conde
+Bilbao,eneko.astorquiza@owasp.org,Eneko Astorquiza San Nicolas
+Biloxi-Gulfport,christian.eaton@owasp.org,Christian James Eaton
+Birmingham AL,tyler.ward@owasp.org,Tyler Ward
+Birmingham UK,jim.gumbley@owasp.org,Jim Gumbley
+Birmingham UK,nathan.britton@owasp.org,Nathan Britton
+Bogota,yuly.larrota@owasp.org,Yuly Paola Larrota Castro
+Bogota,german.suarez@owasp.org,German Alonso Surez Guerrero
+Bogota,giovanni.cruz@csiete.org,Giovanni Cruz Forero
+Bogota,eduardo.chavarro@owasp.org,Eduardo Chavarro
+Bogota,alexander.tafurt@owasp.org,Alexander Tafurt
+Bolivia,elvin.mollinedo@owasp.org,Elvin Mollinedo
+Boston,jim.weiler@owasp.org,Jim Weiler
+Boulder,mark.major@owasp.org,Mark Major
+Brasilia,alcyon.junior@owasp.org,Alcyon Junior
+Brasilia,andre.demiranda@owasp.org,Andre De Miranda
+Brasilia,marcos.cicero@owasp.org,Marcos Cicero
+Brisbane,glyng@owasp.org,Glyn Geoghagen
+Brisbane,wade@bindshell.net,Wade Alcorn
+Bristol UK,craig.francis@owasp.org,Craig Francis
+Bristol UK,katy.anton@owasp.org,Katy Anton
+"Bucharest, Romania",vlad.cotenescu@owasp.org,Vlad Cotenescu
+Bulawayo,trevor.sibanda@owasp.org,Trevor Sibanda
+Burkina Faso,michael.auras@owasp.org,Michael Auras
+Burkina Faso,koffi.lamgnane@owasp.org,koffi lamgnane
+Cairo,mohamed.alfateh@owasp.org,Mohamed Alfateh
+Calgary,alex.privalov@owasp.org,Alex Privalov
+Cali,john.copete@owasp.org,John Copete
+Cambridge,adrian.winckles@owasp.org,Adrian Winckles
+Cambridge,steven.van.der.baan@owasp.org,Steven Van der Baan
+Canary Islands,sergiu.mesesan@owasp.org,Sergiu Mesesan
+Cape Coast,richmond.frimpong@owasp.org,Richmond Frimpong
+Cape Coast,kester.quistaphetsi@owasp.org,Kester Quist-Aphetsi
+Cape Coast,mintah.samuel@owasp.org,Mintah Samuel
+Cape Town,liam.smit@owasp.org,Liam Smit
+Cape Town,christo.goosen@owasp.org,Christo Goosen
+Cape Town,timo.goosen@owasp.org,Timo Goosen
+Cartagena,rafael.barrios@owasp.org,Rafael Enrique Monterroza Barrios
+Cartagena,aisner.juliao@owasp.org,Aisner José Marrugo Juliao
+Central Pennsylvania,joe.oriel@owasp.org,Joe Oriel
+Central Pennsylvania,nathan.cooper@owasp.org,Nathan Cooper
+Charlotte,josh.jenkins@owasp.org,Josh Jenkins
+Chennai,santhosh@owasp.org,Santhosh Kumar
+Chennai,chintu.koshy@owasp.org,Chintu Phillips Koshy
+Chicago,adam.lewis@owasp.org,Adam Lewis
+Chicago,michael.allen@owasp.org,Michael Allen
+Chile,carlos.allendes@owasp.org,Carlos Allendes
+Chile,leonardo.pizarro@owasp.org,Leonardo Pizarro
+Chile,alejandro.johannes@owasp.org,Alejandro Johannes
+China-Mainland,rip@owasp.org,Rip Torn
+China-Mainland,wangjie8578@yahoo.com,Jie Wang
+Cincinnati,adam.leisring@owasp.org,Adam Leisring
+Cleveland,ken.stasiak@owasp.org,Ken Stasiak
+Cluj,ovidiu.cical@owasp.org,Ovidiu CICAL
+Coimbatore,adithyan.ak@owasp.org,Adithyan Ak
+Colombo,isuru.senadheera@owasp.org,Isuru Senadheera
+Colombo,lohitha.perera@owasp.org,Lohitha Perera
+Colombo,danishka.navin@owasp.org,Danishka Navin
+Colorado Springs,terry.bradley@owasp.org,Terry Bradley
+Colorado Springs,matt.pacione@owasp.org,Matt Pacione
+Columbus,cahnee1969@yahoo.com,Constance Matthews
+Columbus,aaronansari@gmail.com,Aaron Ansari
+Columbus,bill.sempf@owasp.org,Bill Sempf
+Copenhagen,alessandro.bruni@owasp.org,Alessandro Bruni
+Cork,mrdarrenm@gmail.com,Darren Fitzpatrick
+Cork,darragh.duffy@owasp.org,Darragh Duffy
+Cork,john.oriordan@owasp.org,John O'Riordan
+Costa Rica,michael.hidalgo@owasp.org,Michael Hidalgo
+Cotonou,apollin.moyo@owasp.org,APOLLIN G. MOYO
+Cuiaba,kembolle@owasp.org,Kembolle Amilkar
+Cusco,yehude.jurado@owasp.org,Yehude Huayhuya Jurado Jurado
+Cusco,everth.gallegos@owasp.org,Everth Gallegos
+Cusco,david.ochoa@owasp.org,David Alain Franco Ochoa
+Cuttack,milan.sen@owasp.org,Milan Sen
+Cuttack,ankush.mohanty@owasp.org,Ankush Mohanty
+Cyprus,simon.loizides@owasp.org,Simon Loizides
+Cyprus,nicolas.markitanis@owasp.org,Nicolas Markitanis
+Cyprus,marios.nicolaides@owasp.org,Marios Nicolaides
+Czech Republic,jan.kopecky@owasp.org,Jan Kopecky
+Czech Republic,daniel.macs@owasp.org,Daniel Macs
+Czech Republic,jan.masarik@owasp.org,Jan Masarik
+Dallas,denis.sheridan@owasp.org,Denis Sheridan
+Da Nang,phuong.namtran@owasp.org,Phuong Nam Tran
+Delaware,david.rhoades@mavensecurity.com,David Rhoades
+Delhi,vaibhav.gupta@owasp.org,Vaibhav Gupta
+Delhi,sandeep_singh8@dell.com,Sandeep Singh
+Denver,serge.borso@owasp.org,Serge Borso
+Des Moines,morgan.mccarley@owasp.org,Morgan McCarley
+Des Moines,nichole.dugan@owasp.org,Nichole Dugan
+Detroit,katie.uhl@owasp.org,Katie Uhl
+Dhaka,jahangir.alam@owasp.org,Md Jahangir Alam
+Dindigul,arun.sakthivel@owasp.org,Arun Sakthivel
+Dnipro,lypnytsky.yan@owasp.org,Yan Lypnytsky
+Doha,javed.khan@owasp.org,Javed Khan
+Doha,ankit.bharathan@owasp.org,Ankit Bharathan
+Doha,praveen.nair@owasp.org,Praveen Nair
+Dominican Republic,jonathan.correa@owasp.org,Jonatahan Correa
+Dominican Republic,saira.isaac.hernandez@owasp.org,Saira Isaac Hernandez
+Dorset,mark.davison@owasp.org,Mark Davison
+Dorset,alexios.mylonas@owasp.org,Alexios Mylonas
+Dorset,daniel.warden@owasp.org,Daniel Warden
+Dublin,tony.clarke@ward.ie,Tony Clarke
+Dublin,brendan.gormley@owasp.org,Brendan Gormley
+Dublin,denise.murtaghdunne@owasp.org,Denise Murtagh-Dunne
+East Sweden,axel.bengtsson@owasp.org,Åke Bengtsson
+East Sweden,gustav.nyqvist@owasp.org,Gustav Nyqvist
+East Sweden,tilltony@gmail.com,Tony Lindgren
+Edmonton,mubasher.hanif@owasp.org,Mubasher Hanif
+El Salvador,nelson.chacon@owasp.org,Nelson Chacon
+France,ludovic.petit@owasp.org,Ludovic Petit
+Fukushima,masato.kaneko@owasp.org,Masato Kaneko
+Geneva,antonio.fontes@owasp.org,Antonio Fontes
+Geneva,thomas.hofer@owasp.org,Thomas Hofer
+Geneva,jeremy.matos@owasp.org,Jérémy Matos
+Germany,tobias.glemser@owasp.org,Tobias Glemser
+Ghana,hassan.abudu@owasp.org,Hassan Abudu
+Ghana,ash.dastmalchi@owasp.org,Ash Dastmalchi
+Gothenburg,jonas.magazinius@assured.se,Jonas Magazinius
+Gothenburg,mattias.jidhage@owasp.org,Mattias Jidhage
+Greece,konstantinos@owasp.org,Konstantinos Papapanagiotou
+Guatemala,amilcar.deleon@owasp.org,Amilcar De Leon
+Guatemala,camilio.fernandez@owasp.org,Camilo Fernandez
+Guatemala,pablo.barrera@owasp.org,Pablo Barrera
+Guayaquil,victor.vera@owasp.org,Victor Vera
+Gwalior,amit.ojha@owasp.org,Amit Ojha
+Gwalior,sumit.ojha@owasp.org,Sumit Ojha
+Halifax,lilly.chalupowski@owasp.org,Lilly Chalupowski
+Halifax,tyler.parrott@owasp.org,Tyler Parrott
+Hampton Roads,carlos.cruz@owasp.org,Carlos E Cruz
+Hampton Roads,afonson.alves@owasp.org,Afonson Alves
+Harrisburg,pete.dayok@owasp.org,Pete Dayok
+Harrisburg,james.lloyd@owasp.org,James Lloyd
+Hartford,alvin.fong@owasp.org,Alvin Fong
+Hartford,jmcgovern@massmutual.com,James McGovern
+Helsinki,petteri.arola@owasp.org,Petteri Arola
+Hereford,james.burford@owasp.org,James Burford
+Hereford,richard.henson@owasp.org,Richard Henson
+Hokushinetsu,takashi.nagamune@owasp.org,Takashi Nagamune
+Hokushinetsu,tatsushi.tsukamoto@owasp.org,Tatsushi Tsukamoto
+Hokushinetsu,akemi.kajikawa@owasp.org,Akemi Kajikawa
+Hong Kong,anthonylai@owasp.org,Anthony Lai
+Houston,ryan.tierney@owasp.org,Ryan Tierney
+Houston,benjamin.loula@owasp.org,Benjamin Loula
+Hungary,timur@owasp.org,Timur Khrotko
+Huntington,levi.durfee@owasp.org,Levi Durfee
+Huntington,john.narcise@owasp.org,John Narcise
+Hyderabad,shalem.raj@owasp.org,Shalem Raj
+Indianapolis,dprofancik@gmail.com,Damian Profancik
+Indianapolis,landon@archmaven.com,Landon Lewis
+Indianapolis,carl.sampson@gmail.com,Carl Sampson
+Indianapolis,todd.grotenhuis@owasp.org,Todd Grotenhuis
+Indore,yatin.sharma@owasp.org,Yatin Sharma
+Indore,sanskar.sharma@owasp.org,Sanskar Sharma
+Inland Empire,alex.lafrenz@owasp.org,Alex Lafrenz
+Inland Empire,brett.gravois@owasp.org,Brett Gravois
+Inland Empire,patrick.gillespiejr@owasp.org,Patrick Gillespie Jr
+Iowa City,solomon.smith@owasp.org,Solomon Smith
+Islamabad,ali.hassanghauri@owasp.org,Ali Hassan Ghauri
+Islamabad,danish.tariqar@owasp.org,Danish Tariqar
+Israel,avi.douglen@owasp.org,Avi Douglen
+Israel,ori.troyna@owasp.org,Ori Troyna
+Israel,shira.shamban@owasp.org,Shira Shamban
+Italy,matteo.meucci@owasp.org,Matteo Meucci
+Jacksonville,larry.franklin@owasp.org,Larry Franklin
+Jacksonville,kevin@secureideas.com,Kevin Johnson
+Jakarta,ade.putra@owasp.org,Ade Yoseman Putra
+Japan,riotaro@owasp.org,Riotaro OKADA
+Japan,takanori.nakanowatari@skydesk.jp,Takanori Nakanowatari
+Japan,nowatari_yukihiro@cyberagent.co.jp,Yukihiro Nowatari
+Japan,m-negishi@iij.ad.jp,Masafumi Negishi
+Japan,takesako@gmail.com,Yoshinori TAKESAKO
+Japan,isaac.dawson@gmail.com,Isaac Dawson
+JKPG,jonathan.sectra@owasp.org,Jonathan Jogenfors
+JKPG,per.josefsson@owasp.org,Per Josefsson
+JKPG,hakan.sonesson@owasp.org,Hakan Sonesson
+Johannesburg,tk.matima@owasp.org,TK Matima
+Johannesburg,sakhi.louw@owasp.org,Sakhi Louw
+Kansai,tomohiko.morita@owasp.org,Tomohiko Morita
+Kansas City,joshua.white@owasp.org,Joshua White
+Kansas City,greg.lahann@owasp.org,Greg Lahann
+Kansas City,justin.ferguson@owasp.org,Justin Ferguson
+Kerala,rejah.rehim@owasp.org,Rejah Rehim
+Kharkiv,vitalii.balashov@owasp.org,Vitalii Balashov
+Knoxville,andrew.smith@owasp.org,Andrew Smith
+Knoxville,kyle.bubp@owasp.org,Kyle Bubp
+Kolkata,krishnendu.paul@owasp.org,Krishnendu Paul
+Kolkata,jitendra.adhikari@owasp.org,Jitendra Adhikari
+Kolkata,tanmoy.khanra@owasp.org,Tanmoy Khanra
+Kuwait City,fahad.alqallaf@owasp.org,Fahad Alqallaf
+Kyiv,vlad.styran@owasp.org,Vlad Styran
+Kyiv,ihor.bliumental@owasp.org,Ihor Bliumental
+Kyushu,yuichi.higashi@owasp.org,Yuichi Higashi
+Las Vegas,carmi.moser@owasp.org,Carmi Moser
+Leeds UK,andrew.ratcliffe@owasp.org,Andrew Ratcliffe
+Leeds UK,ben.slominski@owasp.org,Ben Slominski
+Leeds UK,paul.booth@owasp.org,Paul Booth
+Letterkenny,veronica.cryan@owasp.org,Veronica Cryan
+Letterkenny,anthony.caldwell@owasp.org,Anthony Caldwell
+Letterkenny,gyan.panigraphy@owasp.org,Gyan Panigrahy
+Lincoln,chris.hobbs@owasp.org,Chris Hobbs
+Little Rock,blain.purtle@owasp.org,Blain Purtle
+Liverpool,matthew.hatton@owasp.org,Matthew Hatton
+Lome,adjonyo.kodzo@owasp.org,Adjonyo Kodzo Mawulawoe
+London,sherif.mansour@owasp.org,Sherif Mansour
+London,sam@step9consulting.com,Sam Stepanyan
+London,lezzaandra@gmail.com,Andra Lezza
+Long Island,frank.zinghini@avi.com,Frank Zinghini
+Long Island,charles.beganskas@owasp.org,Charles Beganskas
+Los Angeles,dave.wettenstein@owasp.org,Dave Wettenstein
+Los Angeles,cassio@owasp.org,Cassio Goldschmidt
+Los Angeles,richard.greenberg@owasp.org,Richard Greenberg
+Louisville,richard.connor@owasp.org,Richard Connor
+Luxembourg,jocelyn.aubert@owasp.org,Jocelyn Aubert
+Lviv,igor@beliaiev.com,Igor Beliaiev
+Lviv,root.nt@gmail.com,Nazar Tymoshyk
+Macedonia,mane.piperevski@owasp.org,Mane Piperevski
+Madison,lance.rudolph@owasp.org,Lance Rudolph
+Madison,jeremy.korger@outlook.com,Korger
+Madrid,daniel.garcia@owasp.org,Daniel Garcia
+Madurai,kishore.tk@owasp.org,kishore tk
+Madurai,ksc.soundarya@owasp.org,KSC Soundarya
+Malaysia,fazli@owasp.org,Mohd Fazli Azran Abd Malek
+Malta,rodrigo.marcos@secforce.com,Rodrigo Marcos
+Manchester,bgfountain@googlemail.com,Ben Fountain
+Manchester,daniel@redcrag.com,Daniel Pollard
+Manchester,nikola.milosevic@owasp.org,Nikola Milosevic
+Marquette,matt.landers@owasp.com,Matt Landers
+Medellin,darwin.algarin@owasp.org,Darwin Algarin
+Medellin,cristian.osia@owasp.org,Cristian Osia
+Meerut,hanut.arora@owasp.org,Hanut Kumar Arora
+Meerut,vivek.kumar@owasp.org,Vivek Kumar
+Melbourne,julian.berton@owasp.org,Julian Berton
+Memphis,josh.summitt@owasp.org,Josh Summitt
+Memphis,gregory.nail@owasp.org,Gregory Nail
+Memphis,tommy.xaypanya@owasp.org,Tommy Xaypanya
+Mexicali,carlos.lozano@owasp.org,Carlos A. Lozano
+Mexico City,carlos.sagrero@gmail.com,Carlos Isaac Sagrero Campos
+Miami,shane.jones@owasp.org,Shane Jones
+Miami,alejandro.herrera@owasp.org,Alejandro Herrera
+Minneapolis St Paul,todd.dahl@owasp.org,Todd Dahl
+Minneapolis St Paul,alex.bauert@owasp.org,Alex Bauert
+Monterrey,ruben.jasso@owasp.org,Ruben Fernandez Jasso
+Monterrey,leonel.deleon@owasp.org,Leonel DeLeon
+Monterrey,jtortolero@integrity.cx,Jose de Jesus Moreno Tortolero
+Montreal,michel.bourque@owasp.org,Michel Bourque
+Montreal,anne.gauthier@owasp.org,Anne Gauthier
+Montreal,hugo.genesse@owasp.org,Hugo Genesse
+Morocco,tarik.elaouadi@owasp.org,Tarik Tarik EL AOUADI
+Morocco,azzeddine.ramrami@owasp.org,Azzeddine RAMRAMI Azzeddine
+Moscow,taras.ivaschenko@owasp.org,Taras Ivaschenko
+Moscow,luka.safonov@owasp.org,Luka Safonov
+Moscow,boris.savkov@owasp.org,Boris Savkov
+Mumbai,anant.joshi@owasp.org,Anant Kumar Joshi
+Mumbai,yash.roongta@owasp.org,Yash Roongta
+Mysuru,harikrishnan.c@owasp.org,Harikrishnan C
+Nagoya,yukiharu.niwa@owasp.org,Yukiharu Niwa
+Nagoya,isanori.sakanashi@owasp.org,Isanori Sakanashi
+Nagoya,takeshi.murai@owasp.org,Takeshi Murai
+Nagpur,hrishikesh.somchatwar@owasp.org,Hrirshikesh Somchatwar
+Nagpur,sahil.tembhare@owasp.org,Sahil Tembhare
+Nainital,vikas.singhbisht@owasp.rg,Vikas Singh Bisht
+Nashua,bil.corry@owasp.org,Bil Corry
+Nashville,joel.toassini@owasp.org,Joel Tomassini
+Nashville,mark.geeslin@owasp.org,Mark Geeslin
+Natal,eduardo.santos@owasp.org,Eduardo Barros Santos
+Natal,matheus.oliveira@owasp.org,Matheus Cavalcante de Oliveira
+Natal,julio.lira@owasp.org,Julio Pedro de Lira Neto
+Natori,shota.sato@owasp.org,Shota Sato
+Nepal,nabin.kc@owasp.org,Nabin KC
+Netherlands,joren.poll@owasp.org,Joren Poll
+Netherlands,martin.knobloch@owasp.org,Martin Knobloch
+Netherlands,tom.wirschell@owasp.org,Tom Wirschell
+Netherlands,edwin.gozeling@owasp.org,Edwin Gozeling
+Newcastle UK,andrew.pannell@owasp.org,Andrew Pannell
+Newcastle UK,robin.fewster@owasp.org,Robin Fewster
+Newcastle UK,connor.carr@owasp.org,Connor Carr
+New Jersey North,evin.hernandez@owasp.org,Evin Hernandez
+New York City,guy.osa@owasp.org,Guy Osa
+New York City,zoe.braiterman@owasp.org,Zoe Braiterman
+New York City,evin.hernandez@owasp.org,Evin Hernandez
+New Zealand,john.dileo@owasp.org,John DiLeo
+New Zealand,kirk.jackson@owasp.org,Kirk Jackson
+New Zealand,binarymist@gmail.com,Kim Carter
+Niamey,issoufou.ibrahim@owasp.org,Issoufou Ibrahim
+Nigeria,idara.akpan@owasp.org,Idara Akpan
+Nigeria,abdullahi.arabo@owasp.org,Abdullahi Arabo
+Noida,vaibhav.jha@owasp.org,Vaibhav Jha
+Northeastern University,amirali.sanatinia@owasp.org,Amirali Sanatinia
+Northern Virginia,abdullah.munawar@owasp.org,Abdullah Munawar
+Northern Virginia,bennpick@gmail.com,Ben Pick
+North Sweden,magnus.hultdin@owasp.org,Magnus Hultdin
+North Sweden,markus.orebrand@owasp.org,Markus Örebrand
+Norway,erlend.oftedal@owasp.org,Erlend Oftedal
+Oakland County,bradley.mcmahon@owasp.org,Bradley McMahon
+Oakland County,steven.legg@owasp.org,Steven Legg
+Okinawa,shinichi.fuchigami@owasp.org,Shinichi Fuchigami
+Okinawa,nobuho.matayoshi@owasp.org,Nobuho Matayoshi
+Oklahoma City,stacy.dunn@owasp.org,Stacy Dunn
+Oklahoma City,jim.thavisouk@owasp.org,Jim Thavisouk
+Oklahoma City,joe.sullivan@owasp.org,Joe Sullivan
+Omaha,michael.born@owasp.org,Michael Born
+Orange County,craig.hai@owasp.org,Craig Hai
+Orange County,haral.tsitsivas@owasp.org,Haral Tsitsivas
+Orlando,adrian.pastor@owasp.org,Adrian Pastor
+Orlando,tony.turner@owasp.org,Tony Turner
+Ottawa,garth.boyd@owasp.org,Garth Boyd
+Ottawa,paul.ionescu@owasp.org,Paul Ionescu
+Ottawa,sherif.koussa@owasp.org,Sherif Koussa
+Panama City,diego.gonzalez.arango@owasp.org,Diego Gonzalez Arango
+Panama City,ivan.ho@owasp.org,Ivan Ho
+Panama City,eduardo.snape@owasp.org,Eduardo Snape
+Paraguay,hector.antonio.aguirre@owasp.org,Hector Aguirre
+Paraiba,humberto.junior@owasp.org,Humberto Junior
+Patagonia,diego.dinardo@owasp.org,Diego Di Nardo
+Patagonia,gaston.toth@owasp.org,Gaston Toth
+Perth,maxim.chernyshev@owasp.org,Maxim Chernyshev
+Perth,glen.scott@owasp.org,Glen Scott
+Peru,mauricio.urizar@gmail.com,Mauricio Urizar
+Peru,samuel.ascona@gmail.com,Samuel Ascona
+Peru,john.vargas@owasp.org,John Vargas
+Philadelphia,evan.oslick@owasp.org,Evan Oslick
+Philadelphia,john.kh.baek@gmail.com,John Baek
+Philadelphia,aaron.weaver2@gmail.com,Aaron Weaver
+Phoenix,joaquin.fuentes@owasp.org,Joaquin Fuentes
+Pittsburgh,kevin.cody@owasp.org,Kevin Cody
+Poland,alexander.antukh@owasp.org,Alexander Antukh
+Portland,benny.zhao@owasp.org,Benny Zhao
+Portland,bhushan.gupta@owasp.org,Bhushan Gupta
+Portland,ian.melven@owasp.org,Ian Melven
+"Portland, Maine",john.elingsworth@owasp.org,John Ellingsworth
+"Portland, Maine",joe.lebeau@owasp.org,Joe LeBeau
+"Portland, Maine",scott.ellis@owasp.org,Scott Ellis
+Port Louis,keshav.pamrecha@owasp.org,Keshav Ramrecha
+Porto Alegre,marcos.cassel@owasp.org,Marcos Vinicius Cassel
+Porto Alegre,mauricio.ariza@owasp.org,Mauricio Ariza
+Porto Alegre,eduardo.schultze@owasp.org,Eduardo Schultze
+Pune,nirav.patel@owasp.org,Nirav Patel
+Pune,pramod.rana@owasp.org,Pramod Rana
+Pune,jyoti.raval@owasp.org,Jyoti Raval
+Quebec City,patrick.leclerc@owasp.org,Patrick Leclerc
+Quebec City,louis.nadeau@bentley.com,Louis Nadeau
+Ranchi,kishan.kumar@owasp.org,Kishan Kumar
+"Reading, UK",rameshsagar.k@gmail.com,Ramesh Krishnasagar
+Recife,marcelo.revoredo@owasp.org,Carlo Marcelo Revoredo da Silva
+Rhode Island,patrick.laverty@owasp.org,Patrick Laverty
+Richmond,travis.altman@owasp.org,Travis Altman
+Richmond,matthew.mullins@owasp.org,Matthew Mullins
+Rio de Janeiro,jeymei.leyton@owasp.org,Jeymei Leyton
+Rio de Janeiro,ricardo.supo@owasp.org,Ricardo Supo
+Riviera Maya,paulino.calderonpale@owasp.org,Paulino Paulino Calderon
+Rochester,ralph.durkee@owasp.org,Ralph Durkee
+Rochester,john.king@owasp.org,John King
+Rochester,jim.keeler@owasp.org,Jim Keeler
+Sacramento,joubin.jabbari@owasp.org,Joubin Jabbari
+Sacramento,chad.hollman@owasp.org,Chad Hollman
+Saint Louis,joe.blanchard@owasp.org,Joe Blanchard
+Saint Louis,eric.turcotte@owasp.org,Eric Turcotte
+Salt Lake City,seth.law@owasp.org,Seth Law
+Salt Lake City,cameron.white@owasp.org,Cameron White
+Sanaa,fadi.alaswadi@owasp.org,Fadi Al-Aswadi
+San Antonio,michael.xin@owasp.org,Michael Xin
+San Antonio,matt.valdes@owasp.org,Matthew Valdes
+San Antonio,dan@denimgroup.com,Dan Cornell
+San Diego,tom.spencer@owasp.org,Tom Spencer
+San Diego,schenette@gmail.com,Stephen Chenette
+San Fernando Valley,orion.miller@owasp.org,Orion Miller
+San Fernando Valley,liliya.frye@owasp.org,Liliya Frye
+San Fernando Valley,aidan.anderson@owasp.org,Aidan Anderson
+San Pedro Sula,armando.rodas@owasp.org,Armando Reniey Rodas Santos
+San Pedro Sula,fernando.calix@owasp.org,Fernando Alonso Calix Rodriguez
+San Pedro Sula,raul.aguilar@owasp.org,Raul Aguilar
+Santa Barbara,martin.villalba@owasp.org,Walter Martín Villalba
+Sao Paulo,fernando.galves@owasp.org,Fernando Galves
+Scotland,sean.wright@owasp.org,Sean Wright
+Scotland,rob.jansson@owasp.org,Rob Jansson
+Seattle,ian.gorrie@owasp.org,Ian Gorrie
+Sendai,sonomin@owasp.org,Sonomi Takahashi
+Sendai,nozomi.yamada@owasp.org,Nozomi Yamada
+Sendai,to@security-initiativie.co.jp,Takaharu Ogasa
+Seoul,hyungsoon.choi@owasp.org,Hyungsoon Choi
+Seoul,youngsook.kim@owasp.org,Youngsook Kim
+Seoul,youngjae.jeon@owasp.org,Youngjae Jeon
+Sevilla,jnunez@owasp.org,Jose Nunez
+Sevilla,jmaparicio@owasp.org,Jose Aparicio
+Sevilla,ramon.salado@owasp.org,Ramón Salado
+Sibiu,pitis.daniel@owasp.org,Daniel Pitis
+Singapore,ocwong@owasp.org,Wong Onn Chee
+Sioux Falls,paul.kern@owasp.org,Paul Kern
+Sioux Falls,joey.henkel@owasp.org,Joey Henkel
+Sofia,mihail.stoynov@owasp.org,Mihail Stoynov
+Southern Maryland,larry.conklin@owasp.org,Larry Conklin
+South Florida,rohini.sulatycki@gmail.com,Rohini Sulatycki
+South Sweden,erik.wilhelmsson@owasp.org,Erik Wilhelmsson
+South Sweden,oscar.hjelm@owasp.org,Oscar Hjelm
+South Sweden,olle.svenhag@owasp.org,Olle Svenhag
+Space Coast,marie.albergo@owasp.org,Marie Albergo
+Space Coast,nicole.dyess@owasp.org,Nicole Dyess
+St. Cloud State University,lee.ho@owasp.org,Lee Ho
+St. George,dennis.johnson@owasp.org,Dennis Johnson
+Stockholm,mattias.bergling@owasp.org,Mattias Bergling
+Stockholm,henrik.amark@owasp.org,Henrik Pedersen Amark
+Stockholm,pontus.thulin@owasp.org,Pontus Thulin
+Suffolk,abhinav.sejpal@owasp.org,Abhinav Sejpal
+Suffolk,wojciech.cichon@owasp.org,Wojciech Cichon
+Surat,urvin.mistry@owasp.org,Urvin Mistry
+Switzerland,sven.vetsch@owasp.org,Sven Sven Vetsch
+Switzerland,robert.schneider@owasp.org,Robert Schneider
+Sydney,hemed.gurary@owasp.org,Hemed Gur Ary
+Sydney,reece.stewart@owasp.org,Reece Stewart
+Syracuse,jeff.foley@owasp.org,Jeff Foley
+Syracuse,david.stlaurent@owasp.org,David St. Laurent
+Tampa,sunny.wear@owasp.org,Sunny Wear
+Tampa,jon.singer@owasp.org,Jonathan Singer
+Tbilisi,david.kvatadze@owasp.org,David Kvatadze
+Tegucigalpa,kevin.mejia@owasp.org,Kevin Mejia
+Tegucigalpa,sandy.palma@owasp.org,Sandy Karyna Palma Rodriguez
+Thailand,pituphong.yavirach@owasp.org,Pituphong Yavirach
+Timisoara,catalin.curelaru@owasp.org,Catalin Curelaru
+Toronto,opheliar.chan@owasp.org,Opheliar Chan
+Toronto,yukfai.chan@owasp.org,Yuk Fai Chan
+Triangle-NC,chris.romeo@owasp.org,Chris Romeo
+Triangle-NC,steve.pinkham@owasp.org,Steve Pinkham
+Trinidad and Tobago,laura.bigram@owasp.org,Laura Bigram
+Trinidad and Tobago,patrick.hosein@sta.uwi.edu,Patrick Hosein
+Tripoli,a.greede@uot.edu.ly,Abdolbast Greede
+Tulsa,luke.crouch@owasp.org,Luke Crouch
+Tulsa,nathan.sweaney@owasp.org,Nathan Sweaney
+Tunisia,nihel.benyoussef@owasp.org,Nihel Ben Yossuf
+Ukraine,katerina.ovechenko@owasp.org,Kateryna Ovechenko
+Ukraine,yevgeniya.maskayeva@owasp.org,Yevgeniya maskayeva
+Uruguay,mateo.martinez@owasp.org,Mateo Martinez
+Uruguay,mauro.flores@owasp.org,Mauro Flores
+Uruguay,felipe.zipitria@owasp.org,Felipe Zipitria
+UW Bothell,tlaws@uw.edu,Tyler Laws
+UW Bothell,cody.burkard@owasp.org,Cody Burkard
+Vancouver,farshad.abasi@owasp.org,Farshad Abasi
+Vancouver,teamstuff@jeevan.ca,Jeevan Singh
+Varanasi,sumitsingh31337@gmail.com,Sumit Singh
+Varanasi,ankit.dixit@owasp.org,Ankit Dixit
+Vellore,vijay.s@owasp.org,Vijay S
+Vellore,kr.narayanan@owasp.org,KR. Shankara Narayanan
+Venezuela,diego.subero@gmail.com,Diego Subero
+Venezuela,josmell.chavarri@owasp.org,Josmell Chavarri
+Venezuela,edgar.salazar@owasp.org,Edgar Salazar
+Vienna,andreas.happe@owasp.org,Andreas Happe
+Vienna,lucas.ferreira@owasp.org,Lucas Ferreira
+Vienna,sebastian.bicchi@owasp.org,Sebastian Bicchi
+Vina del Mar,guillermo.farias@owasp.org,Guillermo Farías Díaz Díaz
+Vina del Mar,gustavo.nievesarreaza@owasp.org,Gustavo Nieves Arreaza
+Vitoria,jance.luiz@owasp.org,Jance Luiz
+Vitoria,ulysses@netbox.in,Ulysses Monteiro
+Warwick,brian.mcglone@owasp.org,Brian McGlone
+Warwick,neil.lines@owasp.org,Neil Lines
+Warwick,daniel.reece@owasp.org,Daniel Reece
+Washington DC,bryan.batty@owasp.org,Bryan Batty
+Washington DC,andrew.weidenhamer@owasp.org,Andrew Weidenhamer
+Washington DC,emily.verwee@owasp.org,Emily Verwee
+Waterloo,terry.labach@owasp.org,Terry Labach
+Waterloo,cooperja@opentext.com,Jason Cooper
+West Delhi,akash.sharma@owasp.org,Akash Sharma
+Worcestershire,samuel.aldis@owasp.org,Samuel Elliott Aldis
+Zaragoza,david.lopez@owasp.org,David López
+Zaragoza,maria.salvatierra@owasp.org,Maria Jose Salvatierra
+Zhytomyr,bohdan.nikitenko@owasp.org,Nikitenko Bohdan
