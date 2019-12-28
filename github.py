@@ -10,6 +10,7 @@ class OWASPGitHub:
     gh_endpoint = "https://api.github.com/"
     org_fragment = "orgs/OWASP/repos"
     repo_fragment = "repos/OWASP/:repo"
+    commit_fragment = "repos/OWASP/:repo/commits"
     content_fragment = "repos/OWASP/:repo/contents/:path"
     pages_fragment = "repos/OWASP/:repo/pages"
     team_addrepo_fragment = "teams/:team_id/repos/OWASP/:repo"
@@ -309,3 +310,19 @@ class OWASPGitHub:
         url = self.gh_endpoint + repofrag
         r = requests.get(url = url, headers=headers)
         return r
+
+    def GetLastUpdate(self, repoName, file):
+        repofrag = self.commit_fragment.replace(':repo', repoName)
+        repofrag += f"?path={file}&page=1&per_page=1"
+        headers = {"Authorization": "token " + self.apitoken,
+                "Accept":"application/vnd.github.nebula-preview+json"
+            }
+
+        url = self.gh_endpoint + repofrag
+        r = requests.get(url = url, headers=headers)
+        datecommit = None
+        if r.ok:
+            res = json.loads(r.text)
+            datecommit = res[0]['commit']['committer']['date']
+
+        return datecommit

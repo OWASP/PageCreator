@@ -745,22 +745,25 @@ def process_group_leaders(group, leaders, emails):
             doc = json.loads(r.text)
             sha = doc['sha']
             content = base64.b64decode(doc['content']).decode()
-            if (not ('@' in content) and not ('www.owasp.org' in content)) or ('leader.email@owasp.org' in content):
-                # we can replace the contents of this file
-                content = '### Leaders\n\n'
-                ndx = 0
-                for leader in leaders:
-                    email = f'mailto://{emails[ndx].strip()}'
-                    if not '@owasp.org' in email:
-                        email = 'mailto://' # no email, needs update
-                    content += f'* [{leader.strip()}]({email})'
-                    ndx = ndx + 1
-                
-                r = gh.UpdateFile(www_group, 'leaders.md', content, sha)
-                if r.ok:
-                    print('Updated leaders file\n')
-                else:
-                    print(f'FAILED to update {www_group}\n')
+            lc = gh.GetLastUpdate(www_group, 'leaders.md')
+            updated_recently = ('@' in content and '2019-12-28' in lc)
+            # remove need for test by cleaning list
+            #if (not ('@' in content) and not ('www.owasp.org' in content)) or ('leader.email@owasp.org' in content) or updated_recently:
+            #we can replace the contents of this file
+            content = '### Leaders\n\n'
+            ndx = 0
+            for leader in leaders:
+                email = f'mailto:{emails[ndx].strip()}'
+                if not '@owasp.org' in email:
+                    email = 'mailto:' # no email, needs update
+                content += f'* [{leader.strip()}]({email})\n'
+                ndx = ndx + 1
+            
+            r = gh.UpdateFile(www_group, 'leaders.md', content, sha)
+            if r.ok:
+                print('Updated leaders file\n')
+            else:
+                print(f'FAILED to update {www_group}\n')
     
 def add_leaders():
     curr_group = ''
@@ -769,28 +772,46 @@ def add_leaders():
         
     f = open('all_leaders.csv')
     for line in f.readlines():
+        line = line.replace('"', '')
         keys = line.split(',')
+        keycount = len(keys)
+        ldr_ndx = 2
+        eml_ndx = 1
+        tmp_group = keys[0]
+
+        # Portland, Maine        
+        if keycount > 3:
+            tmp_group = f'{tmp_group}, {keys[1]}'
+            ldr_ndx = 3
+            eml_ndx = 2
+
         if curr_group == '':
-            curr_group = keys[0]
-            
-        if curr_group != keys[0]:
+            curr_group = tmp_group
+            leaders.append(keys[ldr_ndx])
+            emails.append(keys[eml_ndx])
+        elif curr_group != tmp_group:
             print(f'Processing {curr_group}:\n')
             ndx = 0
             for leader in leaders:
                 print(f'\tLeader: {leader}, {emails[ndx]}\n')
                 ndx = ndx + 1
-            curr_group = keys[0]
-            leaders.append(keys[2])
-            emails.append(keys[1])
             process_group_leaders(curr_group, leaders, emails)
             leaders.clear()
             emails.clear()
+            curr_group = tmp_group
+            leaders.append(keys[ldr_ndx])
+            emails.append(keys[eml_ndx])
         else:
-            leaders.append(keys[2])
-            emails.append(keys[1])
+            leaders.append(keys[ldr_ndx])
+            emails.append(keys[eml_ndx])
 
 def main():
     add_leaders()
+    #gh = OWASPGitHub()
+    #dc = gh.GetLastUpdate('www-projectchapter-example', 'leaders.md')
+
+    #print(dc)
+
     #sf = OWASPSalesforce()
     #if sf.Login().ok:
     #    res = sf.FindContact('Berman')
