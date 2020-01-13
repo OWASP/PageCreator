@@ -61,6 +61,36 @@ class StaffProject:
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
 
+
+def build_project_json():
+    # we want to build certain json data files every now and then to keep the website data fresh.
+    #for each repository, public, with www-project
+    #get name of project, level, and type
+    # store in json
+    #write json file out to github.owasp.io _data folder
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-project')
+
+    for repo in repos: #change to use title in project repo.....
+        repo['name'] = repo['name'].replace('www-project-','').replace('-', ' ')
+        repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+
+    repos.sort(key=lambda x: x['name'])
+    repos.sort(key=lambda x: x['level'], reverse=True)
+   
+    sha = ''
+    r = gh.GetFile('owasp.github.io', '_data/projects.json')
+    if gh.TestResultCode(r.status_code):
+        doc = json.loads(r.text)
+        sha = doc['sha']
+
+    contents = json.dumps(repos)
+    r = gh.UpdateFile('owasp.github.io', '_data/projects.json', contents, sha)
+    if gh.TestResultCode(r.status_code):
+        logging.info('Updated _data/projects.json successfully')
+    else:
+        logging.error(f"Failed to update _data/projects.json: {r.text}")
+
 def create_github_repo(github, group, grouptype, msglist):
     
     r = github.CreateRepository(group, grouptype)
@@ -868,7 +898,8 @@ def update_pdf_links():
             
 
 def main():
-    update_pdf_links()
+    build_project_json()
+    #update_pdf_links()
     #content = '---\n\nlayout: col-sidebar\ntitle: OWASP Software Security 5D Framework\ntags: example-tag\nlevel: 0\ntype: documentation\n\nauto-migrated: 1\n---\n<div style="width:100%;height:160px;border:0,margin:0;overflow: hidden;">\n\n![OWASP_Project_Header.jpg](OWASP_Project_Header.jpg\n"OWASP_Project_Header.jpg")\n\n</div>\n\n<table>\n<tbody>\n<tr class="odd">\n<p><span style="color:#000000"> The new Minded Security Software Security 5D framework (now OWASP Software Security 5D framework) is derived from many years of experience performing software security assessment to many Companies and from the experience from the OWASP Community and in particular OWASP SAMM Community.</p>\n<p>Minded Security donated it to OWASP in September 2018.</p>\n<p>Traditional Secure SDLC frameworks lack of: - level of awareness for all the people involved in the process - description of the application security roles involved - set of security standards - security testing tools adopted</p>\n<p>OWASP SwSec 5D represents a more practical framework that focus on 5 dimensions to evaluate the maturity of a SDLC that are the following:<br />\n- SwSec PROCESSES<br />\n- SwSec TESTING<br />\n- SwSec TEAM<br />\n- SwSec AWARENESS<br />\n- SwSec STANDARDS<br />\n<br />\n<a href="https://www.owasp.org/index.php?title=OWASP_Software_Security_5D_Framework_Table_of_Contents">Wiki Home Page</a></p>\n<p><br />\n</span></p>\n<p><span style="color:#000000"> Project goal is to review the 5D framework and create an open source framework adopted by the OWASP Community. </span></p>\n<h2 id="licensing">Licensing</h2>\n<p><span style="color:#000000"> This project is under the AGPL 3.0 license. </span></p>\n<p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href="http://www.gnu.org/licenses/agpl-3.0.html">link GNU Affero General Public License 3.0</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. OWASP and any contributions are Copyright © by {the Project Leader(s) or OWASP} {Year(s)}.</p>\n<h2 id="roadmap">Roadmap</h2>\n<p><span style="color:#000000"> Starting at October 2018. By the end of the year: <strong></p>\n<ul>\n<li>Complete the first draft of the Documentation Project</li>\n<li>Get other people to review the Documentation Project and provide feedback</li>\n<li>Incorporate feedback</li>\n<li>Finalize the Documentation Project and have it reviewed to be promoted from an Incubator Project to a Lab Project</li>\n</ul>\n<p></strong></p>\n<h2 id="getting_involved">Getting Involved</h2>\n<p><span style="color:#000000"> Involvement in the development and promotion of <strong>SwSec 5D project</strong> is actively encouraged! You do not have to be a security expert or a programmer to contribute. Please send an email to: <a href="mailto:matteo.meucci@owasp.org">Matteo Meucci</a></p></td>\n<td><h2 id="project_resources">Project Resources</h2>\n<p><a href="/www-pdf-archive/OWASP_SwSec5D_Presentation_-_Oct18.pdf">Presentation</a></p>\n<p><a href="https://www.owasp.org/images/9/92/OWASP_SwSec5D_Presentation_-_Oct18.pdf">Presentation</a></p>\n<p><a href="https://github.com/OWASP/Software-Security-5D-Framework">GitHub</a></p>\n<p><a href="https://github.com/OWASP/Software-Security-5D-Framework">GitHub</a></p>\n<p><a href="https://www.owasp.org/index.php?title=OWASP_Software_Security_5D_Framework_Table_of_Contents">Wiki Home Page</a></p>\n<p><a href="https://www.owasp.org/index.php?title=OWASP_Software_Security_5D_Framework_Table_of_Contents">Wiki Home Page</a></p>\n<h2 id="project_leader">Project Leader</h2>\n<h2 id="project_leader">Project Leader</h2>\n<p><a href="User:Mmeucci" title="wikilink">Matteo Meucci</a></p>\n<p><a href="User:Mmeucci" title="wikilink">Matteo Meucci</a></p>\n<h2 id="related_projects">Related Projects</h2>\n<h2 id="related_projects">Related Projects</h2>\n<p><a href="OWASP_SAMM_Project" title="wikilink">OWASP SAMM</a></p></td>\n<p><a href="OWASP_SAMM_Project" title="wikilink">OWASP SAMM</a></p></td>\n</tr>\n</tr>\n</tbody>\n</tbody>\n</table>\n</table>\n\n\n__NOTOC__ <headertabs />\n__NOTOC__ <headertabs />\n\n\n[Category:OWASP Project](Category:OWASP_Project "wikilink")\n[Category:OWASP Project](Category:OWASP_Project "wikilink")\n[Category:OWASP_Document](Category:OWASP_Document "wikilink")\n[Category:OWASP_Document](Category:OWASP_Document "wikilink")\n'
     #content = "<p>The <a href='Media:OWASP_Top_10-2017_(en).pdf.pdf' title='wikilink'>OWASP Top 10 - 2017</a> is now available.</p>"
     #print(walk_text(content))
