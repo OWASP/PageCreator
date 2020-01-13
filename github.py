@@ -176,7 +176,7 @@ class OWASPGitHub:
         return r
 
     def GetPublicRepositories(self, matching=""):
-        headers = {"Authorization": "token " + self.apitoken,
+        headers = {"Authorization": "token " + self.apitoken, "X-PrettyPrint":"1",
             "Accept":"application/vnd.github.switcheroo-preview+json, application/vnd.github.mister-fantastic-preview+json, application/json, application/vnd.github.baptiste-preview+json"
         }
         
@@ -209,6 +209,7 @@ class OWASPGitHub:
                         if not matching or matching in repoName:
                             addrepo = {}
                             addrepo['name'] = repoName
+                            addrepo['url'] = f"https://www2.owasp.org/{ repoName }"
                             r = self.GetFile(repoName, 'index.md')
                             if self.TestResultCode(r.status_code):
                                 doc = json.loads(r.text)
@@ -223,7 +224,8 @@ class OWASPGitHub:
 
                                 ndx = content.find('level:') + 6
                                 eol = content.find("\n", ndx)
-                                if ndx < 0 or content.find("This is an example of a Project") >= 0:
+                                not_updated = (content.find("This is an example of a Project") >= 0)
+                                if ndx < 0 or not_updated:
                                     level = "-1"
                                 else:
                                     level = content[ndx:eol]
@@ -232,6 +234,26 @@ class OWASPGitHub:
                                 eol = content.find("\n", ndx)
                                 gtype = content[ndx:eol]
                                 addrepo['type'] = gtype.strip()
+                                ndx = content.find('region:') + 7
+                                
+                                if not_updated:
+                                    gtype = 'Needs Website Update'
+                                elif ndx > 6: # -1 + 7
+                                    eol = content.find("\n", ndx)
+                                    gtype = content[ndx:eol]
+                                else: 
+                                    gtype = 'Unknown'
+                                    
+                                addrepo['region'] = gtype.strip()
+
+                                ndx = content.find('pitch:') + 6
+                                if ndx > 5: # -1 + 6
+                                    eol = content.find('\n', ndx)
+                                    gtype = content[ndx:eol]
+                                else:
+                                    gtype = 'More info soon...' 
+                                addrepo['pitch'] = gtype.strip()
+
                                 results.append(addrepo)
 
 
