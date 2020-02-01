@@ -939,8 +939,66 @@ def replicate_404():
             else:
                 print('Updated repo...\n')
 
+def parse_leaderline(line):
+    ename = line.find(']')
+    name = line[line.find('[') + 1:line.find(']')]
+    email = line[line.find('(', ename) + 1:line.find(')', ename)]
+    return name, email
+
+def add_to_leaders(repo, content, all_leaders, stype):
+    lines = content.split('\n')
+    for line in lines:
+        fstr = line.find('[')
+        if(line.startswith('###') and 'Leaders' not in line):
+            break
+        
+        if(line.startswith('*') and fstr > -1 and fstr < 4):
+            name, email = parse_leaderline(line)
+            leader = {}
+            leader['name'] = name
+            leader['email'] = email
+            leader['group'] = repo['title']
+            leader['group-type'] = stype
+            all_leaders.append(leader)
+
+
+def build_leaders_json(gh):
+    all_leaders = []
+    repos = gh.GetPublicRepositories('www-')
+    for repo in repos:
+        r = gh.GetFile(repo['name'], 'leaders.md')
+        if r.ok:
+            doc = json.loads(r.text)
+            content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+            stype = ''
+            if 'www-chapter' in repo['name']:
+                stype = 'chapter'
+            elif 'www-committee' in repo['name']:
+                stype = 'committee'
+            elif 'www-project' in repo['name']:
+                stype = 'project'
+            else:
+                continue
+
+            add_to_leaders(repo, content, all_leaders, stype)
+    
+    r = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    sha = ''
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+    
+    r = gh.UpdateFile('owasp.github.io', '_data/leaders.json', json.dumps(all_leaders, ensure_ascii=False, indent = 4), sha)
+    if r.ok:
+        print('Update leaders json succeeded')
+    else:
+        print(f'Update leaders json failed: {r.status}')
+    
 def main():
-    build_committee_json()
+    gh = OWASPGitHub()
+    build_leaders_json(gh)
+
+    #build_committee_json()
     #replicate_404()    
     #build_project_json()
     #update_pdf_links()
