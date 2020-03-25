@@ -9,6 +9,11 @@ import base64
 import datetime
 from wufoo import *
 from salesforce import *
+
+from mailchimp3 import MailChimp
+from mailchimp3.mailchimpclient import MailChimpError
+mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
+
 class Leader:
     def __init__(self, name, email):
         self.name = name
@@ -789,8 +794,80 @@ def add_leaders():
             leaders.append(keys[2])
             emails.append(keys[1])
 
+def CollectMailchimpTags():
+    audience = mailchimp.lists.members.all(os.environ["MAILCHIMP_LIST_ID"], get_all=True)
+    
+    print(len(audience['members']))
+
+    for person in audience['members']:
+        for tag in person['tags']:
+            if('Dublin' in tag['name']):
+                print(person['email_address'])
+
+def build_chapter_json(gh):
+    # we want to build certain json data files every now and then to keep the website data fresh.
+    #for each repository, public, with www-project
+    #get name of project, level, and type
+    # store in json
+    #write json file out to github.owasp.io _data folder
+    repos = gh.GetPublicRepositories('www-chapter')
+    
+    for repo in repos:
+        repo['name'] = repo['name'].replace('www-chapter-','').replace('-', ' ')
+        repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+
+    repos.sort(key=lambda x: x['name'])
+    repos.sort(key=lambda x: x['region'], reverse=True)
+   
+    sha = ''
+    r = gh.GetFile('owasp.github.io', '_data/chapters.json')
+    if gh.TestResultCode(r.status_code):
+        doc = json.loads(r.text)
+        sha = doc['sha']
+
+    contents = json.dumps(repos)
+    r = gh.UpdateFile('owasp.github.io', '_data/chapters.json', contents, sha)
+    if gh.TestResultCode(r.status_code):
+        print('Updated _data/chapters.json successfully')
+    else:
+        print(f"Failed to update _data/chapters.json: {r.text}")
+
+def GetContactInfo():
+    names = []
+    sf = OWASPSalesforce()
+    sf.Login()
+    with open('contacts.txt', 'r') as f:
+        for line in f.readlines():
+           qry = f"Select FirstName, LastName, Email From Contact Where Id = '{line.strip()}'"
+           records = sf.Query(qry)
+           if len(records) > 0:
+                if 'FirstName' in records[0]:
+                    fname = records[0]['FirstName']
+                if 'LastName' in records[0]:
+                    lname = records[0]['LastName']
+                if 'Email' in records[0]:
+                    email = records[0]['Email']
+                names.append(f"{fname, lname, email}\n")
+           else:
+                print(f'No record found for {line.strip()}')
+    
+    with open('contacts_resolved.txt', 'w') as of:
+        of.writelines(names)
+
 def main():
-    add_leaders()
+    #GetContactInfo()
+    gh = OWASPGitHub()
+    build_chapter_json(gh)
+
+    #CollectMailchimpTags()
+    #build_staff_project_json()
+    #r = gh.GetPages("www-chapter-louisville")
+    #print(r)
+    #print('\n')
+    #r = gh.GetPages("www-project-zap")
+    #print(r)
+    #print('\n')
+    #add_leaders()
     #sf = OWASPSalesforce()
     #if sf.Login().ok:
     #    res = sf.FindContact('Berman')
