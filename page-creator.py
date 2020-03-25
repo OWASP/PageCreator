@@ -7,9 +7,9 @@ import json
 from github import *
 import base64
 import datetime
+import re
 from wufoo import *
 from salesforce import *
-
 from mailchimp3 import MailChimp
 from mailchimp3.mailchimpclient import MailChimpError
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
@@ -63,6 +63,60 @@ class StaffProject:
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, 
             sort_keys=True, indent=4)
+
+
+def build_committee_json():
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-committee')
+
+    for repo in repos: #change to use title in project repo.....
+        repo['name'] = repo['name'].replace('www-committee-','').replace('-', ' ')
+        repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+
+    repos.sort(key=lambda x: x['name'])
+    repos.sort(key=lambda x: x['level'], reverse=True)
+   
+    sha = ''
+    r = gh.GetFile('owasp.github.io', '_data/committees.json')
+    if gh.TestResultCode(r.status_code):
+        doc = json.loads(r.text)
+        sha = doc['sha']
+
+    contents = json.dumps(repos)
+    r = gh.UpdateFile('owasp.github.io', '_data/committees.json', contents, sha)
+    if gh.TestResultCode(r.status_code):
+        logging.info('Updated _data/committees.json successfully')
+    else:
+        logging.error(f"Failed to update _data/committees.json: {r.text}")
+
+def build_project_json():
+    # we want to build certain json data files every now and then to keep the website data fresh.
+    #for each repository, public, with www-project
+    #get name of project, level, and type
+    # store in json
+    #write json file out to github.owasp.io _data folder
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-project')
+
+    for repo in repos: #change to use title in project repo.....
+        repo['name'] = repo['name'].replace('www-project-','').replace('-', ' ')
+        repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+
+    repos.sort(key=lambda x: x['name'])
+    repos.sort(key=lambda x: x['level'], reverse=True)
+   
+    sha = ''
+    r = gh.GetFile('owasp.github.io', '_data/projects.json')
+    if gh.TestResultCode(r.status_code):
+        doc = json.loads(r.text)
+        sha = doc['sha']
+
+    contents = json.dumps(repos)
+    r = gh.UpdateFile('owasp.github.io', '_data/projects.json', contents, sha)
+    if gh.TestResultCode(r.status_code):
+        logging.info('Updated _data/projects.json successfully')
+    else:
+        logging.error(f"Failed to update _data/projects.json: {r.text}")
 
 def create_github_repo(github, group, grouptype, msglist):
     
@@ -750,22 +804,25 @@ def process_group_leaders(group, leaders, emails):
             doc = json.loads(r.text)
             sha = doc['sha']
             content = base64.b64decode(doc['content']).decode()
-            if (not ('@' in content) and not ('www.owasp.org' in content)) or ('leader.email@owasp.org' in content):
-                # we can replace the contents of this file
-                content = '### Leaders\n\n'
-                ndx = 0
-                for leader in leaders:
-                    email = f'mailto://{emails[ndx].strip()}'
-                    if not '@owasp.org' in email:
-                        email = 'mailto://' # no email, needs update
-                    content += f'* [{leader.strip()}]({email})'
-                    ndx = ndx + 1
-                
-                r = gh.UpdateFile(www_group, 'leaders.md', content, sha)
-                if r.ok:
-                    print('Updated leaders file\n')
-                else:
-                    print(f'FAILED to update {www_group}\n')
+            lc = gh.GetLastUpdate(www_group, 'leaders.md')
+            updated_recently = ('@' in content and '2019-12-28' in lc)
+            # remove need for test by cleaning list
+            #if (not ('@' in content) and not ('www.owasp.org' in content)) or ('leader.email@owasp.org' in content) or updated_recently:
+            #we can replace the contents of this file
+            content = '### Leaders\n\n'
+            ndx = 0
+            for leader in leaders:
+                email = f'mailto:{emails[ndx].strip()}'
+                if not '@owasp.org' in email:
+                    email = 'mailto:' # no email, needs update
+                content += f'* [{leader.strip()}]({email})\n'
+                ndx = ndx + 1
+            
+            r = gh.UpdateFile(www_group, 'leaders.md', content, sha)
+            if r.ok:
+                print('Updated leaders file\n')
+            else:
+                print(f'FAILED to update {www_group}\n')
     
 def add_leaders():
     curr_group = ''
@@ -774,25 +831,169 @@ def add_leaders():
         
     f = open('all_leaders.csv')
     for line in f.readlines():
+        line = line.replace('"', '')
         keys = line.split(',')
+        keycount = len(keys)
+        ldr_ndx = 2
+        eml_ndx = 1
+        tmp_group = keys[0]
+
+        # Portland, Maine        
+        if keycount > 3:
+            tmp_group = f'{tmp_group}, {keys[1]}'
+            ldr_ndx = 3
+            eml_ndx = 2
+
         if curr_group == '':
-            curr_group = keys[0]
-            
-        if curr_group != keys[0]:
+            curr_group = tmp_group
+            leaders.append(keys[ldr_ndx])
+            emails.append(keys[eml_ndx])
+        elif curr_group != tmp_group:
             print(f'Processing {curr_group}:\n')
             ndx = 0
             for leader in leaders:
                 print(f'\tLeader: {leader}, {emails[ndx]}\n')
                 ndx = ndx + 1
-            curr_group = keys[0]
-            leaders.append(keys[2])
-            emails.append(keys[1])
             process_group_leaders(curr_group, leaders, emails)
             leaders.clear()
             emails.clear()
+            curr_group = tmp_group
+            leaders.append(keys[ldr_ndx])
+            emails.append(keys[eml_ndx])
         else:
-            leaders.append(keys[2])
-            emails.append(keys[1])
+            leaders.append(keys[ldr_ndx])
+            emails.append(keys[eml_ndx])
+
+def replace_all(old, new, text):
+    idx = 0
+    while idx < len(text):
+        index_l = text.lower().find(old.lower(), idx)
+        if index_l == -1:
+            return text
+        text = text[:index_l] + new + text[index_l + len(old):]
+        idx = index_l + len(new) 
+    return text
+
+# this function checks for pdfs and corrects link for website if media: or still old wiki
+def walk_text(text):
+    idx = 0
+    repl_pdf_link = '/www-pdf-archive/'
+    repl_wiki_txt = ''
+    pdf_text = '.pdf'
+
+    while idx < len(text):
+        index_l = text.lower().find(pdf_text, idx) # .pdf found in text
+        if index_l == -1:
+            return text  # no pdf, we are done
+        
+        p_ndx = text.lower().rfind('https://www.owasp.org', idx, index_l)
+        lentxt = 0
+        if p_ndx == -1:
+            p_ndx = text.lower().rfind('media:', idx, index_l)
+            if p_ndx > -1:
+                lentxt = 6
+        else:
+            lentxt = (text.lower().rfind('/', idx, index_l) + 1) - p_ndx
+
+        if p_ndx == -1:
+            return text # the pdf is not linked with media or with www.owasp.org
+
+        if text.lower().find(' ', p_ndx, index_l) == -1: # no spaces between the previous owasp or media and the pdf link
+            text = text[:p_ndx] + repl_pdf_link + text[p_ndx + lentxt:]
+        
+        idx = text.lower().find(pdf_text, idx) + len(pdf_text)
+
+    return text
+
+def update_pdf_links():
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories()
+    for repo in repos:
+        repoName = repo['name']
+        r = gh.GetFile(repoName, 'migrated_content.md')
+        if r.ok:
+            doc = json.loads(r.text)
+            sha = doc['sha']
+            base_content = base64.b64decode(doc['content']).decode()
+            content = walk_text(base_content)
+            if content != base_content:
+                content = content.replace('title = "wikilink"', '')
+                content = content.replace('"wikilink"', '')
+                gh.UpdateFile(repoName, 'migrated_content.md', content, sha)
+            
+def replicate_404():
+    gh = OWASPGitHub()
+    r404 = gh.GetFile('owasp.github.io', '404.html')
+    if r404.ok:
+        doc = json.loads(r404.text)
+        sha = doc['sha']
+        content = base64.b64decode(doc['content']).decode()
+
+    repos = gh.GetPublicRepositories()
+    for repo in repos:
+        repoName = repo['name']
+        r = gh.GetFile(repoName, '404.html')
+        if not r.ok and 'www-' in repoName:
+            r = gh.UpdateFile(repoName, '404.html', content, '')
+            if not r.ok:
+                print(f'Failed to update {repoName}: {r.text}\n')
+            else:
+                print('Updated repo...\n')
+
+def parse_leaderline(line):
+    ename = line.find(']')
+    name = line[line.find('[') + 1:line.find(']')]
+    email = line[line.find('(', ename) + 1:line.find(')', ename)]
+    return name, email
+
+def add_to_leaders(repo, content, all_leaders, stype):
+    lines = content.split('\n')
+    for line in lines:
+        fstr = line.find('[')
+        if(line.startswith('###') and 'Leaders' not in line):
+            break
+        
+        if(line.startswith('*') and fstr > -1 and fstr < 4):
+            name, email = parse_leaderline(line)
+            leader = {}
+            leader['name'] = name
+            leader['email'] = email
+            leader['group'] = repo['title']
+            leader['group-type'] = stype
+            all_leaders.append(leader)
+
+
+def build_leaders_json(gh):
+    all_leaders = []
+    repos = gh.GetPublicRepositories('www-')
+    for repo in repos:
+        r = gh.GetFile(repo['name'], 'leaders.md')
+        if r.ok:
+            doc = json.loads(r.text)
+            content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+            stype = ''
+            if 'www-chapter' in repo['name']:
+                stype = 'chapter'
+            elif 'www-committee' in repo['name']:
+                stype = 'committee'
+            elif 'www-project' in repo['name']:
+                stype = 'project'
+            else:
+                continue
+
+            add_to_leaders(repo, content, all_leaders, stype)
+    
+    r = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    sha = ''
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+    
+    r = gh.UpdateFile('owasp.github.io', '_data/leaders.json', json.dumps(all_leaders, ensure_ascii=False, indent = 4), sha)
+    if r.ok:
+        print('Update leaders json succeeded')
+    else:
+        print(f'Update leaders json failed: {r.status}')
 
 def CollectMailchimpTags():
     audience = mailchimp.lists.members.all(os.environ["MAILCHIMP_LIST_ID"], get_all=True)
@@ -856,8 +1057,8 @@ def GetContactInfo():
 
 def main():
     #GetContactInfo()
-    gh = OWASPGitHub()
-    build_chapter_json(gh)
+    #gh = OWASPGitHub()
+    #build_chapter_json(gh)
 
     #CollectMailchimpTags()
     #build_staff_project_json()
