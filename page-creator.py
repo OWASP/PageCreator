@@ -5,6 +5,8 @@
 import requests
 import json
 from github import *
+from copper import *
+
 import base64
 import datetime
 import re
@@ -1056,6 +1058,25 @@ def GetContactInfo():
         of.writelines(names)
 
 def main():
+    cp = OWASPCopper()
+
+    #r = cp.ListProjects()
+    #r = cp.ListOpportunities()
+    # r = cp.FindPersonByName('Blank')
+    #r = cp.FindPersonByEmail('harold.blankenship@owasp.com')
+    #person = json.loads(r)
+    #print(person[0]['id'])
+    #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
+    #print(r)
+    #r = cp.GetCustomFields()
+    #print(r)
+    #r = cp.GetProject('Chapter - Los Angeles')
+    #print(r)
+    r = cp.CreateProject('Chapter - Beverly Hills', 
+                        ['harold.blankenship@owasp.com', 'mike.mccamon@owasp.com', 'kelly.santalucia@owasp.com'], 
+                        cp.cp_project_chapter_status_option_active, cp.cp_project_chapter_region_option_northamerica, 
+                        'United States', '90210'. 'https://github.com/owasp/www-chapter-beverly-hills')
+    print(r)
     #GetContactInfo()
     #gh = OWASPGitHub()
     #build_chapter_json(gh)
