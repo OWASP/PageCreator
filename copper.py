@@ -115,6 +115,8 @@ class OWASPCopper:
             return ''
         people = json.loads(contact_json)
 
+        # See CreateProject for adding custom fields
+        
         data = {
             'name': 'opp_name',
             'primary_contact_id': people[0]['id']
