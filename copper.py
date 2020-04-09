@@ -108,6 +108,24 @@ class OWASPCopper:
         
         return ''
 
+    def CreatePerson(self, email):
+        data = {
+            'emails': [
+                {
+                    'email':email,
+                    'category': 'work'
+                }
+            ]
+        }
+        url = f'{self.cp_base_url}{self.cp_people_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        pid = None
+        if r.ok:
+            person = json.loads(r.text)
+            pid = person.id
+        
+        return pid
+
     def CreateOpportunity(self, opp_name, contact_email):
 
         contact_json = self.FindPersonByEmail(contact_email)
@@ -157,36 +175,54 @@ class OWASPCopper:
 
         return ''
 
+    def FindProject(self, proj_name):
+        lstxt = proj_name.lower()
+
+        data = {
+            'page_size': 5,
+            'sort_by': 'name',
+            'name': lstxt
+        }
+        projects = []
+        url = f'{self.cp_base_url}{self.cp_projects_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            projects = json.loads(r.text)
+            return projects
+        
+        return projects
+
     def CreateProject(self, proj_name, emails, status, region, country, postal_code, repo):
         data = {
                 'name':proj_name
         }
-        custom_fields = [{
-                    'custom_field_definition_id': self.cp_project_type,
-                    'value': self.cp_project_type_option_chapter
-                },
-                {
+        fields = []
+        fields.append({'custom_field_definition_id' : self.cp_project_type, 'value': self.cp_project_type_option_chapter})
+        fields.append({
                     'custom_field_definition_id': self.cp_project_chapter_status,
                     'value': status
-                }
-                ,
-                {
+                })
+        if region:
+            fields.append({
                     'custom_field_definition_id': self.cp_project_chapter_region,
                     'value': region
-                },
-                {
+                })
+        if country:
+            fields.append({
                     'custom_field_definition_id': self.cp_project_chapter_country,
                     'value': country
-                },
-                {
+                })
+        if postal_code:
+            fields.append({
                     'custom_field_definition_id': self.cp_project_chapter_postal_code,
                     'value': postal_code
-                },
-                {
+                })
+        fields.append({
                     'custom_field_definition_id': self.cp_project_github_repo,
                     'value': repo
-                }
-                ]
+                })
+                
+        custom_fields = fields
 
         data['custom_fields'] = custom_fields
 
@@ -198,9 +234,15 @@ class OWASPCopper:
 
             for email in emails:
                 sr = self.FindPersonByEmail(email)
-                if len(sr) > 0:
-                    person_id = json.loads(sr)[0]['id']
+                people = json.loads(sr)
+                if len(people) > 0:
+                    person_id = people[0]['id']
+                else: 
+                    person_id = self.CreatePerson(email)    
+                
+                if person_id:
                     self.RelateRecord('projects', pid, person_id)
+
 
             return r.text
         

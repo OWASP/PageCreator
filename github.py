@@ -260,6 +260,7 @@ class OWASPGitHub:
                                 addrepo['type'] = gtype.strip()
                                 ndx = content.find('region:') + 7
                                 
+                                not_updated = False # I need the real regions for now.  TODO: Remove this!
                                 if not_updated:
                                     gtype = 'Needs Website Update'
                                 elif ndx > 6: # -1 + 7

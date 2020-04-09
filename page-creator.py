@@ -1057,8 +1057,72 @@ def GetContactInfo():
     with open('contacts_resolved.txt', 'w') as of:
         of.writelines(names)
 
+def GetLeaders(gh, chapter_repo):
+    r = gh.GetFile(chapter_repo, 'leaders.md')
+    all_leaders = []
+    if r.ok:
+        doc = json.loads(r.text)
+        content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+        lines = content.split('\n')
+        for line in lines:
+            fstr = line.find('[')
+            if(line.startswith('###') and 'Leaders' not in line):
+                break
+            
+            if(line.startswith('*') and fstr > -1 and fstr < 4):
+                name, email = parse_leaderline(line)
+                if email:
+                    email = email.replace('mailto:\\', '')
+                    email = email.replace('mailto:', '')
+                    all_leaders.append(email)
+
+    return all_leaders
+
+def GetRegion(cp, region):
+    cp_region = None
+    if region == 'Africa':
+        cp_region = cp.cp_project_chapter_region_option_africa
+    elif region == 'Asia':
+        cp_region = cp.cp_project_chapter_region_option_asia
+    elif region == 'Europe':
+        cp_region = cp.cp_project_chapter_region_option_europe
+    elif region == 'Oceania':
+        cp_region = cp.cp_project_chapter_region_option_oceania
+    elif region == 'South America':
+        cp_region = cp.cp_project_chapter_region_option_southamerica
+    elif region == 'North America' or region == 'United States':
+        cp_region = cp.cp_project_chapter_region_option_northamerica
+
+    return cp_region 
+
+
 def main():
+    gh = OWASPGitHub()
+    chapters = gh.GetPublicRepositories('www-chapter')
     cp = OWASPCopper()
+    failed_list = []
+    for chapter in chapters:
+        if len(cp.FindProject('Chapter - ' + chapter['title'])) > 0:
+            continue
+        leaders = GetLeaders(gh, chapter['name'])
+        region = GetRegion(cp, chapter['region'])
+        print(f"Attempting to create project: {chapter['title']}")
+        r = cp.CreateProject('Chapter - ' + chapter['title'], 
+                        leaders, 
+                        cp.cp_project_chapter_status_option_active,
+                        region, 
+                        '',
+                        '',
+                        'https://github.com/owasp/' + chapter['name'])
+
+        if r:
+            print(f"Created Copper project: {chapter['title']}")
+        else:
+            print(f"Failed to create: {chapter['title']}")
+            failed_list.append(chapter['name'] + '\n')
+
+    with open('failed_copper_chaters.txt', 'w') as f:
+        f.writelines(failed_list)
 
     #r = cp.ListProjects()
     #r = cp.ListOpportunities()
@@ -1072,11 +1136,6 @@ def main():
     #print(r)
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
-    r = cp.CreateProject('Chapter - Beverly Hills', 
-                        ['harold.blankenship@owasp.com', 'mike.mccamon@owasp.com', 'kelly.santalucia@owasp.com'], 
-                        cp.cp_project_chapter_status_option_active, cp.cp_project_chapter_region_option_northamerica, 
-                        'United States', '90210'. 'https://github.com/owasp/www-chapter-beverly-hills')
-    print(r)
     #GetContactInfo()
     #gh = OWASPGitHub()
     #build_chapter_json(gh)
