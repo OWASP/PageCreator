@@ -1073,6 +1073,7 @@ def GetLeaders(gh, chapter_repo):
                 name, email = parse_leaderline(line)
                 if email:
                     email = email.replace('mailto:\\', '')
+                    email = email.replace('mailto://', '')
                     email = email.replace('mailto:', '')
                     all_leaders.append(email)
 
@@ -1096,34 +1097,36 @@ def GetRegion(cp, region):
     return cp_region 
 
 
-def main():
+def DoCopperCreate():
     gh = OWASPGitHub()
-    chapters = gh.GetPublicRepositories('www-chapter')
+    committees = gh.GetPublicRepositories('www-committee')
     cp = OWASPCopper()
     failed_list = []
-    for chapter in chapters:
-        if len(cp.FindProject('Chapter - ' + chapter['title'])) > 0:
+    for committee in committees:
+        if len(cp.FindProject('Project - ' + committee['title'])) > 0:
             continue
-        leaders = GetLeaders(gh, chapter['name'])
-        region = GetRegion(cp, chapter['region'])
-        print(f"Attempting to create project: {chapter['title']}")
-        r = cp.CreateProject('Chapter - ' + chapter['title'], 
+        leaders = GetLeaders(gh, committee['name'])
+        print(f"Attempting to create project: {committee['title']}")
+        r = cp.CreateProject('Project - ' + committee['title'], 
                         leaders, 
+                        cp.cp_project_type_option_committee,
                         cp.cp_project_chapter_status_option_active,
-                        region, 
+                        '', 
                         '',
                         '',
-                        'https://github.com/owasp/' + chapter['name'])
+                        'https://github.com/owasp/' + committee['name'])
 
         if r:
-            print(f"Created Copper project: {chapter['title']}")
+            print(f"Created Copper project: {committee['title']}")
         else:
-            print(f"Failed to create: {chapter['title']}")
-            failed_list.append(chapter['name'] + '\n')
+            print(f"Failed to create: {committee['title']}")
+            failed_list.append(committee['name'] + '\n')
 
-    with open('failed_copper_chaters.txt', 'w') as f:
+    with open('failed_copper_committees.txt', 'w') as f:
         f.writelines(failed_list)
 
+def main():
+    DoCopperCreate()
     #r = cp.ListProjects()
     #r = cp.ListOpportunities()
     # r = cp.FindPersonByName('Blank')
@@ -1132,8 +1135,9 @@ def main():
     #print(person[0]['id'])
     #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
     #print(r)
-    #r = cp.GetCustomFields()
-    #print(r)
+    # cp = OWASPCopper()
+    # r = cp.GetCustomFields()
+    # print(r)
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()
