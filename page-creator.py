@@ -1015,9 +1015,20 @@ def build_chapter_json(gh):
     #write json file out to github.owasp.io _data folder
     repos = gh.GetPublicRepositories('www-chapter')
     
+    fmt_str = "%a %b %d %H:%M:%S %Y"
     for repo in repos:
         repo['name'] = repo['name'].replace('www-chapter-','').replace('-', ' ')
         repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+        try:
+            dobj = datetime.datetime.strptime(repo['created'], fmt_str)
+            repo['created'] = dobj.strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+        try:
+            dobj = datetime.datetime.strptime(repo['updated'], fmt_str)
+            repo['updated'] = dobj.strftime("%Y-%m-%d")
+        except ValueError:
+            pass
 
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['region'], reverse=True)
@@ -1034,6 +1045,29 @@ def build_chapter_json(gh):
         print('Updated _data/chapters.json successfully')
     else:
         print(f"Failed to update _data/chapters.json: {r.text}")
+
+def build_inactive_chapters_json(gh):
+    repos = gh.GetPublicRepositories('www-chapter', True)
+    
+    for repo in repos:
+        repo['name'] = repo['name'].replace('www-chapter-','').replace('-', ' ')
+        repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
+
+    repos.sort(key=lambda x: x['name'])
+    repos.sort(key=lambda x: x['region'], reverse=True)
+   
+    sha = ''
+    r = gh.GetFile('owasp.github.io', '_data/inactive_chapters.json')
+    if gh.TestResultCode(r.status_code):
+        doc = json.loads(r.text)
+        sha = doc['sha']
+
+    contents = json.dumps(repos)
+    r = gh.UpdateFile('owasp.github.io', '_data/inactive_chapters.json', contents, sha)
+    if gh.TestResultCode(r.status_code):
+        logging.info('Updated _data/inactive_chapters.json successfully')
+    else:
+        logging.error(f"Failed to update _data/inactive_chapters.json: {r.text}")
 
 def GetContactInfo():
     names = []
@@ -1126,7 +1160,10 @@ def DoCopperCreate():
         f.writelines(failed_list)
 
 def main():
-    DoCopperCreate()
+   # DoCopperCreate()
+   #cp = OWASPCopper()
+   #pid = cp.CreatePerson('Jay Tester', 'tester@test.owasp.com')
+
     #r = cp.ListProjects()
     #r = cp.ListOpportunities()
     # r = cp.FindPersonByName('Blank')
@@ -1141,8 +1178,14 @@ def main():
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()
-    #gh = OWASPGitHub()
-    #build_chapter_json(gh)
+    
+    gh = OWASPGitHub()
+    #repos = gh.GetPublicRepositories('www-chapter', inactive=True)
+   
+    #print(repos)
+    #build_inactive_chapters_json(gh)
+    
+    build_chapter_json(gh)
 
     #CollectMailchimpTags()
     #build_staff_project_json()

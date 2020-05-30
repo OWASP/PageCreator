@@ -114,8 +114,10 @@ class OWASPCopper:
         
         return ''
 
-    def CreatePerson(self, email):
+    def CreatePerson(self, name, email):
+        # Needs Name
         data = {
+            'name':name,
             'emails': [
                 {
                     'email':email,
@@ -128,7 +130,7 @@ class OWASPCopper:
         pid = None
         if r.ok:
             person = json.loads(r.text)
-            pid = person.id
+            pid = person['id']
         
         return pid
 

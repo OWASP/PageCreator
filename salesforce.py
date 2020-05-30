@@ -152,7 +152,7 @@ class OWASPSalesforce:
 
     def CreateAccount(self, accountName):        
         if accountName:
-            jsonAccount = '{ "Name":"' + accountName + '"}'
+            jsonAccount = '{  "' + accountName + '"}'
             obj_url =    self.sf_instance_url + self.sf_api_url + self.sf_account_url
             headers = {"Content-Type":"application/json", "Authorization":"Bearer " + self.sf_token_id, "X-PrettyPrint":"1" }
             r = requests.post(url=obj_url, headers=headers, data=jsonAccount)
@@ -339,7 +339,7 @@ class OWASPSalesforce:
             return r    
         else:
             #create a whole new chapter
-            jsonChapter = '{ "Name":"' + chapter_name + '", "PagesApi__Type__c":"Chapter", "City__c":"' + city + '", "Country__c":"' + country + '", "Region__c":"' + region + '", "Display_on_Membership_Application__c":"true" }'
+            jsonChapter = '{  "' + chapter_name + '", "PagesApi__Type__c":"Chapter", "City__c":"' + city + '", "Country__c":"' + country + '", "Region__c":"' + region + '", "Display_on_Membership_Application__c":"true" }'
             obj_url =    self.sf_instance_url + self.sf_api_url + self.sf_community_group_url
             headers = {"Content-Type":"application/json", "Authorization":"Bearer " + self.sf_token_id, "X-PrettyPrint":"1" }
             r = requests.post(url=obj_url, headers=headers, data=jsonChapter)
