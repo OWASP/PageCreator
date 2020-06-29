@@ -23,6 +23,8 @@ class OWASPGitHub:
     of_team_addrepo_fragment = "teams/:team_id/repos/OWASP-Foundation/:repo"
     of_team_getbyname_fragment = "orgs/OWASP-Foundation/teams/:team_slug"
     
+    user_fragment = "users/:username"
+    collaborator_fragment = "repos/OWASP/:repo/collaborators/:username"
 
     def CreateRepository(self, repoName, rtype):
         repoName = self.FormatRepoName(repoName, rtype)
@@ -389,3 +391,37 @@ class OWASPGitHub:
             datecommit = res[0]['commit']['committer']['date']
 
         return datecommit
+
+    def FindUser(self, user):
+        url = self.gh_endpoint + self.user_fragment
+        url = url.replace(":username", user)
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.get(url = url, headers=headers)
+        user = None
+        if r.ok:
+            try:
+                user = json.loads(r.text)
+            except json.JSONDecodeError:
+                pass
+
+        return user
+
+    def AddUserToRepo(self, user, repo):
+        repofrag = self.collaborator_fragment
+        repofrag = repofrag.replace(':repo', repo)
+        repofrag = repofrag.replace(':username', user)
+
+        headers = {"Authorization": "token " + self.apitoken,
+            "Accept":"application/vnd.github.hellcat-preview+json, application/vnd.github.inertia-preview+json"
+        }
+
+        url = self.gh_endpoint + repofrag
+
+        # first do a get to see if they are already a user
+        r = requests.get(url = url, headers=headers)
+        if not r.ok:
+            data = { "permission" : "admin"}
+            jsonData = json.dumps(data)
+            r = requests.put(url = url, headers=headers, data=jsonData)
+
+        return r
