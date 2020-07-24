@@ -6,7 +6,7 @@ import os
 import datetime
 
 class OWASPGitHub:
-    apitoken = os.environ["APITOKEN"]
+    apitoken = os.environ["GH_APITOKEN"]
     user = "harold.blankenship@owasp.com"
     gh_endpoint = "https://api.github.com/"
     org_fragment = "orgs/OWASP/repos"

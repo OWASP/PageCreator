@@ -18,8 +18,7 @@ from mailchimp3.mailchimpclient import MailChimpError
 import gspread
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
-from cryptography.fernet import Fernet
-from simplecrypt import encrypt, decrypt
+import stripe
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -1303,7 +1302,39 @@ def add_users_to_repos():
         row_ndx = row_ndx + 1
 
 def main():
-   add_users_to_repos()
+
+
+    # with open('members_emails.txt', 'r') as f:
+    #     lines = f.readlines()
+    #     for emailaddr in lines:
+    #         stripe.api_key = os.environ['STRIPE_SECRET']
+    #         customers = stripe.Customer.list(email=emailaddr.strip())
+    #         if not customers.is_empty:
+    #             customer = customers.data[0]
+    #             metadata = customer.get('metadata', {})
+                
+    #             membership_type = metadata.get('membership_type', None)
+    #             if membership_type and membership_type != 'lifetime':
+    #                 mendstr = metadata.get('membership_end', None)
+    #                 if mendstr != None:
+    #                     mend = datetime.datetime.strptime(mendstr, "%m/%d/%Y")
+    #                 else:
+    #                     mend = None
+
+    #                 if mend and mend >= datetime.datetime.now():
+    #                     print('membership verified')
+    #                 else:
+    #                     print(f'membership ended: {mend}')
+    #             elif membership_type == 'lifetime':
+    #                 print('membership verified')
+    #             else:
+    #                 print(f'not a member with email {emailaddr.strip()}')
+    #         else:
+    #             print(f'not a member with email {emailaddr.strip()}')
+                
+
+
+   #add_users_to_repos()
 
     # test = time.time()
     # key = Fernet.generate_key()
