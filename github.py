@@ -158,6 +158,19 @@ class OWASPGitHub:
     def GetOFFile(self, repo, filepath):
         return self.GetFile(repo, filepath, self.of_content_fragment)
 
+    def DeleteFile(self, repo, filepath):
+        url = self.gh_endpoint + self.content_fragment
+        url = url.replace(":repo", repo)
+        url = url.replace(":path", filepath)
+
+        committer = {
+            "name" : "OWASP Foundation",
+            "email" : "owasp.foundation@owasp.org"
+        }
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.delete(url = url, headers=headers)
+        return r
+
     def UpdateFile(self, repo, filepath, contents, sha):
         url = self.gh_endpoint + self.content_fragment
         url = url.replace(":repo", repo)
@@ -288,7 +301,28 @@ class OWASPGitHub:
                             else:
                                 gtype = 'More info soon...' 
                             addrepo['pitch'] = gtype.strip()
+                            ndx = content.find('meetup.com/')
+                            if ndx > -1:
+                                ndx += 11
+                                eolfs = content.find('/', ndx)
+                                
+                                if eolfs - ndx <= 6:
+                                    ndx = eolfs
+                                    eolfs = content.find('/', ndx + 1)
 
+                                eolp = content.find(')', ndx + 1)
+                                eols = content.find(' ', ndx + 1)
+                                eol = eolfs
+                                if eolp > -1 and eolp < eol:
+                                    eol = eolp
+                                if eols > -1 and eols < eol:
+                                    eol = eols
+
+                                mu = content[ndx:eol]
+                                if '/' in mu:
+                                    mu = mu.replace('/','')
+                                if len(mu.strip()) > 0:
+                                    addrepo['meetup-group'] = mu.strip()
                             results.append(addrepo)
 
 

@@ -6,6 +6,8 @@ import requests
 import json
 from github import *
 from copper import *
+from meetup import *
+
 import time
 
 import base64
@@ -1301,9 +1303,74 @@ def add_users_to_repos():
             add_result_to_sheet(sheet, row_ndx, success)
         row_ndx = row_ndx + 1
 
+def add_to_events(mue, events):
+    
+    if len(mue) <= 0 or 'errors' in mue:
+        return events
+    
+    for mevent in mue:
+        event = {}
+        today = datetime.datetime.today()
+        eventdate = datetime.datetime.strptime(mevent['local_date'], '%Y-%m-%d')
+        tdelta = eventdate - today
+        if tdelta.days >= 0 and tdelta.days < 6:
+            event['name'] = mevent['name']
+            event['date'] = mevent['local_date']
+            event['time'] = mevent['local_time']
+            event['link'] = mevent['link']
+            event['timezone'] = mevent['group']['timezone']
+            if 'description' in mevent:
+                event['description'] = mevent['description']
+            else:
+                event['description'] = ''
+                
+            events.append(event)
+
+    return events
+
+def create_chapter_events(gh, mu):
+    repos = gh.GetPublicRepositories('www-chapter')
+    
+    ch_events = []
+    for repo in repos:
+        events = []
+        if 'meetup-group' in repo and repo['meetup-group']:
+            if mu.Login():
+                mue = mu.GetGroupEvents(repo['meetup-group'])
+                events = add_to_events(mue, events)
+                if len(events) > 0:
+                    chapter = repo['name'].replace('www-chapter-','').replace('-', ' ')
+                    chapter = " ".join(w.capitalize() for w in chapter.split())
+                    ch_event = {}
+                    ch_event['chapter'] = chapter
+                    ch_event['events'] = events
+                    ch_events.append(ch_event)
+
+    if len(ch_events) <= 0:
+        return
+        
+    r = gh.GetFile('owasp.github.io', '_data/chapter_events.json')
+    sha = ''
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+    
+    contents = json.dumps(ch_events)
+    r = gh.UpdateFile('owasp.github.io', '_data/chapter_events.json', contents, sha)
+    if r.ok:
+        logging.info('Updated _data/chapter_events.json successfully')
+    else:
+        logging.error(f"Failed to update _data/chapter_events.json: {r.text}")
+
 def main():
+    gh = OWASPGitHub()
+    mu = OWASPMeetup()
+    create_chapter_events(gh, mu)
 
-
+    #mu = OWASPMeetup()
+    #if mu.Login():
+    #    print(mu.GetGroupEvents('owasp-los-angeles'))
+    
     # with open('members_emails.txt', 'r') as f:
     #     lines = f.readlines()
     #     for emailaddr in lines:
@@ -1424,8 +1491,8 @@ def main():
     # content = teststr[:front_ndx] + 'region: ' + gtype + '\n\n' + teststr[front_ndx:]
     # print(content)
 
-    # gh = OWASPGitHub()
-    # repos = gh.GetPublicRepositories('www-project')
+    #gh = OWASPGitHub()
+    #repos = gh.GetPublicRepositories('www-project')
     # repos.sort(key=lambda x: x['name'])
     # repos.sort(key=lambda x: x['level'], reverse=True)
    
