@@ -1303,17 +1303,22 @@ def add_users_to_repos():
             add_result_to_sheet(sheet, row_ndx, success)
         row_ndx = row_ndx + 1
 
-def add_to_events(mue, events):
+def add_to_events(mue, events, repo):
     
     if len(mue) <= 0 or 'errors' in mue:
         return events
     
+    chapter = repo.replace('www-chapter-','').replace('-', ' ')
+    chapter = " ".join(w.capitalize() for w in chapter.split())
+                
     for mevent in mue:
         event = {}
         today = datetime.datetime.today()
         eventdate = datetime.datetime.strptime(mevent['local_date'], '%Y-%m-%d')
         tdelta = eventdate - today
-        if tdelta.days >= 0 and tdelta.days < 6:
+        if tdelta.days >= 0 and tdelta.days < 30:
+            event['chapter'] = chapter
+            event['repo'] = repo
             event['name'] = mevent['name']
             event['date'] = mevent['local_date']
             event['time'] = mevent['local_time']
@@ -1331,23 +1336,15 @@ def add_to_events(mue, events):
 def create_chapter_events(gh, mu):
     repos = gh.GetPublicRepositories('www-chapter')
     
-    ch_events = []
+    events = []
     for repo in repos:
-        events = []
         if 'meetup-group' in repo and repo['meetup-group']:
             if mu.Login():
                 mue = mu.GetGroupEvents(repo['meetup-group'])
-                events = add_to_events(mue, events)
-                if len(events) > 0:
-                    chapter = repo['name'].replace('www-chapter-','').replace('-', ' ')
-                    chapter = " ".join(w.capitalize() for w in chapter.split())
-                    ch_event = {}
-                    ch_event['chapter'] = chapter
-                    ch_event['repo'] = repo['name']
-                    ch_event['events'] = events
-                    ch_events.append(ch_event)
+                add_to_events(mue, events, repo['name'])
+                
 
-    if len(ch_events) <= 0:
+    if len(events) <= 0:
         return
         
     r = gh.GetFile('owasp.github.io', '_data/chapter_events.json')
@@ -1356,17 +1353,68 @@ def create_chapter_events(gh, mu):
         doc = json.loads(r.text)
         sha = doc['sha']
     
-    contents = json.dumps(ch_events)
+    contents = json.dumps(events)
     r = gh.UpdateFile('owasp.github.io', '_data/chapter_events.json', contents, sha)
     if r.ok:
         logging.info('Updated _data/chapter_events.json successfully')
     else:
         logging.error(f"Failed to update _data/chapter_events.json: {r.text}")
 
+def add_chapter_meetups(gh, mu, outfile):
+
+    outlines = []
+    with open("chapter-meetups.txt") as fp:
+        for line in fp:
+            splits = line.split(':')
+            repo = splits[0]
+            meetup = splits[1]
+            country = ''
+            postal = ''
+            if len(splits) > 2:
+                country = splits[2]
+            if len(splits) > 3:
+                postal = splits[3]
+
+            sha = ''
+            r = gh.GetFile(repo, 'index.md')
+            if gh.TestResultCode(r.status_code):
+                doc = json.loads(r.text)
+                sha = doc['sha']
+                content = base64.b64decode(doc["content"]).decode()
+                fndx = content.find('---')
+                sndx = content.find('---', fndx + 3) - 2
+                hasmu = content.find('meetup-group:')
+                if hasmu > 0 and hasmu < sndx:
+                    print('index.md already has meetup-group')
+                    outlines.append(f'index.md already has meetup-group\n')
+                    continue
+
+                docstart = content[0:sndx] + '\n'
+                addstr = 'meetup-group: ' + meetup + '\n'
+                addstr += 'country: ' + country + '\n'
+                addstr += 'postal-code: ' + postal + '\n'
+                docend = content[sndx + 2:]
+                if not docend.startswith('\n') and not addstr.endswith('\n\n'):
+                    addstr += '\n'
+
+                content = docstart + addstr + docend
+
+                r = gh.UpdateFile(repo, 'index.md', content, sha)
+                if gh.TestResultCode(r.status_code):
+                    print('Updated index.md successfully')
+                    outlines.append('Updated index.md successfully\n')
+                else:
+                    print(f"Failed to update index.md: {r.text}")
+                    outlines.append(f'Failed to update index.md: {r.text}')
+    outfile.writelines(outlines)
+
 def main():
     gh = OWASPGitHub()
     mu = OWASPMeetup()
     create_chapter_events(gh, mu)
+
+    #with open('meetup_results.txt', 'w+') as outfile:
+    #    add_chapter_meetups(gh, mu, outfile)
 
     #mu = OWASPMeetup()
     #if mu.Login():

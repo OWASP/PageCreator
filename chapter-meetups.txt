@@ -1,0 +1,158 @@
+www-chapter-boulder:OWASP-Boulder:USA:80302
+www-chapter-los-angles:OWASP-Los-Angeles:USA:90001
+www-chapter-orange-county:OWASP-OC:USA:92618
+www-chapter-bay-area:Bay-Area-OWASP:USA:94105
+www-chapter-charlotte:owaspCLT:USA:28202
+www-chapter-northern-virginia:OWASP-Northern-Virginia-Chapter:USA:20191
+www-chapter-denver:Denver-OWASP:USA:80208
+www-chapter-triangle-nc:owasptriangle:USA:27560
+www-chapter-columbus:Columbus-OWASP:USA:43201
+www-chapter-poland:owasp-poland:Poland:
+www-chapter-dallas:Dallas-The-Open-Web-Application-Security-Project-Meetup:USA:75201
+www-chapter-boston:owaspboston:USA:2139
+www-chapter-toronto:OWASP-Toronto:Canada:
+www-chapter-delhi:OWASP-Delhi-NCR-Chapter:India:
+www-chapter-seattle:Seattle-Open-Web-Application-Security-Project-OWASP-Chapter:USA:98119
+www-chapter-cape-town:OWASP-Cape-Town-Chapter-Meetup:South Africa:
+www-chapter-minneapolis-st-paul:OWASP-MSP-Meetup:USA:55101
+www-chapter-melbourne:Application-Security-OWASP-Melbourne:Australia:
+www-chapter-south-florida:South-Florida-OWASP-Chapter:USA:33314
+www-chapter-germany:OWASP-Hamburg-Stammtisch:Germany:
+www-chapter-inland-empire:OWASP-Inland-Empire-Open-Web-Application-Security-Project:USA:91711
+www-chapter-bristol-uk:OWASP-Bristol:United Kingdom:
+www-chapter-chicago:OWASP-Chicago-Chapter:USA:60654
+www-chapter-santa-barbara:Santa-Barbara-OWASP-Chapter:USA:93101
+www-chapter-portland:OWASP-Portland-Chapter:USA:97201
+www-chapter-belfast:OWASP-Belfast:United Kingdom:
+www-chapter-baltimore:OWASP-Balt:USA:21046
+www-chapter-indianapolis:indyowasp:USA:46240
+www-chapter-israel:OWASP-Israel:Israel:
+www-chapter-london:OWASP-London:United Kingdom:
+www-chapter-hartford:CT-Cyber-Security-Meetup-OWASP-Hartford:USA:6183
+www-chapter-cork:OWASP-Cork:Ireland:
+www-chapter-jakarta:OWASP-Jakarta-Chapter:Indonesia:
+www-chapter-kansas-city:OWASP-Kansas-City:USA:64101
+www-chapter-pittsburgh:OWASP-Pittsburgh-Chapter:USA:15222
+www-chapter-long-island:owaspli:USA:11530
+www-chapter-new-zealand:OWASP-Wellington:New Zealand:
+www-chapter-new-zealand:OWASP-New-Zealand-Chapter-Auckland:New Zealand:
+www-chapter-new-zealand:OWASP-New-Zealand-Chapter-Christchurch:New Zealand:
+www-chapter-oklahoma-city:Oklahoma-City-Chapter-Meetup:USA:73101
+www-chapter-dublin:OWASP-Dublin:Ireland:
+www-chapter-hungary:OWASP-HU:Hungary:
+www-chapter-suffolk:OWASP-Suffolk-Chapter:United Kingdom:
+www-chapter-philadelphia:OWASP-Philadelphia:USA:19019
+www-chapter-cambridge:OWASP-Cambridge-Meetup:United Kingdom:
+www-chapter-macedonia:SkopjeSec-Macedonians-Monthly-Security-Professional-Meetup:Macedonia:
+www-chapter-natal:OWASP-Natal-Chapter:Brazil:
+www-chapter-san-jacinto-college:OWASP-San-Jacinto-College-Student-Chapter:USA:77001
+www-chapter-switzerland:OWASPSwitzerland:Switzerland:
+www-chapter-moscow:OWASP-Moscow:Russia:
+www-chapter-jacksonville:OWASP-Jacksonville-Chapter:USA:32099
+www-chapter-sao-paulo:OWASP-Sao-Paulo-Chapter:Brazil:
+www-chapter-vitoria:owasp-capixaba:Brazil:
+www-chapter-quito:OWASP-Quito:Ecuador:
+www-chapter-amman:OWASP-Amman-Chapter:Jordan:
+www-chapter-copenhagen:OWASP-Copenhagen-Chapter:Denmark:
+www-chapter-dorset:OWASP-Dorset-Chapter:United Kingdom:
+www-chapter-mumbai:OWASP-Mumbai-Chapter:India:
+www-chapter-panama-city:OWASP-Panama-City-Chapter:Panama:
+www-chapter-tulsa:OWASP-Tulsa-Chapter:USA:74101
+www-chapter-sacramento:OWASP-Sacramento-Chapter:USA:94203
+www-chapter-san-fernando-valley:OWASP-San-Fernando-Valley-Chapter:USA:91403
+www-chapter-oakland-county:OWASP-Oakland-County-Chapter:USA:48033
+www-chapter-nagpur:OWASP-Nagpur-Chapter:India:
+www-chapter-ghana:OWASP-Ghana-Chapter:Ghana:
+www-chapter-brasilia:OWASPBSB:Brazil:
+www-chapter-ahmedabad:OWASP-Ahmedabad-Chapter:India:
+www-chapter-doha:OWASP-Doha-Chapter:Qatar:
+www-chapter-vienna:OWASP-Vienna-Chapter:Austria:
+www-chapter-vina-del-mar:OWASP-Vina-del-Mar-Chapter:Chile:
+www-chapter-rochester:OWASP-Rochester-Chapter:USA:14602
+www-chapter-las-vegas:OWASP-Las-Vegas-Chapter:USA:89101
+www-chapter-salt-lake-city:owasp-slc:USA:84101
+www-chapter-aarhus:OWASP-Aarhus-Chapter:Denmark:
+www-chapter-medellin:OWASP-Medellin-Chapter:Colombia:
+www-chapter-guayaquil:OWASP-Guayaquil-Chapter:Ecuador:
+www-chapter-nashville:OWASP-Nashville-Chapter:USA:37201
+www-chapter-newcastle-uk:OWASP-Newcastle-Chapter:United Kingdom:
+www-chapter-birmingham-uk:meetup-group-PDvbIQzf:United Kingdom:
+www-chapter-richmond:OWASP-Richmond-Chapter-Meetup:USA:23218
+www-chapter-sioux-falls:OWASP-Sioux-Falls:USA:57101
+www-chapter-bonita-springs:OWASP-Bonita-Springs-Chapter:USA:34133
+www-chapter-nashua:OWASP-Nashua-Chapter:USA:3060
+www-chapter-bhopal:OWASP-Bhopal-Chapter:India:
+www-chapter-pune:OWASP-Pune-Chapter:India:
+www-chapter-colorado-springs:OWASP-Colorado-Springs-Meetup:USA:80901
+www-chapter-porto-alegre:OWASP-Porto-Alegre-Chapter:Brazil:
+www-chapter-bournemouth-university:OWASP-Bournemouth-University-Student-Chapter:United Kingdom:
+www-committee-wia/:London-Women-in-AppSec-WIA-Meetup-Group:United Kingdom:
+www-chapter-indore:OWASP-Indore-Chapter:India:
+www-chapter-belo-horizonte:OWASP-Belo-Horizonte-Chapter:Brazil:
+www-chapter-tbilisi:OWASP-Tbilisi-Chapter:Georgia:
+www-chapter-space-coast:OWASP-Space-Coast-Chapter:USA:32905
+www-chapter-uruguay:OWASP-Uruguay-Chapter:Uruguay:
+www-chapter-manchester:OWASP-Manchester:United Kingdom:
+www-chapter-hampton-roads:OWASP-Hampton-Roads-Chapter:USA:23322
+www-chapter-huntington:OWASP-Huntington-Chapter:USA:25701
+www-chapter-geneva:OWASP-Geneva-Chapter:Switzerland:
+www-chapter-iiit-sricity:OWASP-IIIT-SRICITY:India:
+www-chapter-harrisburg:OWASP-Harrisburg-Chapter:USA:17101
+www-chapter-johannesburg:OWASP-Johannesburg-Chapter:South Africa:
+www-chapter-houston:OWASP-Houston-Texas-Chapter:USA:77001
+www-chapter-timisoara:OWASP-Timisoara-Chapter:Romania:
+www-chapter-gwalior:OWASP-Gwalior-Chapter:India:
+www-chapter-meerut:OWASP-Meerut-Chapter:India:
+www-chapter-sofia:OWASP-Sofia-Chapter:Bulgaria:
+www-chapter-kerala:OWASP-Kerala-Chapter:India:
+www-chapter-letterkenny:OWASP-Letterkenny-Chapter:Ireland:
+www-chapter-perth:OWASP-Perth:Australia:
+www-chapter-austin:OWASP-Austin-Chapter:USA:78759
+www-chapter-seoul:meetup-group-CLBZfMfm:Korea (South):
+www-chapter-somerset:OWASP-Somerset-Chapter:USA:42501
+www-chapter-florianopolis:OWASP-Florianopolis-Chapter:Brazil:
+www-chapter-fortaleza:OWASP-Fortaleza-Chapter:Brazil:
+www-chapter-belagavi:OWASP-Belagavi-Chapter:India:
+www-chapter-paraiba:OWASP-Paraiba-Chapter:Brazil:
+www-chapter-tegucigalpa:OWASP-Tegucigalpa-Chapter:Honduras:
+www-chapter-noida:OWASP-Noida-Chapter:India:
+www-chapter-sanaa:OWASP-Sanaa-Chapter:Yemen:
+www-chapter-cartagena:OWASP-Cartagena-Chapter:Colombia:
+www-chapter-liverpool:OWASP-Liverpool-Chapter:United Kingdom:
+www-chapter-san-pedro-sula:OWASP-San-Pedro-Sula-Chapter:Honduras:
+www-chapter-kharkiv:OWASP-Kharkiv-Chapter:Ukraine:
+www-chapter-bilbao:OWASP-Bilbao-Chapter:Spain:
+www-chapter-worcestershire:OWASP-Worcestershire-Chapter:United Kingdom:
+www-chapter-kuwait-city:OWASP-Kuwait-City-Chapter:Kuwait:
+www-chapter-zhytomyr:OWASP-Zhytomyr-Chapter:Ukraine:
+www-chapter-detroit:OWASP-Detroit-Chapter:USA:48201
+www-chapter-zaragoza:OWASP-Zaragoza-Chapter:Spain:
+www-chapter-warwick:OWASP-Warwick-Chapter:United Kingdom:
+www-chapter-miami:OWASP-Miami-Chapter:USA:33101
+www-chapter-waterloo:OWASP-Waterloo-Chapter:Canada:
+www-chapter-bangalore:OWASP-Barcelona:Spain:
+www-chapter-louisville:meetup-group-iOVgsIcE:USA:40201
+www-chapter-canberra:OWASP-Canberra-Chapter:Australia:
+www-chapter-malmo:OWASP-Malmo-Chapter:Sweden:
+www-chapter-karachi:OWASP-Karachi-Chapter:Pakistan:
+www-chapter-portland-me:OWASP-Portland-Maine-Chapter:USA:4101
+www-chapter-cuddalore:OWASP-Cuddalore-Chapter:India:
+www-chapter-victoria:OWASP-Victoria-Chapter:Canada:
+www-chapter-niamey:OWASP-Niamey-Chapter:Niger:
+www-chapter-reading:OWASP-Reading-Chapter:United Kingdom:
+www-chapter-leeds-uk:OWASP-Leeds-Chapter:United Kingdom:
+www-chapter-monterrey:OWASP-Monterrey-Chapter:Mexico:
+www-chapter-colombo:OWASP-Colombo-Chapter:Sri Lanka:
+www-chapter-marquette:OWASP-Marquette-Chapter:USA:49855
+www-chapter-vancouver:OWASP-Vancouver-Chapter:Canada:
+www-chapter-lincoln:OWASP-Lincoln-Chapter:USA:68501
+www-chapter-dhaka:OWASP-Dhaka-Chapter:Bangladesh:
+www-chapter-lome:OWASP-Lome-Chapter:Togo:
+www-chapter-nainital:OWASP-Nainital-Chapter:India:
+www-chapter-barranquilla:OWASP-Barranquilla-Chapter:Colombia:
+www-chapter-vellore:OWASP-Vellore-Chapter:India:
+www-chapter-port-louis:owaspportlouis:Mauritius:
+www-chapter-sydney:OWASP-Sydney-Chapter:Australia:
+www-chapter-little-rock:OWASP-Little-Rock-Chapter:USA:72201
+www-chapter-memphis:OWASP-Memphis-Chapter:USA:38016
+www-chapter-des-moines:OWASP-Des-Moines-Chapter:USA:50301
