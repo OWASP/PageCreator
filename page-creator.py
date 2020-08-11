@@ -21,6 +21,7 @@ import gspread
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import stripe
+import chapterreport
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -1409,9 +1410,11 @@ def add_chapter_meetups(gh, mu, outfile):
     outfile.writelines(outlines)
 
 def main():
-    gh = OWASPGitHub()
-    mu = OWASPMeetup()
-    create_chapter_events(gh, mu)
+    #gh = OWASPGitHub()
+    #mu = OWASPMeetup()
+    #create_chapter_events(gh, mu)
+
+    chapterreport.do_chapter_report()
 
     #with open('meetup_results.txt', 'w+') as outfile:
     #    add_chapter_meetups(gh, mu, outfile)
