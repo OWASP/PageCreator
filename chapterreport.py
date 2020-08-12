@@ -21,7 +21,9 @@ def do_chapter_report():
         sha = doc['sha']
         content = base64.b64decode(doc['content']).decode(encoding='utf-8')
         ch_json = json.loads(content)
-        sheet = create_spreadsheet()
+        ret = create_spreadsheet()
+        sheet = ret[0]
+        file_id = ret[1]
         headers = sheet.row_values(1)
         rows = []
         for ch in ch_json:
@@ -66,7 +68,7 @@ def create_spreadsheet():
     }
 
     rfile = drive.files().create(body=file_metadata, supportsAllDrives=True).execute()
-    
+    file_id = rfile.get('id')
     client = gspread.authorize(creds)
     sheet = client.open(sheet_name).sheet1
     row_headers = ['Chapter Name', 'Last Update', 'Repo', 'Region', 'Leaders']
@@ -88,7 +90,7 @@ def create_spreadsheet():
         }
     }
     sheet.format('A1:E1', header_format)
-    return sheet
+    return sheet, file_id
 
 def get_spreadsheet_name():
     report_name = 'chapter-report'
