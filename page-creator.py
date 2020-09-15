@@ -24,6 +24,7 @@ import stripe
 import chapterreport
 import rebuild_milestones
 from repo_users import add_users_to_repos
+from import_members import import_members
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -1010,7 +1011,8 @@ def add_chapter_meetups(gh, mu, outfile):
     outfile.writelines(outlines)
 
 def main():
-    add_users_to_repos()
+    import_members('members.example.csv')
+    #add_users_to_repos()
     #gh = OWASPGitHub()
     #mu = OWASPMeetup()
     #create_chapter_events(gh, mu)
@@ -1080,9 +1082,9 @@ def main():
     #print(person[0]['id'])
     #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
     #print(r)
-    # cp = OWASPCopper()
-    # r = cp.GetCustomFields()
-    # print(r)
+    #cp = OWASPCopper()
+    #r = cp.GetCustomFields()
+    #print(r)
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()
