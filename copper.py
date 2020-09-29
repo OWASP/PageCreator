@@ -3,6 +3,7 @@ import json
 import os
 import logging
 from datetime import datetime
+import time
 
 class OWASPCopper:
 
@@ -63,6 +64,7 @@ class OWASPCopper:
     cp_person_membership_option_lifetime = 674398
     cp_person_membership_option_oneyear = 674395
     cp_person_membership_option_twoyear = 674396
+    cp_person_membership_option_complimentary = 1506889
     cp_person_membership_start = 394883
     cp_person_membership_end = 394884
     cp_person_github_username = 395220
@@ -73,7 +75,8 @@ class OWASPCopper:
     cp_opportunity_end_date = 400119
     cp_opportunity_autorenew_checkbox = 419575
     cp_opportunity_invoice_no = 407333  # can be the URL to the stripe payment for membership
-
+    cp_opportunity_stripe_transaction_id = 440903
+    
     def GetHeaders(self):
         headers = {
             'X-PW-AccessToken':os.environ['COPPER_API_KEY'],
@@ -125,6 +128,96 @@ class OWASPCopper:
         
         return ''
 
+    def ListMembers(self):
+        members = []
+
+        #Get One year
+        data = {
+            'page_size': 200,
+            'sort_by': 'name',
+            'custom_fields': [{
+                'custom_field_definition_id': self.cp_person_membership,
+                'value': self.cp_person_membership_option_oneyear,
+            }]
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if 'X-PW-TOTAL' in r.headers:
+            count = r.headers['X-PW-TOTAL']
+        if not r.ok:
+            return members
+        
+        members = json.loads(r.text)
+        data = {
+            'page_size': 200,
+            'sort_by': 'name',
+            'custom_fields': [{
+                'custom_field_definition_id': self.cp_person_membership,
+                'value': self.cp_person_membership_option_twoyear,
+            }]
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if 'X-PW-TOTAL' in r.headers:
+            count = r.headers['X-PW-TOTAL']
+        if not r.ok:
+            return members
+        members.append(json.loads(r.text))
+        data = {
+            'page_size': 200,
+            'sort_by': 'name',
+            'custom_fields': [{
+                'custom_field_definition_id': self.cp_person_membership,
+                'value': self.cp_person_membership_option_student,
+            }]
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if 'X-PW-TOTAL' in r.headers:
+            count = r.headers['X-PW-TOTAL']
+        if not r.ok:
+            return members
+        members.append(json.loads(r.text))
+
+        data = {
+            'page_size': 200,
+            'sort_by': 'name',
+            'custom_fields': [{
+                'custom_field_definition_id': self.cp_person_membership,
+                'value': self.cp_person_membership_option_lifetime,
+            }]
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if 'X-PW-TOTAL' in r.headers:
+            count = r.headers['X-PW-TOTAL']
+        if not r.ok:
+            return members
+        members.append(json.loads(r.text))
+
+        data = {
+            'page_size': 200,
+            'sort_by': 'name',
+            'custom_fields': [{
+                'custom_field_definition_id': self.cp_person_membership,
+                'value': self.cp_person_membership_option_complimentary,
+            }]
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if 'X-PW-TOTAL' in r.headers:
+            count = r.headers['X-PW-TOTAL']
+        if not r.ok:
+            return members
+        members.append(json.loads(r.text))
+
+        return members
+
     def FindPersonByName(self, searchtext):
         lstxt = searchtext.lower()
         if len(lstxt) <= 0:
@@ -141,7 +234,7 @@ class OWASPCopper:
         if r.ok:
             return r.text
         
-        return ''
+        return '[]'
 
     def CreatePerson(self, name, email, subscription_data = None, stripe_id = None):
         # Needs Name
@@ -169,6 +262,15 @@ class OWASPCopper:
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership, 
                         'value': self.cp_person_membership_option_oneyear
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                    })
+            elif subscription_data['membership_type'] == 'honorary':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_complimentary
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
@@ -213,6 +315,79 @@ class OWASPCopper:
         
         return pid
 
+    def UpdatePerson(self, pid, subscription_data = None, stripe_id = None):
+        
+        data = {
+        }
+
+        if subscription_data != None:
+            fields = []
+            if subscription_data['membership_type'] == 'lifetime':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_lifetime
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': None
+                    })
+            elif subscription_data['membership_type'] == 'one':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_oneyear
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                    })
+            elif subscription_data['membership_type'] == 'honorary':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_complimentary
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                    })
+            elif subscription_data['membership_type'] == 'two':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_twoyear
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                    })
+            elif subscription_data['membership_type'] == 'student':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_student
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                    })
+
+            fields.append({
+                        'custom_field_definition_id' : self.cp_person_stripe_number, 
+                        'value': f"https://dashboard.stripe.com/customers/{stripe_id}"
+                    })
+
+            fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_start, 
+                        'value': datetime.strptime(subscription_data['membership_start'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                    })        
+            data['custom_fields'] = fields
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
+        r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
+        pid = None
+        if r.ok:
+            person = json.loads(r.text)
+            pid = person['id']
+        
+        return pid
+
     def CreateOpportunity(self, opp_name, contact_email):
 
         contact_json = self.FindPersonByEmail(contact_email)
@@ -234,12 +409,8 @@ class OWASPCopper:
         
         return ''
     
-    def CreateMemberOpportunity(self, opp_name, contact_email, subscription_data):
-
-        contact_json = self.FindPersonByEmail(contact_email)
-        if contact_json == '':
-            return ''
-        people = json.loads(contact_json)
+    def CreateMemberOpportunity(self, opp_name, pid, subscription_data):
+        # there is a delay before FindPerson shows up...let's pass the ID instead....
         
         pipeline = self.GetPipeline('Individual Membership')
         if pipeline == None:
@@ -254,7 +425,7 @@ class OWASPCopper:
 
         data = {
             'name': opp_name,
-            'primary_contact_id': people[0]['id'],
+            'primary_contact_id': pid,
             'pipeline_id': pipeline_id,
             'pipeline_stage_id': pipeline_stage_id,
             'status': 'Won'
@@ -427,18 +598,27 @@ class OWASPCopper:
         contact_json = self.FindPersonByEmail(email)
         pid = None
         if contact_json != '':
-            pid = json.loads(contact_json)[0]['id']
+            jsonp = json.loads(contact_json)
+            if len(jsonp) > 0:
+                pid = json.loads(contact_json)[0]['id']
+        
         if pid == None or pid <= 0:
             pid = self.CreatePerson(name, email, subscription_data, stripe_id)
-            
-        if pid <= 0:
+        else:
+            self.UpdatePerson(pid, subscription_data, stripe_id)
+
+        if pid == None or pid <= 0:
             logging.error(f'Failed to create person for {email}')
             return
 
         opp_name = subscription_data['membership_type'].capitalize()
+        if opp_name == 'Honorary':
+            opp_name = "Complimentary One"
         if subscription_data['membership_type'] != 'lifetime':
             opp_name += f" Year Membership until {subscription_data['membership_end']}"
         else:
             opp_name += " Membership"
+        
+        time.sleep(7.0) # seems to take copper a little while after a person is created for the relation to be able to see it
 
-        self.CreateMemberOpportunity(opp_name, email, subscription_data)
+        self.CreateMemberOpportunity(opp_name, pid, subscription_data)

@@ -16,7 +16,8 @@
 {"id":394882,"name":"Membership","data_type":"Dropdown","available_on":["person"],"options":[{"id":674397,"name":"Student","rank":2},
                                                                                             {"id":674398,"name":"Lifetime","rank":3},
                                                                                             {"id":674395,"name":"One Year","rank":0},
-                                                                                            {"id":674396,"name":"Two Year","rank":1}]},
+                                                                                            {"id":674396,"name":"Two Year","rank":1},
+                                                                                            {"id":1506889,"name":"Complimentary","rank":4}]},
 {"id":394883,"name":"Membership Start","data_type":"Date","available_on":["person","company"]},
 {"id":394884,"name":"Membership End","data_type":"Date","available_on":["person","company"]},
 {"id":394888,"name":"Fax Phone","data_type":"String","available_on":["company","person"]},
@@ -69,5 +70,6 @@
 {"id":419571,"name":"Discount Code","data_type":"String","available_on":["opportunity"]},
 {"id":419573,"name":"Restricted","data_type":"Checkbox","available_on":["opportunity"]},
 {"id":419574,"name":"Repository","data_type":"String","available_on":["opportunity"]},
-{"id":419575,"name":"Auto-Renew","data_type":"Checkbox","available_on":["opportunity"]}
-{"id":440584,"name":"Stripe Customer Number","data_type":"URL","available_on":["person"]}]
+{"id":419575,"name":"Auto-Renew","data_type":"Checkbox","available_on":["opportunity"]},
+{"id":440584,"name":"Stripe Customer Number","data_type":"URL","available_on":["person"]},
+{"id":440903,"name":"Stripe Transaction Number","data_type":"String","available_on":["opportunity"]}]
