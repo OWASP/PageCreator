@@ -1,4 +1,6 @@
 __pycache__
 env
 .vscode
+*.csv
 api_responses.txt
+all_copper_custom_properties.txt

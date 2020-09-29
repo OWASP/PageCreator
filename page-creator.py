@@ -25,6 +25,8 @@ import chapterreport
 import rebuild_milestones
 from repo_users import add_users_to_repos
 from import_members import import_members
+from googleapi import OWASPGoogle
+import random
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -1011,7 +1013,29 @@ def add_chapter_meetups(gh, mu, outfile):
     outfile.writelines(outlines)
 
 def main():
-    import_members('members.example.csv')
+    #customer = { 'name':'John von Hosenshertz III'}
+    #first_name = customer['name'].lower().strip().split(' ')[0]
+    #last_name = ''.join((customer['name'].lower() + '').split(' ')[1:]).strip()
+    
+    #print(first_name + '.' + last_name + '@owasp.org'
+    # response_str = "harold@owasp.org"
+    # response = {
+    #         "status": "ERROR",
+    #         "errors": response_str
+    #     }
+
+    # obj = json.dumps(response)
+    # print(obj)
+    #og = OWASPGoogle()
+    #print(og.GetPossibleEmailAddresses('harold.blankenship@owasp.org'))
+    #print(og.CreateEmailAddress("kithwood@gmail.com", "harold", "test2"))
+    import_members('gappsec_members_9.23.2020.csv')
+    # cp = OWASPCopper()
+    # persons = cp.ListMembers()
+    # for person in persons:
+    #     print(person)
+    #     print('\n----------------------------------\n')
+    # print(len(persons))
     #add_users_to_repos()
     #gh = OWASPGitHub()
     #mu = OWASPMeetup()
@@ -1082,9 +1106,9 @@ def main():
     #print(person[0]['id'])
     #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
     #print(r)
-    #cp = OWASPCopper()
-    #r = cp.GetCustomFields()
-    #print(r)
+    # cp = OWASPCopper()
+    # r = cp.GetCustomFields()
+    # print(r)
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()
@@ -1112,20 +1136,7 @@ def main():
     #    res = sf.FindContact('Berman')
 
     #print(res)
-    #MigrateProjectPages()
-    #MigrateChapterPages()
-
-    #CreateProjectPageList()
-    #MigrateSelectedPages('attack_files.txt')
-    #MigrateSelectedPages('vuln_files.txt')
-    #AddChaptersToChapterTeam()
-    
-    #build_staff_project_json()
-    #print('Hello')
-    # github = OWASPGitHub()
-    # group = "deepviolet-tls-ssl-scanner"
-    # grouptype = 0
-    # r = github.InitializeRepositoryPages(group, grouptype)
+    #MigrateProjectPages()membership_typeeRepositoryPages(group, grouptype)
     # if github.TestResultCode(r.status_code):
     #     r = github.EnablePages(group, grouptype)
 

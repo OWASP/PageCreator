@@ -12,15 +12,24 @@ import stripe
 from datetime import datetime
 from datetime import timedelta
 import csv
+from owaspmailchimp import OWASPMailchimp
 
 class MemberData:
-    def __init__(self, name, email, company, country, start, end, type, recurring):
+    def __init__(self, name, email, company, country, postal_code, start, end, type, recurring):
         self.name = name
         self.email = email
         self.company = company
         self.country = country
-        self.start = datetime.strptime(start, "%Y-%m-%d")
-        self.end = datetime.strptime(end, "%Y-%m-%d")
+        self.postal_code = postal_code
+        try:
+            self.start = datetime.strptime(start, "%Y-%m-%d")
+        except:
+            self.start = datetime.strptime(start, "%m/%d/%Y")
+        try:
+            self.end = datetime.strptime(end, "%Y-%m-%d")
+        except:
+            self.end = datetime.strptime(end, "%m/%d/%Y")
+            
         self.type = type
         self.recurring = recurring
         self.stripe_id = None
@@ -66,7 +75,7 @@ def import_members(filename):
                     
         for row in reader:
             nstr = f"{row['First Name']} {row['Last Name']}".strip()
-            member = MemberData(nstr, row['Email'], row['Company'], row['Work Country'], row['membership-start-date'], row['membership-end-date'], row['membership-type'], row['membership-recurring'])
+            member = MemberData(nstr, row['Email'].lower(), row['Company'], row['Work Country'], row['Work Zip'], row['membership-start-date'], row['membership-end-date'], row['membership-type'], row['membership-recurring'])
             customers = stripe.Customer.list(email=member.email)
             stripe_id = None
             
@@ -109,4 +118,17 @@ def import_members(filename):
             
             if stripe_id != None:
                 cop.CreateOWASPMembership(stripe_id, member.name, member.email, member.GetSubscriptionData())
-          
+                mailchimp = OWASPMailchimp()
+                mailchimpdata = {
+                    'name': member.name,
+                    'source': 'script import',    
+                    'purchase_type': 'membership',
+                    'company': member.company,
+                    'country': member.country,
+                    'postal_code': member.postal_code,
+                    'mailing_list': 'True'
+                }
+
+                mailchimp.AddToMailingList(member.email, mailchimpdata , member.GetSubscriptionData(), stripe_id)
+
+            print(member.email + ' completed.')
