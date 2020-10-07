@@ -26,6 +26,8 @@ import rebuild_milestones
 from repo_users import add_users_to_repos
 from import_members import import_members
 from googleapi import OWASPGoogle
+from owaspjira import OWASPJira
+
 import random
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
@@ -1012,7 +1014,34 @@ def add_chapter_meetups(gh, mu, outfile):
                     outlines.append(f'Failed to update index.md: {r.text}')
     outfile.writelines(outlines)
 
+def create_zoom_account(chapter_url):
+    #creating a zoom account requires
+    #  1.) creating a [chapter-name]-leaders@owasp.org group account
+    #  2.) adding leaders to group
+    #  3.) determining which zoom group to put them in (currently 4 groups)
+    #  4.) sending onetimesecret link with password to person who requested access
+    #  5.) updating JIRA
+    og = OWASPGoogle()
+    result = og.FindGroup('test-group-create@owasp.org')
+    if result == None:
+        result = og.CreateGroup('test-group-create@owasp.org')
+    
+    if not 'Failed' in result:
+        gh = OWASPGitHub()
+        leaders = gh.GetLeadersForRepo(chapter_url)
+        
+    return None
+
 def main():
+    gh = OWASPGitHub()
+    leaders = gh.GetLeadersForRepo('www-chapter-austin')
+    print(leaders)
+    #og = OWASPGoogle()
+    #print(og.GetGroupSettings('baltimore-leaders@owasp.org'))
+    #create_zoom_account('www-projectchapter-example')
+    #oj = OWASPJira()
+    #print(oj.CreateDropDownField().text)
+
     #customer = { 'name':'John von Hosenshertz III'}
     #first_name = customer['name'].lower().strip().split(' ')[0]
     #last_name = ''.join((customer['name'].lower() + '').split(' ')[1:]).strip()
@@ -1029,7 +1058,7 @@ def main():
     #og = OWASPGoogle()
     #print(og.GetPossibleEmailAddresses('harold.blankenship@owasp.org'))
     #print(og.CreateEmailAddress("kithwood@gmail.com", "harold", "test2"))
-    import_members('gappsec_members_9.23.2020.csv')
+    #import_members('gappsec_members_10.5.2020.csv')
     # cp = OWASPCopper()
     # persons = cp.ListMembers()
     # for person in persons:
