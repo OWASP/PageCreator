@@ -480,7 +480,7 @@ class OWASPGitHub:
                         name, email = self.ParseLeaderline(line)
                         leader = {}
                         leader['name'] = name
-                        leader['email'] = email
+                        leader['email'] = email.replace('mailto://','').replace('mailto:','')
                         
                         repo_leaders.append(leader)
 

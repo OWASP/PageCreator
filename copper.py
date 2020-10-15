@@ -115,6 +115,13 @@ class OWASPCopper:
         if len(lstxt) <= 0:
             return ''
 
+        # first use fetch_by_email
+        url = f'{self.cp_base_url}{self.cp_people_fragment}fetch_by_email'
+        data = { 'email': lstxt }
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok and r.text != '[]':
+            return f"[{r.text}]"
+
         data = {
             'page_size': 5,
             'sort_by': 'name',
@@ -122,6 +129,7 @@ class OWASPCopper:
         }
 
         url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        
         r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
         if r.ok:
             return r.text
@@ -597,10 +605,10 @@ class OWASPCopper:
         # CreateOpportunity
         contact_json = self.FindPersonByEmail(email)
         pid = None
-        if contact_json != '':
+        if contact_json != '' and contact_json !='[]':
             jsonp = json.loads(contact_json)
             if len(jsonp) > 0:
-                pid = json.loads(contact_json)[0]['id']
+                pid = jsonp[0]['id']
         
         if pid == None or pid <= 0:
             pid = self.CreatePerson(name, email, subscription_data, stripe_id)
