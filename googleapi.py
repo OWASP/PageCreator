@@ -21,6 +21,42 @@ class OWASPGoogle:
         self.admin = build('admin', 'directory_v1', credentials=creds, cache_discovery=False)
         self.groupSettings = build('groupssettings', 'v1', credentials=creds, cache_discovery=False)
 
+    def CreateSpecificEmailAddress(self, altemail, first, last, email_address, fail_if_exists=True):
+        
+        user = {
+            "name": {
+                "familyName": last,
+                "givenName": first
+            },
+            "primaryEmail": email_address,
+            "recoveryEmail": altemail,
+            "password": datetime.now().strftime('%m%d%Y'),
+            "emails": [{
+                    "address": altemail,
+                    "type": "home",
+                    "customType": "",
+                    "primary": False
+                },
+                {
+                    "address": email_address,
+                    "type": "home",
+                    "customType": "",
+                    "primary": True
+                }
+            ]
+        }
+        
+        if fail_if_exists:
+            results = self.admin.users().list(domain='owasp.org', query=f"email={user['primaryEmail']}").execute()
+            if 'users' in results and len(results['users']) > 0:
+                return f"User {user['primaryEmail']} already exists."
+
+        result = f"User {user['primaryEmail']} created"
+        results = self.admin.users().insert(body = user).execute()
+        if 'primaryEmail' not in results:
+            result = f"Failed to create User {user['primaryEmail']}."
+        return result
+        
     def CreateEmailAddress(self, altemail, first, last, fail_if_exists=True):
         user = {
             "name": {
@@ -90,13 +126,44 @@ class OWASPGoogle:
         return None
 
     def GetGroupSettings(self, group_name):
-        return self.groupSettings.groups().get(groupUniqueId=group_name).execute()
+        val = ''
+        try:
+            val = self.groupSettings.groups().get(groupUniqueId=group_name).execute()
+        except:
+            pass
+
+        return val
 
     def SetGroupSettings(self, group_name, group_settings):
-        return self.groupSettings.groups().update(groupUniqueId=group_name, body=group_settings).execute()
+        val = ''
+        try:
+            val = self.groupSettings.groups().update(groupUniqueId=group_name, body=group_settings).execute()
+        except:
+            pass
 
+        return val
 
-    def GetInitialGroupSettings(self, group_name):
+    def GetGroupMembers(self, group_name):
+        val = ''
+        try:
+            val = self.admin.members().list(groupKey=group_name).execute()
+        except:
+            pass
+
+        return val
+
+    def AddMemberToGroup(self, group_name, email, role='MANAGER', member_type='USER'):
+        data = { 'email': email, 'role': role, 'type':member_type }
+        val = ''
+        try:
+            val = self.admin.members().insert(groupKey=group_name, body=data).execute()
+        except:
+            pass
+
+        return val
+        
+
+    def GetInitialGroupSettings(self):
         gs = {  'whoCanJoin': 'INVITED_CAN_JOIN', 
                 'whoCanViewMembership': 'ALL_IN_DOMAIN_CAN_VIEW', 
                 'whoCanViewGroup': 'ALL_MEMBERS_CAN_VIEW', 
@@ -117,7 +184,12 @@ class OWASPGoogle:
         }
 
         result = f"Group {group['email']} created"
-        results = self.admin.groups().insert(body = group).execute()
+        results = ''
+        try:
+            results = self.admin.groups().insert(body = group).execute()
+        except:
+            pass
+
         if 'name' not in results:
             result = f"Failed to create Group {group['email']}."
         else:

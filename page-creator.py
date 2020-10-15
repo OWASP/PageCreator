@@ -2,6 +2,7 @@
 # Tool used for creating chapter and project pages
 # for OWASP Community
 
+from owaspzoom import OWASPZoom
 import requests
 import json
 from github import *
@@ -832,7 +833,7 @@ def GetContactInfo():
                     lname = records[0]['LastName']
                 if 'Email' in records[0]:
                     email = records[0]['Email']
-                names.append(f"{fname, lname, email}\n")
+                names.append(f"{fname}, {lname}, {email}\n")
            else:
                 print(f'No record found for {line.strip()}')
     
@@ -1014,29 +1015,79 @@ def add_chapter_meetups(gh, mu, outfile):
                     outlines.append(f'Failed to update index.md: {r.text}')
     outfile.writelines(outlines)
 
+def retrieve_member_counts(zoom_accounts):
+    counts = []
+    og = OWASPGoogle()
+    for za in zoom_accounts:
+        data = {'account': za, 'count': 0 }
+        members = og.GetGroupMembers(za)
+        data['count'] = len(members['members'])
+        counts.append(data)
+
+    return sorted(counts, key=lambda group: group['count'])
+
+def send_onetime_secret(leaders, secret):
+    headers = {
+        'Authorization':f"Basic {base64.b64encode((os.environ['OTS_USER'] + ':' + os.environ['OTS_API_KEY']).encode()).decode()}"
+    }
+    for leader in leaders:
+        r = requests.post(f"https://onetimesecret.com/api/v1/share/?secret=Zoom%20Password%20is%20{secret}&recipient={leader['email']}", headers=headers)
+        if not r.ok:
+            print(r.text)
+
 def create_zoom_account(chapter_url):
     #creating a zoom account requires
     #  1.) creating a [chapter-name]-leaders@owasp.org group account
     #  2.) adding leaders to group
     #  3.) determining which zoom group to put them in (currently 4 groups)
+
     #  4.) sending onetimesecret link with password to person who requested access
-    #  5.) updating JIRA
-    og = OWASPGoogle()
-    result = og.FindGroup('test-group-create@owasp.org')
-    if result == None:
-        result = og.CreateGroup('test-group-create@owasp.org')
-    
-    if not 'Failed' in result:
-        gh = OWASPGitHub()
-        leaders = gh.GetLeadersForRepo(chapter_url)
+    chapter_name = chapter_url.replace('www-projectchapter-','').replace('www-chapter-', '').replace('www-project-', '').replace(' ', '-')
+    leadersemail = f"{chapter_name}-leaders@owasp.org"
+
+    leaders = []
+    gh = OWASPGitHub()
+    leaders = gh.GetLeadersForRepo(chapter_url)
+
+    if len(leaders) > 0:
+        og = OWASPGoogle()
+        result = og.FindGroup(leadersemail)
+        if result == None:
+            result = og.CreateGroup(leadersemail)
+        if not 'Failed' in result:    
+            for leader in leaders:
+                og.AddMemberToGroup(leadersemail, leader['email'])
         
+        if not 'Failed' in result:
+            zoom_accounts = ['leaders-zoom-one@owasp.org', 'leaders-zoom-two@owasp.org', 'leaders-zoom-three@owasp.org', 'leaders-zoom-four@owasp.org']
+            retrieve_member_counts(zoom_accounts)
+            # the list is sorted by count so first one is golden..
+            result = og.FindGroup(zoom_accounts[0])
+            if result != None and not 'Failed' in result:
+                og.AddMemberToGroup(zoom_accounts[0], leadersemail)
+
+            zoom_account = zoom_accounts[0][0:zoom_accounts[0].find('@')]
+            
+            send_onetime_secret(leaders, os.environ[zoom_account.replace('-', '_') +'_pass'])
+
     return None
 
 def main():
-    gh = OWASPGitHub()
-    leaders = gh.GetLeadersForRepo('www-chapter-austin')
-    print(leaders)
+    #create_zoom_account('www-projectchapter-example')
     #og = OWASPGoogle()
+    #og.AddMemberToGroup('leaders-zoom-one@owasp.org', 'example-leaders@owasp.org', 'MEMBER', 'GROUP')
+    #zoom_accounts = ['leaders-zoom-one@owasp.org', 'leaders-zoom-two@owasp.org', 'leaders-zoom-three@owasp.org', 'leaders-zoom-four@owasp.org']
+    #print(retrieve_member_counts(zoom_accounts))
+    #leaders = ['harold.blankenship@owasp.com']
+    #send_onetime_secret(leaders, 'ThisIsMyGroup')
+    #oz = OWASPZoom()
+    #print(oz.GetUser('INl4oy6fQ4aojKSqUSMylA'))
+    #gh = OWASPGitHub()
+    #leaders = gh.GetLeadersForRepo('www-chapter-austin')
+    #print(leaders)
+    #og = OWASPGoogle()
+    #jsonobj = og.GetGroupMembers('leaders-zoom-one@owasp.org')
+    #print(len(jsonobj['members']))
     #print(og.GetGroupSettings('baltimore-leaders@owasp.org'))
     #create_zoom_account('www-projectchapter-example')
     #oj = OWASPJira()
@@ -1054,12 +1105,17 @@ def main():
     #     }
 
     # obj = json.dumps(response)
-    # print(obj)
+    # print(obj)MANAGER'
     #og = OWASPGoogle()
     #print(og.GetPossibleEmailAddresses('harold.blankenship@owasp.org'))
     #print(og.CreateEmailAddress("kithwood@gmail.com", "harold", "test2"))
-    #import_members('gappsec_members_10.5.2020.csv')
+    import_members('gappsec_members_10.14.2020.csv')
+
     # cp = OWASPCopper()
+    # person = cp.FindPersonByEmail('plupiani@bcgeng.com')
+    # print(person)
+    # person = cp.FindPersonByEmail('pluplupiani@bcgeng.com')
+    # print(person)
     # persons = cp.ListMembers()
     # for person in persons:
     #     print(person)
