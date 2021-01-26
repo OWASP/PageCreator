@@ -4,6 +4,7 @@ import os
 import logging
 from datetime import datetime
 import time
+from datetime import timedelta
 
 class OWASPCopper:
 
@@ -85,6 +86,40 @@ class OWASPCopper:
             'Content-Type':'application/json'
         }
         return headers
+    
+    def GetCustomFieldHelper(self, custom_field_id, fields):
+        for field in fields:
+            if field['custom_field_definition_id'] == custom_field_id:
+                return field['value']
+        
+        return None
+    
+    def GetDatetimeHelper(self, datestr):
+        retdate = None
+        try:
+            retdate = datetime.strptime(datestr, "%m/%d/%Y")
+        except:
+            try:
+                retdate = datetime.strptime(datestr, "%Y-%m-%d")
+            except:
+                try:
+                    retdate = datetime.strptime(datestr, "%m/%d/%y")
+                except:
+                    return retdate
+                    
+        return retdate
+
+    def GetStartdateHelper(self, subscription_data):
+        startdate = datetime.now()
+        mem_type = subscription_data['membership_type']
+        mem_end = self.GetDatetimeHelper(subscription_data['membership_end'])
+        if mem_end != None: 
+            if mem_type == 'one' or mem_type == 'complimentary' or mem_type == 'student':
+                startdate = mem_end - timedelta(days=365)
+            elif mem_type == 'two':
+                startdate = mem_end - timedelta(days=730)
+            
+        return startdate
 
     def ListProjects(self):
         data = {
@@ -246,6 +281,9 @@ class OWASPCopper:
 
     def CreatePerson(self, name, email, subscription_data = None, stripe_id = None):
         # Needs Name
+        if not name:
+            name = 'Unknown'
+
         data = {
             'name':name,
             'emails': [
@@ -255,6 +293,11 @@ class OWASPCopper:
                 }
             ]
         }
+        memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+        if memstart == None:
+            # so we have no start...must calculate it
+            memstart = self.GetStartdateHelper(subscription_data)
+
         if subscription_data != None:
             fields = []
             if subscription_data['membership_type'] == 'lifetime':
@@ -275,7 +318,7 @@ class OWASPCopper:
                         'custom_field_definition_id' : self.cp_person_membership_end, 
                         'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
                     })
-            elif subscription_data['membership_type'] == 'honorary':
+            elif subscription_data['membership_type'] == 'complimentary':
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership, 
                         'value': self.cp_person_membership_option_complimentary
@@ -310,7 +353,7 @@ class OWASPCopper:
 
             fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_start, 
-                        'value': datetime.strptime(subscription_data['membership_start'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': memstart.strftime("%m/%d/%Y")
                     })        
             data['custom_fields'] = fields
 
@@ -320,6 +363,8 @@ class OWASPCopper:
         if r.ok:
             person = json.loads(r.text)
             pid = person['id']
+        else:
+            logging.error(f"Failed to create {name}: {r.text}")
         
         return pid
 
@@ -327,6 +372,11 @@ class OWASPCopper:
         
         data = {
         }
+
+        memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+        if memstart == None:
+            # so we have no start...must calculate it
+            memstart = self.GetStartdateHelper(subscription_data)
 
         if subscription_data != None:
             fields = []
@@ -348,7 +398,7 @@ class OWASPCopper:
                         'custom_field_definition_id' : self.cp_person_membership_end, 
                         'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
                     })
-            elif subscription_data['membership_type'] == 'honorary':
+            elif subscription_data['membership_type'] == 'honorary' or subscription_data['membership_type'] == 'complimentary':
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership, 
                         'value': self.cp_person_membership_option_complimentary
@@ -383,7 +433,7 @@ class OWASPCopper:
 
             fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_start, 
-                        'value': datetime.strptime(subscription_data['membership_start'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': memstart.strftime("%m/%d/%Y")
                     })        
             data['custom_fields'] = fields
 
@@ -417,6 +467,38 @@ class OWASPCopper:
         
         return ''
     
+    def FindMemberOpportunity(self, email, subscription_data):
+        opp = None
+        contact_json = self.FindPersonByEmail(email)
+        pid = None
+        if contact_json != '' and contact_json !='[]':
+            jsonp = json.loads(contact_json)
+            if len(jsonp) > 0:
+                pid = jsonp[0]['id']
+
+        if pid != None:
+            url = f'{self.cp_base_url}{self.cp_related_fragment}'
+            url = url.replace(':entity_id', str(pid)).replace(':entity', 'people')
+            url = url + '/opportunities'
+            r = requests.get(url, headers=self.GetHeaders())
+            if r.ok and r.text:
+                for item in json.loads(r.text):
+                    url = url = f"{self.cp_base_url}{self.cp_opp_fragment}{item['id']}"
+                    r = requests.get(url, headers=self.GetHeaders())
+                    if r.ok:
+                        opportunity = json.loads(r.text)
+                        if 'Lifetime' in opportunity['name'] or (opportunity['name'] == 'Membership' and opportunity['monetary_value'] == 500):
+                            return r.text
+                        for cfield in opportunity['custom_fields']:
+                            if cfield['custom_field_definition_id'] == self.cp_opportunity_end_date:
+                                mend = cfield['value']
+                                if subscription_data['membership_end']:
+                                    tend = int(datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").timestamp())
+                                    if mend == tend:
+                                        return r.text
+
+        return opp
+
     def CreateMemberOpportunity(self, opp_name, pid, subscription_data):
         # there is a delay before FindPerson shows up...let's pass the ID instead....
         
@@ -431,12 +513,18 @@ class OWASPCopper:
                 pipeline_stage_id = stage['id']
                 break
 
+        memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+        closedate = datetime.now().strftime("%m/%d/%Y")
+        if memstart != None:
+            closedate = memstart.strftime("%m/%d/%Y")
+
         data = {
             'name': opp_name,
             'primary_contact_id': pid,
             'pipeline_id': pipeline_id,
             'pipeline_stage_id': pipeline_stage_id,
-            'status': 'Won'
+            'status': 'Won',
+            'close_date': closedate
         }
         
         if subscription_data != None:
@@ -604,16 +692,25 @@ class OWASPCopper:
         # CreatePerson
         # CreateOpportunity
         contact_json = self.FindPersonByEmail(email)
+        person = None
         pid = None
         if contact_json != '' and contact_json !='[]':
-            jsonp = json.loads(contact_json)
-            if len(jsonp) > 0:
-                pid = jsonp[0]['id']
+            person = json.loads(contact_json)
+            if len(person) > 0:
+                person = person[0]
+                pid = person['id']
         
         if pid == None or pid <= 0:
             pid = self.CreatePerson(name, email, subscription_data, stripe_id)
-        else:
-            self.UpdatePerson(pid, subscription_data, stripe_id)
+        else: #should only update if sub data membership end is later or nonexistent (and not a lifetime member)
+            memtype = self.GetCustomFieldHelper(self.cp_person_membership, person['custom_fields'])
+            if memtype == None:
+                self.UpdatePerson(pid, subscription_data, stripe_id)
+            elif memtype != self.cp_person_membership_option_lifetime:
+                mend = self.GetDatetimeHelper(subscription_data['membership_end'])
+                cp_mend = self.GetCustomFieldHelper(self.cp_person_membership_end, person['custom_fields'])
+                if mend == None or cp_mend == None or mend > datetime.fromtimestamp(cp_mend):
+                    self.UpdatePerson(pid, subscription_data, stripe_id)
 
         if pid == None or pid <= 0:
             logging.error(f'Failed to create person for {email}')

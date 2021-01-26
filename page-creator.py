@@ -2,13 +2,14 @@
 # Tool used for creating chapter and project pages
 # for OWASP Community
 
+from stripe.api_resources import payment_intent
 from owaspzoom import OWASPZoom
 import requests
 import json
 from github import *
 from copper import *
 from meetup import *
-
+import random
 import time
 
 import base64
@@ -22,12 +23,17 @@ import gspread
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import stripe
+from datetime import datetime
+from datetime import timedelta
+import csv
 import chapterreport
 import rebuild_milestones
 from repo_users import add_users_to_repos
-from import_members import import_members
+from import_members import import_members, MemberData
 from googleapi import OWASPGoogle
 from owaspjira import OWASPJira
+from docusign_esign import EnvelopesApi
+from docusign_esign import ApiClient
 
 import random
 
@@ -696,41 +702,64 @@ def parse_leaderline(line):
 
 def add_to_leaders(repo, content, all_leaders, stype):
     lines = content.split('\n')
+    max_leaders = 5
+    leader_count = 0
+    in_leaders = False
     for line in lines:
-        fstr = line.find('[')
-        if(line.startswith('###') and 'Leaders' not in line):
+        testline = line.lower()
+        if in_leaders and leader_count > 0 and not testline.startswith('*'):
             break
         
+        if(testline.startswith('###') and 'leader' not in testline):
+            break
+        elif testline.startswith('###') and 'leader' in testline:
+            in_leaders = True
+            continue
+
+        fstr = line.find('[')
         if(line.startswith('*') and fstr > -1 and fstr < 4):
             name, email = parse_leaderline(line)
-            leader = {}
-            leader['name'] = name
-            leader['email'] = email
-            leader['group'] = repo['title']
-            leader['group-type'] = stype
-            all_leaders.append(leader)
+            if 'leader.email@owasp.org' not in email and leader_count < max_leaders: # default
+                leader = {}
+                leader['name'] = name
+                leader['email'] = email.replace('mailto://', '').replace('mailto:','').lower()
+                leader['group'] = repo['title']
+                leader['group-type'] = stype
+                leader['group_url'] = repo['url']
+                
+                all_leaders.append(leader)
+                leader_count = leader_count + 1
 
 
 def build_leaders_json(gh):
     all_leaders = []
     repos = gh.GetPublicRepositories('www-')
     for repo in repos:
+        stype = ''
+
+        if 'www-projectchapter-example' in repo['url']:
+            continue
+
+        if 'www-chapter' in repo['url']:
+            stype = 'chapter'
+        elif 'www-committee' in repo['url']:
+            stype = 'committee'
+        elif 'www-project' in repo['url']:
+            stype = 'project'
+        else:
+            continue
+
         r = gh.GetFile(repo['name'], 'leaders.md')
         if r.ok:
             doc = json.loads(r.text)
             content = base64.b64decode(doc['content']).decode(encoding='utf-8')
-            stype = ''
-            if 'www-chapter' in repo['name']:
-                stype = 'chapter'
-            elif 'www-committee' in repo['name']:
-                stype = 'committee'
-            elif 'www-project' in repo['name']:
-                stype = 'project'
-            else:
-                continue
+            
 
             add_to_leaders(repo, content, all_leaders, stype)
-    
+        else:
+            print(f"Could not get leaders.md file for {repo['name']}: {r.text}")
+
+    print(len(all_leaders))
     r = gh.GetFile('owasp.github.io', '_data/leaders.json')
     sha = ''
     if r.ok:
@@ -1072,7 +1101,145 @@ def create_zoom_account(chapter_url):
 
     return None
 
+def AddStripeMembershipToCopper():
+    stripe.api_key = os.environ['STRIPE_SECRET']
+    customers = stripe.Customer.list(limit=100)
+    count = 0
+    for customer in customers.auto_paging_iter():
+        if not customer.name or customer.name.strip() == '':
+            UpdateCustomerName(stripe, customer)
+        
+        metadata = customer.get('metadata', None)
+        count = count + 1
+        if metadata and metadata.get('membership_type', None):
+            AddToMemberOpportunityIfNotExist(customer, metadata)        
+            
+        print(f"Checking {count}", end="\r", flush=True)
+
+def UpdateCustomerName(stripe, cust):
+    payments = stripe.PaymentIntent.list(customer=cust.id)
+    subscriptions = stripe.Subscription.list(customer=cust.id)
+    name = None
+
+    for payment in payments:
+        metadata = payment.get('metadata', None)
+        if metadata:
+            name = metadata.get('name','').strip()
+            if name != '':
+                break
+
+    if not name or name == '':
+        for sub in subscriptions:
+            metadata = sub.get('metadata', None)    
+            if metadata:
+                name = metadata.get('name','').strip()
+                if name != '':
+                    break
+    if not name or name == '':
+        name = 'Unknown'
+
+    stripe.Customer.modify(cust.id, name=name)
+    cust.name = name
+
+def AddToMemberOpportunityIfNotExist(customer, metadata):
+    copper = OWASPCopper()
+    mstart = metadata.get('membership_start', None)
+    mend = metadata.get('membership_end', None)
+    mtype = metadata.get('membership_type', None)
+    mrecurr = metadata.get('membership_recurring', None)
+
+    member = MemberData(customer.get('name'), customer.email.lower(), "", "", "", mstart, mend, mtype, mrecurr)  
+    sub = member.GetSubscriptionData()     
+    if not copper.FindMemberOpportunity(customer.email, sub):
+        copper.CreateOWASPMembership(customer.id, customer.name, customer.email, sub)
+        print(f"Added {customer.email} with membership type {mtype}, starting on {mstart} and ending on {mend}")
+
+def verify_cleanup(cfile):
+    with open(cfile) as csvfile:
+        reader = csv.DictReader(csvfile)
+        stripe.api_key = os.environ['STRIPE_SECRET']
+        total = 295144
+        count = 0
+        for row in reader:
+            count = count + 1
+            wait_call = True
+            cid = row['id']
+            print(f"{count} of {total}")
+            cleanup = row['cleanup_customer (metadata)']
+            drop_off = 1.0
+            if cleanup == 'TRUE':
+                while wait_call:
+                    wait_call = False
+                    try:
+                        customer = stripe.Customer.retrieve(cid)
+                        if customer:
+                            metadata = customer.get('metadata', None)
+                            if metadata and (metadata.get('membership_type', None) or metadata.get('membership_end', None) or metadata.get('membership_recurring', None) or metadata.get('membership_start', None)):
+                                print(f"WARNING: Customer {cid} has metadata!")
+                            payments = stripe.PaymentIntent.list(customer=cid)
+                            if payments:
+                                for payment in payments:
+                                    if payment.status != 'canceled':
+                                        print(f"WARNING: Customer {cid} has made payments!")
+                            subscriptions = stripe.Subscription.list(customer=cid)
+                            if subscriptions:
+                                print(f"WARNING: Customer {cid} has subscriptions!")
+                            invoices = stripe.Invoice.list(customer=cid)
+                            if invoices:
+                                print(f"WARNING: Customer {cid} has invoices!")
+                            orders = stripe.Order.list(customer = cid)
+                            if orders:
+                                print(f"WARNING: Customer {cid} has orders!")
+                        drop_off = 1
+                    except:
+                        wait_call = True
+                        # possibly raised an exception because limited Stripe API calls...
+                        time.sleep((4 + drop_off) * random.randint(1,4))
+                        drop_off *= 1.25
+                        pass
+
+# def get_docusign_docs():
+#     api_client = ApiClient()
+#     api_client.host = "account-d.docusign.com"
+#     api_client.set_default_header(header_name="Authorization", header_value=f"Bearer {os.environ['DOCUSIGN_APITOKEN']}")
+#     env_api = EnvelopesApi(api_client)
+#     # moronic api requires from_date or similar to list envelopes because, you know, they cannot just list all the envelopes
+#     # and, of course, to list envelopes, you should call is list_status_changes....
+#     envelopes = env_api.list_status_changes()
+#     docs = env_api.list_documents(account_id=os.environ['DOCUSIGN_ACCOUNT'], envelope_id=err...we need to list envelopes first?)
+
 def main():
+    gh = OWASPGitHub()
+    projects = gh.GetPublicRepositories(matching="www-project-")
+    for project in projects:
+        if 'card' in project['url']:
+            print(project)
+
+    #get_docusign_docs()
+
+    #ipaddrs = ['123.45.234.33:5555']
+    #ipaddr = ipaddrs[0][:ipaddrs[0].find(':')]
+    #print(ipaddr)
+    
+    # customer_name = "Yang Ju Ryul"
+    # first_name = customer_name.lower().strip().split(' ')[0]
+    # last_name = ''.join((customer_name.lower() + '').split(' ')[1:]).strip()
+
+    # if first_name != None and last_name != None:
+    #     og = OWASPGoogle()
+    #     preferred_email = first_name + '.' + last_name + '@owasp.org'    
+    #     email_list = og.GetPossibleEmailAddresses(preferred_email)
+
+    #     print(email_list)
+    #verify_cleanup('customers_1.csv')
+
+    # AddStripeMembershipToCopper()
+    # copper = OWASPCopper()
+    # pjson = copper.FindPersonByEmail('harold.blankenship@owasp.com')
+    # person = json.loads(pjson)[0]
+    # memend = datetime.fromtimestamp(copper.GetCustomFieldHelper(copper.cp_person_membership_end, person['custom_fields']))
+    # print(memend)
+
     #create_zoom_account('www-projectchapter-example')
     #og = OWASPGoogle()
     #og.AddMemberToGroup('leaders-zoom-one@owasp.org', 'example-leaders@owasp.org', 'MEMBER', 'GROUP')
@@ -1083,6 +1250,8 @@ def main():
     #oz = OWASPZoom()
     #print(oz.GetUser('INl4oy6fQ4aojKSqUSMylA'))
     #gh = OWASPGitHub()
+    #build_leaders_json(gh)
+
     #leaders = gh.GetLeadersForRepo('www-chapter-austin')
     #print(leaders)
     #og = OWASPGoogle()
@@ -1109,7 +1278,8 @@ def main():
     #og = OWASPGoogle()
     #print(og.GetPossibleEmailAddresses('harold.blankenship@owasp.org'))
     #print(og.CreateEmailAddress("kithwood@gmail.com", "harold", "test2"))
-    import_members('gappsec_members_10.14.2020.csv')
+    
+    #import_members('gappsec_members_9.30.2020.csv')
 
     # cp = OWASPCopper()
     # person = cp.FindPersonByEmail('plupiani@bcgeng.com')
@@ -1131,9 +1301,9 @@ def main():
     #with open('meetup_results.txt', 'w+') as outfile:
     #    add_chapter_meetups(gh, mu, outfile)
 
-    #mu = OWASPMeetup()
-    #if mu.Login():
-    #    print(mu.GetGroupEvents('owasp-los-angeles'))
+    # mu = OWASPMeetup()
+    # if mu.Login():
+    #     print(mu.GetGroupEvents('OWASP-London'))
     
     # with open('members_emails.txt', 'r') as f:
     #     lines = f.readlines()
@@ -1191,9 +1361,9 @@ def main():
     #print(person[0]['id'])
     #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
     #print(r)
-    # cp = OWASPCopper()
-    # r = cp.GetCustomFields()
-    # print(r)
+    #cp = OWASPCopper()
+    #r = cp.GetCustomFields()
+    #print(r)
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()

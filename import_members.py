@@ -21,14 +21,14 @@ class MemberData:
         self.company = company
         self.country = country
         self.postal_code = postal_code
-        try:
-            self.start = datetime.strptime(start, "%Y-%m-%d")
-        except:
-            self.start = datetime.strptime(start, "%m/%d/%Y")
-        try:
-            self.end = datetime.strptime(end, "%Y-%m-%d")
-        except:
-            self.end = datetime.strptime(end, "%m/%d/%Y")
+        self.end = None
+        self.start = None
+        
+        copper = OWASPCopper()
+        if start:
+            self.start = copper.GetDatetimeHelper(start)
+        if end:
+            self.end = copper.GetDatetimeHelper(end)
             
         self.type = type
         self.recurring = recurring
@@ -56,10 +56,17 @@ class MemberData:
         return self.stripe_id
 
     def GetSubscriptionData(self):
+
+        mstart = None
+        mend = None
+        if self.start:
+            mstart = datetime.strftime(self.start, '%Y-%m-%d')
+        if self.end:
+            mend = datetime.strftime(self.end, '%Y-%m-%d')
         metadata = {
                     'membership_type':self.type,
-                    'membership_start':datetime.strftime(self.start, '%Y-%m-%d'),
-                    'membership_end':datetime.strftime(self.end, '%Y-%m-%d'),
+                    'membership_start':mstart,
+                    'membership_end':mend,
                     'membership_recurring':self.recurring,
                     'company':self.company,
                     'country':self.country
@@ -93,9 +100,9 @@ def import_members(filename):
                         mend_dt = datetime.strptime(mendstr, '%m/%d/%Y')
                         #possible case: member got complimentary AND has membership already...update end date to be +time
                         if member.end > mend_dt:
-                            add_days = 365
+                            add_days = 364
                             if membership_type == 'two':
-                                add_days = 730
+                                add_days = 729
                             member.end = mend_dt + timedelta(days=add_days)
 
                         member.UpdateMetadata(customer_id,
