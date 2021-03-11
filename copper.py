@@ -144,7 +144,16 @@ class OWASPCopper:
             return r.text
         
         return ''
+    
+    def GetPerson(self, pid):
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
         
+        r = requests.get(url, headers=self.GetHeaders())
+        if r.ok and r.text != '[]':
+            return r.text
+        
+        return ''
+
     def FindPersonByEmail(self, searchtext):
         lstxt = searchtext.lower()
         if len(lstxt) <= 0:
@@ -368,17 +377,19 @@ class OWASPCopper:
         
         return pid
 
-    def UpdatePerson(self, pid, subscription_data = None, stripe_id = None):
+    def UpdatePerson(self, pid, subscription_data = None, stripe_id = None, other_email = None):
         
         data = {
         }
 
-        memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
-        if memstart == None:
-            # so we have no start...must calculate it
-            memstart = self.GetStartdateHelper(subscription_data)
+        
 
         if subscription_data != None:
+            memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+            if memstart == None:
+                # so we have no start...must calculate it
+                memstart = self.GetStartdateHelper(subscription_data)
+                
             fields = []
             if subscription_data['membership_type'] == 'lifetime':
                 fields.append({
@@ -436,6 +447,17 @@ class OWASPCopper:
                         'value': memstart.strftime("%m/%d/%Y")
                     })        
             data['custom_fields'] = fields
+
+        if other_email != None:
+            # first, we have to get all the emails from the person record....
+            contact_json = self.GetPerson(pid)
+            if contact_json != '':
+                pers = json.loads(contact_json)
+                if 'emails' in pers:
+                    data['emails'] = pers['emails']
+                else:
+                    data['emails'] = []
+                data['emails'].append({'email':other_email, 'category':'other'})
 
         url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
         r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
