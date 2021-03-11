@@ -11,6 +11,7 @@ from copper import *
 from meetup import *
 import random
 import time
+import unicodedata
 
 import base64
 import datetime
@@ -1209,12 +1210,22 @@ def verify_cleanup(cfile):
 #     docs = env_api.list_documents(account_id=os.environ['DOCUSIGN_ACCOUNT'], envelope_id=err...we need to list envelopes first?)
 
 def main():
-    gh = OWASPGitHub()
-    projects = gh.GetPublicRepositories(matching="www-project-")
-    for project in projects:
-        if 'card' in project['url']:
-            print(project)
+    
 
+    first_name = 'Cartêgeña'
+    last_name = "d'Oros"
+
+    nfn = unicodedata.normalize('NFD', first_name)
+    nln = unicodedata.normalize('NFD', last_name)
+    nfn = ''.join([c for c in nfn if not unicodedata.combining(c)])
+    nln = ''.join([c for c in nln if not unicodedata.combining(c)])
+    r2 = re.compile(r'[^a-zA-Z0-9]')
+    first_name = r2.sub('',nfn)
+    last_name = r2.sub('', nln)
+
+    print(first_name + '.' + last_name + '@someother.edu')
+
+    
     #get_docusign_docs()
 
     #ipaddrs = ['123.45.234.33:5555']
