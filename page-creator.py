@@ -51,7 +51,7 @@ def build_committee_json():
 
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['level'], reverse=True)
-   
+
     sha = ''
     r = gh.GetFile('owasp.github.io', '_data/committees.json')
     if gh.TestResultCode(r.status_code):
@@ -80,7 +80,7 @@ def build_project_json():
 
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['level'], reverse=True)
-   
+
     sha = ''
     r = gh.GetFile('owasp.github.io', '_data/projects.json')
     if gh.TestResultCode(r.status_code):
@@ -95,7 +95,7 @@ def build_project_json():
         logging.error(f"Failed to update _data/projects.json: {r.text}")
 
 def create_github_repo(github, group, grouptype, msglist):
-    
+
     r = github.CreateRepository(group, grouptype)
     if github.TestResultCode(r.status_code):
         r = github.InitializeRepositoryPages(group, grouptype)
@@ -112,7 +112,7 @@ def create_github_repo(github, group, grouptype, msglist):
 
 def create_all_pages():
     fp = open("projects.txt")
-    
+
     project_type_chapter = 1
     project_type_project = 0
 
@@ -127,11 +127,11 @@ def create_all_pages():
         msglist.append(msg)
         create_github_repo(github, group, project_type_project, msglist)
         group = fp.readline()
-        
+
     fp.close()
 
     fp = open("chapters.txt")
-    
+
     group = fp.readline()
     while group:
         group = group.lower().replace("owasp ", "").replace("chapter","").replace("\n", "")
@@ -140,14 +140,14 @@ def create_all_pages():
         msglist.append(msg)
         create_github_repo(github, group, project_type_chapter, msglist)
         group = fp.readline()
-        
+
     fp.close()
 
     fp = open("creator.log", "w")
     fp.writelines(msglist)
     fp.close()
 
-def update_project_pages():    
+def update_project_pages():
     fp = open("projects.txt")
 
     msglist = []
@@ -170,7 +170,7 @@ def update_project_pages():
             lvl_ndx = content.find("level:")
             eol = content.find("\n", lvl_ndx)
             content = content[:eol + 1] + 'type: ' + gtype + '\n' + content[eol + 1:]
-            
+
             r = github.UpdateFile(github.FormatRepoName(group, 0), 'index.md', content, doc["sha"])
             if github.TestResultCode(r.status_code):
                 print("Update success\n")
@@ -180,10 +180,10 @@ def update_project_pages():
             print(f"Failed to get index.md for {group}: {r.text}")
 
         group = fp.readline()
-        
+
     fp.close()
 
-def update_chapter_pages():    
+def update_chapter_pages():
     fp = open("chapters.txt")
     msglist = []
     msg = ""
@@ -206,7 +206,7 @@ def update_chapter_pages():
 
             front_ndx = content.find("---", content.find("---") + 3) # second instance of ---
             content = content[:front_ndx] + 'region: ' + gtype + '\n\n' + content[front_ndx:]
-            
+
             r = github.UpdateFile(github.FormatRepoName(group, 1), 'index.md', content, doc["sha"])
             if github.TestResultCode(r.status_code):
                 print("Update success\n")
@@ -216,7 +216,7 @@ def update_chapter_pages():
             print(f"Failed to get index.md for {group}: {r.text}")
 
         group = fp.readline()
-        
+
     fp.close()
 
 
@@ -267,7 +267,7 @@ def clean_of_project(content):
 
         if td_count == 2:
             rescontent += line
-            rescontent += '\n'    
+            rescontent += '\n'
     return rescontent
 
 def clean_of_chapter(content):
@@ -372,7 +372,7 @@ def MigrateProjectPages():
                     continue # do not process this file...
                 elif 'an example of a Project or Chapter' not in icontent: # this is not a default page
                     continue
-            
+
         if r.ok:# grab the index.md content and update with new header info
             content = base64.b64decode(doc["content"]).decode()
             fcontent = ''
@@ -385,7 +385,7 @@ def MigrateProjectPages():
                         fcontent += 'auto-migrated: 1\n\n'
                     fcontent += iline
                     fcontent += '\n'
-                    
+
                     if iline == '---':
                         frontmatter += 1
                 else:
@@ -402,7 +402,7 @@ def MigrateProjectPages():
                 fcontent = fcontent.replace(oldtitle, newtitle)
 
             migrated_frontmatter = fcontent.replace('auto-migrated: 1\n\n', '')
-        
+
             fcontent += base_content #The index.md file should be the base_index.md + front-matter
             r = gh.UpdateFile(repo, topath, fcontent, sha)
             if r.ok:
@@ -414,7 +414,7 @@ def MigrateProjectPages():
 
                 content = clean_of_project(content)
                 migrated_content = migrated_frontmatter + content
-                r = gh.UpdateFile(repo, 'migrated_content.md', migrated_content, msha)    
+                r = gh.UpdateFile(repo, 'migrated_content.md', migrated_content, msha)
 
         if r.ok:
             ReplaceProjectInfoLeaderFile(gh, repo)
@@ -440,7 +440,7 @@ def MigrateChapterPages():
         frompath = line.replace(' ', '_')
         frompath = frompath.strip('\n')
         frompath = frompath + '.md'
-       
+
         r = gh.GetFile('owasp-wiki-md', frompath, gh.of_content_fragment)
         if r.ok:
             doc = json.loads(r.text)
@@ -456,7 +456,7 @@ def MigrateChapterPages():
                     continue # do not process this file...
                 elif 'an example of a Project or Chapter' not in icontent: # this is not a default page
                     continue
-            
+
         if r.ok: # grab the index.md content and update with new header info
             content = base64.b64decode(doc["content"]).decode()
             fcontent = ''
@@ -467,15 +467,15 @@ def MigrateChapterPages():
                         iline =  'level: 0'
                     if iline == '---' and frontmatter == 1:
                         fcontent += 'auto-migrated: 1\n\n'
-                    fcontent += iline    
+                    fcontent += iline
                     fcontent += '\n'
-                        
+
                     if iline == '---':
                         frontmatter += 1
-                    
+
                 else:
                     break
-            
+
             base_index = open('base_index.md')
             base_content = ''
             for baseline in base_index.readlines():
@@ -488,7 +488,7 @@ def MigrateChapterPages():
                 fcontent = fcontent.replace(oldtitle, newtitle)
 
             migrated_frontmatter = fcontent.replace('auto-migrated: 1\n\n', '\n')
-        
+
             fcontent += base_content #The index.md file should be the base_index.md + front-matter
             r = gh.UpdateFile(repo, topath, fcontent, sha)
             if r.ok:
@@ -572,18 +572,18 @@ def process_group_leaders(group, leaders, emails):
                     email = 'mailto:' # no email, needs update
                 content += f'* [{leader.strip()}]({email})\n'
                 ndx = ndx + 1
-            
+
             r = gh.UpdateFile(www_group, 'leaders.md', content, sha)
             if r.ok:
                 print('Updated leaders file\n')
             else:
                 print(f'FAILED to update {www_group}\n')
-    
+
 def add_leaders():
     curr_group = ''
     leaders = []
     emails = []
-        
+
     f = open('all_leaders.csv')
     for line in f.readlines():
         line = line.replace('"', '')
@@ -593,7 +593,7 @@ def add_leaders():
         eml_ndx = 1
         tmp_group = keys[0]
 
-        # Portland, Maine        
+        # Portland, Maine
         if keycount > 3:
             tmp_group = f'{tmp_group}, {keys[1]}'
             ldr_ndx = 3
@@ -626,7 +626,7 @@ def replace_all(old, new, text):
         if index_l == -1:
             return text
         text = text[:index_l] + new + text[index_l + len(old):]
-        idx = index_l + len(new) 
+        idx = index_l + len(new)
     return text
 
 # this function checks for pdfs and corrects link for website if media: or still old wiki
@@ -640,7 +640,7 @@ def walk_text(text):
         index_l = text.lower().find(pdf_text, idx) # .pdf found in text
         if index_l == -1:
             return text  # no pdf, we are done
-        
+
         p_ndx = text.lower().rfind('https://www.owasp.org', idx, index_l)
         lentxt = 0
         if p_ndx == -1:
@@ -655,7 +655,7 @@ def walk_text(text):
 
         if text.lower().find(' ', p_ndx, index_l) == -1: # no spaces between the previous owasp or media and the pdf link
             text = text[:p_ndx] + repl_pdf_link + text[p_ndx + lentxt:]
-        
+
         idx = text.lower().find(pdf_text, idx) + len(pdf_text)
 
     return text
@@ -675,7 +675,7 @@ def update_pdf_links():
                 content = content.replace('title = "wikilink"', '')
                 content = content.replace('"wikilink"', '')
                 gh.UpdateFile(repoName, 'migrated_content.md', content, sha)
-            
+
 def replicate_404():
     gh = OWASPGitHub()
     r404 = gh.GetFile('owasp.github.io', '404.html')
@@ -710,7 +710,7 @@ def add_to_leaders(repo, content, all_leaders, stype):
         testline = line.lower()
         if in_leaders and leader_count > 0 and not testline.startswith('*'):
             break
-        
+
         if(testline.startswith('###') and 'leader' not in testline):
             break
         elif testline.startswith('###') and 'leader' in testline:
@@ -727,7 +727,7 @@ def add_to_leaders(repo, content, all_leaders, stype):
                 leader['group'] = repo['title']
                 leader['group-type'] = stype
                 leader['group_url'] = repo['url']
-                
+
                 all_leaders.append(leader)
                 leader_count = leader_count + 1
 
@@ -754,7 +754,7 @@ def build_leaders_json(gh):
         if r.ok:
             doc = json.loads(r.text)
             content = base64.b64decode(doc['content']).decode(encoding='utf-8')
-            
+
 
             add_to_leaders(repo, content, all_leaders, stype)
         else:
@@ -766,7 +766,7 @@ def build_leaders_json(gh):
     if r.ok:
         doc = json.loads(r.text)
         sha = doc['sha']
-    
+
     r = gh.UpdateFile('owasp.github.io', '_data/leaders.json', json.dumps(all_leaders, ensure_ascii=False, indent = 4), sha)
     if r.ok:
         print('Update leaders json succeeded')
@@ -775,7 +775,7 @@ def build_leaders_json(gh):
 
 def CollectMailchimpTags():
     audience = mailchimp.lists.members.all(os.environ["MAILCHIMP_LIST_ID"], get_all=True)
-    
+
     print(len(audience['members']))
 
     for person in audience['members']:
@@ -790,25 +790,25 @@ def build_chapter_json(gh):
     # store in json
     #write json file out to github.owasp.io _data folder
     repos = gh.GetPublicRepositories('www-chapter')
-    
+
     fmt_str = "%a %b %d %H:%M:%S %Y"
     for repo in repos:
         repo['name'] = repo['name'].replace('www-chapter-','').replace('-', ' ')
         repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
         try:
-            dobj = datetime.datetime.strptime(repo['created'], fmt_str)
+            dobj = datetime.strptime(repo['created'], fmt_str)
             repo['created'] = dobj.strftime("%Y-%m-%d")
         except ValueError:
             pass
         try:
-            dobj = datetime.datetime.strptime(repo['updated'], fmt_str)
+            dobj = datetime.strptime(repo['updated'], fmt_str)
             repo['updated'] = dobj.strftime("%Y-%m-%d")
         except ValueError:
             pass
 
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['region'], reverse=True)
-   
+
     sha = ''
     r = gh.GetFile('owasp.github.io', '_data/chapters.json')
     if gh.TestResultCode(r.status_code):
@@ -824,14 +824,14 @@ def build_chapter_json(gh):
 
 def build_inactive_chapters_json(gh):
     repos = gh.GetPublicRepositories('www-chapter', True)
-    
+
     for repo in repos:
         repo['name'] = repo['name'].replace('www-chapter-','').replace('-', ' ')
         repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
 
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['region'], reverse=True)
-   
+
     sha = ''
     r = gh.GetFile('owasp.github.io', '_data/inactive_chapters.json')
     if gh.TestResultCode(r.status_code):
@@ -866,7 +866,7 @@ def GetContactInfo():
                 names.append(f"{fname}, {lname}, {email}\n")
            else:
                 print(f'No record found for {line.strip()}')
-    
+
     with open('contacts_resolved.txt', 'w') as of:
         of.writelines(names)
 
@@ -881,7 +881,7 @@ def GetLeaders(gh, chapter_repo):
             fstr = line.find('[')
             if(line.startswith('###') and 'Leaders' not in line):
                 break
-            
+
             if(line.startswith('*') and fstr > -1 and fstr < 4):
                 name, email = parse_leaderline(line)
                 if email:
@@ -907,7 +907,7 @@ def GetRegion(cp, region):
     elif region == 'North America' or region == 'United States':
         cp_region = cp.cp_project_chapter_region_option_northamerica
 
-    return cp_region 
+    return cp_region
 
 
 def DoCopperCreate():
@@ -920,11 +920,11 @@ def DoCopperCreate():
             continue
         leaders = GetLeaders(gh, committee['name'])
         print(f"Attempting to create project: {committee['title']}")
-        r = cp.CreateProject('Project - ' + committee['title'], 
-                        leaders, 
+        r = cp.CreateProject('Project - ' + committee['title'],
+                        leaders,
                         cp.cp_project_type_option_committee,
                         cp.cp_project_chapter_status_option_active,
-                        '', 
+                        '',
                         '',
                         '',
                         'https://github.com/owasp/' + committee['name'])
@@ -940,21 +940,38 @@ def DoCopperCreate():
 
 
 
-def add_to_events(mue, events, repo):
+def deEmojify(text):
+    # was included but should be covered by enclosed characters u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        
+    # regex_pattern = re.compile(pattern = "["
+    #     u"\U0001F600-\U0001F64F"  # emoticons
+    #     u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+    #     u"\U0001F680-\U0001F6FF"  # transport & map symbols
+    #     u"\U00002702-\U000027B0"  # dingbats
+    #     u"\U000024C2-\U0001F251"  # enclosed characters
+    #                        "]+", flags = re.UNICODE)
+    regex_pattern = re.compile(u"[^\U00000000-\U0000d7ff\U0000e000-\U0000ffff]", flags=re.UNICODE)
+
+    return regex_pattern.sub(r'',text)
+
+def add_to_events(gh, mue, events, repo):
     
     if len(mue) <= 0 or 'errors' in mue:
         return events
-    
-    chapter = repo.replace('www-chapter-','').replace('-', ' ')
-    chapter = " ".join(w.capitalize() for w in chapter.split())
+    group = repo.replace('www-chapter-','')
+    group = group.replace('www-project-','')
+    group = group.replace('www-committee-','')
+    group = group.replace('-', ' ')
+
+    group = " ".join(w.capitalize() for w in group.split())
                 
     for mevent in mue:
         event = {}
-        today = datetime.datetime.today()
-        eventdate = datetime.datetime.strptime(mevent['local_date'], '%Y-%m-%d')
+        today = datetime.today()
+        eventdate = datetime.strptime(mevent['local_date'], '%Y-%m-%d')
         tdelta = eventdate - today
         if tdelta.days >= 0 and tdelta.days < 30:
-            event['chapter'] = chapter
+            event['group'] = group
             event['repo'] = repo
             event['name'] = mevent['name']
             event['date'] = mevent['local_date']
@@ -962,7 +979,7 @@ def add_to_events(mue, events, repo):
             event['link'] = mevent['link']
             event['timezone'] = mevent['group']['timezone']
             if 'description' in mevent:
-                event['description'] = mevent['description']
+                event['description'] = deEmojify(mevent['description'])
             else:
                 event['description'] = ''
                 
@@ -977,8 +994,10 @@ def create_chapter_events(gh, mu):
     for repo in repos:
         if 'meetup-group' in repo and repo['meetup-group']:
             if mu.Login():
-                mue = mu.GetGroupEvents(repo['meetup-group'])
-                add_to_events(mue, events, repo['name'])
+                mstr = mu.GetGroupEvents(repo['meetup-group'])
+                if mstr:
+                    muej = json.loads(mstr)
+                    add_to_events(gh, muej, events, repo['name'])
                 
 
     if len(events) <= 0:
@@ -990,12 +1009,44 @@ def create_chapter_events(gh, mu):
         doc = json.loads(r.text)
         sha = doc['sha']
     
-    contents = json.dumps(events)
+    contents = json.dumps(events, indent=4)
     r = gh.UpdateFile('owasp.github.io', '_data/chapter_events.json', contents, sha)
     if r.ok:
         logging.info('Updated _data/chapter_events.json successfully')
     else:
         logging.error(f"Failed to update _data/chapter_events.json: {r.text}")
+
+def create_community_events(gh, mu):
+    repos = gh.GetPublicRepositories('www-')
+    
+    events = []
+    for repo in repos:
+        if 'www-chapter' not in repo['name'] and 'www-project' not in repo['name'] and 'www-committee' not in repo['name']:
+            continue
+
+        if 'meetup-group' in repo and repo['meetup-group']:
+            if mu.Login():
+                mstr = mu.GetGroupEvents(repo['meetup-group'])
+                if mstr:
+                    muej = json.loads(mstr)
+                    add_to_events(gh, muej, events, repo['name'])
+                
+
+    if len(events) <= 0:
+        return
+        
+    r = gh.GetFile('www-community', '_data/community_events.json')
+    sha = ''
+    if r.ok:
+        doc = json.loads(r.text)
+        sha = doc['sha']
+    
+    contents = json.dumps(events, indent=4)
+    r = gh.UpdateFile('www-community', '_data/community_events.json', contents, sha)
+    if r.ok:
+        logging.info('Updated _data/community_events.json successfully')
+    else:
+        logging.error(f"Failed to update _data/community_events.json: {r.text}")
 
 def add_chapter_meetups(gh, mu, outfile):
 
@@ -1084,10 +1135,10 @@ def create_zoom_account(chapter_url):
         result = og.FindGroup(leadersemail)
         if result == None:
             result = og.CreateGroup(leadersemail)
-        if not 'Failed' in result:    
+        if not 'Failed' in result:
             for leader in leaders:
                 og.AddMemberToGroup(leadersemail, leader['email'])
-        
+
         if not 'Failed' in result:
             zoom_accounts = ['leaders-zoom-one@owasp.org', 'leaders-zoom-two@owasp.org', 'leaders-zoom-three@owasp.org', 'leaders-zoom-four@owasp.org']
             retrieve_member_counts(zoom_accounts)
@@ -1097,7 +1148,7 @@ def create_zoom_account(chapter_url):
                 og.AddMemberToGroup(zoom_accounts[0], leadersemail)
 
             zoom_account = zoom_accounts[0][0:zoom_accounts[0].find('@')]
-            
+
             send_onetime_secret(leaders, os.environ[zoom_account.replace('-', '_') +'_pass'])
 
     return None
@@ -1109,12 +1160,12 @@ def AddStripeMembershipToCopper():
     for customer in customers.auto_paging_iter():
         if not customer.name or customer.name.strip() == '':
             UpdateCustomerName(stripe, customer)
-        
+
         metadata = customer.get('metadata', None)
         count = count + 1
         if metadata and metadata.get('membership_type', None):
-            AddToMemberOpportunityIfNotExist(customer, metadata)        
-            
+            AddToMemberOpportunityIfNotExist(customer, metadata)
+
         print(f"Checking {count}", end="\r", flush=True)
 
 def UpdateCustomerName(stripe, cust):
@@ -1131,7 +1182,7 @@ def UpdateCustomerName(stripe, cust):
 
     if not name or name == '':
         for sub in subscriptions:
-            metadata = sub.get('metadata', None)    
+            metadata = sub.get('metadata', None)
             if metadata:
                 name = metadata.get('name','').strip()
                 if name != '':
@@ -1149,8 +1200,8 @@ def AddToMemberOpportunityIfNotExist(customer, metadata):
     mtype = metadata.get('membership_type', None)
     mrecurr = metadata.get('membership_recurring', None)
 
-    member = MemberData(customer.get('name'), customer.email.lower(), "", "", "", mstart, mend, mtype, mrecurr)  
-    sub = member.GetSubscriptionData()     
+    member = MemberData(customer.get('name'), customer.email.lower(), "", "", "", mstart, mend, mtype, mrecurr)
+    sub = member.GetSubscriptionData()
     if not copper.FindMemberOpportunity(customer.email, sub):
         copper.CreateOWASPMembership(customer.id, customer.name, customer.email, sub)
         print(f"Added {customer.email} with membership type {mtype}, starting on {mstart} and ending on {mend}")
@@ -1209,21 +1260,59 @@ def verify_cleanup(cfile):
 #     envelopes = env_api.list_status_changes()
 #     docs = env_api.list_documents(account_id=os.environ['DOCUSIGN_ACCOUNT'], envelope_id=err...we need to list envelopes first?)
 
+def update_customer_metadata_null():
+    customers = stripe.Customer.list(email="mohamed.mahdy4@gmail.com", api_key=os.environ['STRIPE_SECRET'])
+    for customer in customers.auto_paging_iter():
+        metadata = customer.get('metadata', None)
+        if metadata['membership_type'] == 'lifetime' and 'membership_end' in metadata and metadata['membership_end'] != None:
+            metadata.membership_end = None
+            customer.metadata['membership_end'] = None
+            customer.save()
+
+
+    print("done")
+
+def update_www_repos_main():
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-chapter')
+    for repo in repos:
+        repoName = repo['name']
+        r = gh.GetFile(repoName, '_config.yml')
+        if r.ok and 'www-' in repoName:
+            doc = json.loads(r.text)
+            sha = doc['sha']
+            content = base64.b64decode(doc['content']).decode()
+            if 'www--site-theme' in content and not '@main' in content:
+                content = content.replace('www--site-theme', 'www--site-theme@main')
+                r = gh.UpdateFile(repoName, '_config.yml', content, sha)
+                if not r.ok:
+                    print(f'Failed to update {repoName}: {r.text}\n')
+                else:
+                    print(f'Updated repo {repoName}\n')
+
 def main():
-    
+    #update_customer_metadata_null()
 
-    first_name = 'Cartêgeña'
-    last_name = "d'Oros"
+    #update_www_repos_main()
 
-    nfn = unicodedata.normalize('NFD', first_name)
-    nln = unicodedata.normalize('NFD', last_name)
-    nfn = ''.join([c for c in nfn if not unicodedata.combining(c)])
-    nln = ''.join([c for c in nln if not unicodedata.combining(c)])
-    r2 = re.compile(r'[^a-zA-Z0-9]')
-    first_name = r2.sub('',nfn)
-    last_name = r2.sub('', nln)
+    # trying to figure out what Top 10 Card Game not in repos...
+    #gh = OWASPGitHub()
+    #projects = gh.GetPublicRepositories(matching="www-project-")
+    #for project in projects:
+    #    if 'card' in project['url']:
+    #        print(project)
+    # first_name = 'Cartêgeña'
+    # last_name = "d'Oros"
 
-    print(first_name + '.' + last_name + '@someother.edu')
+    # nfn = unicodedata.normalize('NFD', first_name)
+    # nln = unicodedata.normalize('NFD', last_name)
+    # nfn = ''.join([c for c in nfn if not unicodedata.combining(c)])
+    # nln = ''.join([c for c in nln if not unicodedata.combining(c)])
+    # r2 = re.compile(r'[^a-zA-Z0-9]')
+    # first_name = r2.sub('',nfn)
+    # last_name = r2.sub('', nln)
+
+    # print(first_name + '.' + last_name + '@someother.edu')
 
     
     #get_docusign_docs()
@@ -1231,14 +1320,14 @@ def main():
     #ipaddrs = ['123.45.234.33:5555']
     #ipaddr = ipaddrs[0][:ipaddrs[0].find(':')]
     #print(ipaddr)
-    
+
     # customer_name = "Yang Ju Ryul"
     # first_name = customer_name.lower().strip().split(' ')[0]
     # last_name = ''.join((customer_name.lower() + '').split(' ')[1:]).strip()
 
     # if first_name != None and last_name != None:
     #     og = OWASPGoogle()
-    #     preferred_email = first_name + '.' + last_name + '@owasp.org'    
+    #     preferred_email = first_name + '.' + last_name + '@owasp.org'
     #     email_list = og.GetPossibleEmailAddresses(preferred_email)
 
     #     print(email_list)
@@ -1276,7 +1365,7 @@ def main():
     #customer = { 'name':'John von Hosenshertz III'}
     #first_name = customer['name'].lower().strip().split(' ')[0]
     #last_name = ''.join((customer['name'].lower() + '').split(' ')[1:]).strip()
-    
+
     #print(first_name + '.' + last_name + '@owasp.org'
     # response_str = "harold@owasp.org"
     # response = {
@@ -1289,7 +1378,7 @@ def main():
     #og = OWASPGoogle()
     #print(og.GetPossibleEmailAddresses('harold.blankenship@owasp.org'))
     #print(og.CreateEmailAddress("kithwood@gmail.com", "harold", "test2"))
-    
+
     #import_members('gappsec_members_9.30.2020.csv')
 
     # cp = OWASPCopper()
@@ -1302,11 +1391,13 @@ def main():
     #     print(person)
     #     print('\n----------------------------------\n')
     # print(len(persons))
-    #add_users_to_repos()
-    #gh = OWASPGitHub()
-    #mu = OWASPMeetup()
-    #create_chapter_events(gh, mu)
 
+    #add_users_to_repos()
+
+    gh = OWASPGitHub()
+    mu = OWASPMeetup()
+    #create_chapter_events(gh, mu)
+    create_community_events(gh, mu)
     #chapterreport.do_chapter_report()
     #rebuild_milestones.build_staff_project_json()
     #with open('meetup_results.txt', 'w+') as outfile:
@@ -1315,7 +1406,7 @@ def main():
     # mu = OWASPMeetup()
     # if mu.Login():
     #     print(mu.GetGroupEvents('OWASP-London'))
-    
+
     # with open('members_emails.txt', 'r') as f:
     #     lines = f.readlines()
     #     for emailaddr in lines:
@@ -1324,7 +1415,7 @@ def main():
     #         if not customers.is_empty:
     #             customer = customers.data[0]
     #             metadata = customer.get('metadata', {})
-                
+
     #             membership_type = metadata.get('membership_type', None)
     #             if membership_type and membership_type != 'lifetime':
     #                 mendstr = metadata.get('membership_end', None)
@@ -1343,7 +1434,7 @@ def main():
     #                 print(f'not a member with email {emailaddr.strip()}')
     #         else:
     #             print(f'not a member with email {emailaddr.strip()}')
-                
+
 
     # test = time.time()
     # key = Fernet.generate_key()
@@ -1358,7 +1449,7 @@ def main():
     # #print(token)
     # result = decrypt("sdfh88sfhe90sd8700sd9f8", token)
     # print(time.time() - test)
-    
+
 
    # DoCopperCreate()
    #cp = OWASPCopper()
@@ -1382,10 +1473,10 @@ def main():
     # print(ans)
     #gh = OWASPGitHub()
     #repos = gh.GetPublicRepositories('www-chapter', inactive=True)
-   
+
     #print(repos)
     #build_inactive_chapters_json(gh)
-    
+
     #build_chapter_json(gh)
 
     #CollectMailchimpTags()
@@ -1424,7 +1515,7 @@ def main():
     #repos = gh.GetPublicRepositories('www-project')
     # repos.sort(key=lambda x: x['name'])
     # repos.sort(key=lambda x: x['level'], reverse=True)
-   
+
     # for repo in repos:
     #     repo['name'] = repo['name'].replace('www-project-','').replace('-', ' ')
     #     repo['name'] = " ".join(w.capitalize() for w in repo['name'].split())
@@ -1441,5 +1532,5 @@ def main():
     #     print('Success!')
     # else:
     #     print(f"Failed: {r.text}")
-    
+
 main()
