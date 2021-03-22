@@ -1290,7 +1290,43 @@ def update_www_repos_main():
                 else:
                     print(f'Updated repo {repoName}\n')
 
+def do_stripe_verify_recurring():
+    users = []
+    stripe.api_key = os.environ['STRIPE_SECRET']
+    customers = stripe.Customer.list(limit=500)
+    
+    start_check = datetime(2019, 1, 1, 0, 0, 0, 0)
+    end_check = datetime(2021, 4, 30, 23, 59, 59)
+
+    count = 0
+    cp = OWASPCopper()
+    for customer in customers.auto_paging_iter():
+        metadata = customer.get('metadata', None)
+        if metadata and metadata.get('membership_type', None):
+            endstr = metadata.get('membership_end', None)
+            if endstr:
+                mem_end_date = cp.GetDatetimeHelper(endstr) 
+                if mem_end_date >= start_check and mem_end_date <= end_check:
+                    subscriptions = stripe.Subscription.list(customer = customer.id)
+                    for sub in subscriptions:
+                        if sub.status == 'canceled' or sub.cancel_at_period_end:
+                            recurring = metadata.get('membership_recurring', None)
+                            if recurring == 'no':
+                                searchres = mailchimp.search_members.get(query=f"email={customer.get('email')}", list_id=os.environ['MAILCHIMP_LIST_ID'])
+                                members = searchres['full_search']['members']
+                                for member in members:
+                                    membership_recurring = member['merge_fields']['MEMRECUR']
+                                    if membership_recurring == 'yes' and recurring == 'no': # we found a problem
+                                        users.append(customer.get('email'))
+
+
+
+    print(f"done: {users}")
+
 def main():
+    # TODO: Verify that events (chapter/community) updated in azure funcs
+
+    do_stripe_verify_recurring()
     #update_customer_metadata_null()
 
     #update_www_repos_main()
@@ -1394,10 +1430,10 @@ def main():
 
     #add_users_to_repos()
 
-    gh = OWASPGitHub()
-    mu = OWASPMeetup()
+    #gh = OWASPGitHub()
+    #mu = OWASPMeetup()
     #create_chapter_events(gh, mu)
-    create_community_events(gh, mu)
+    #create_community_events(gh, mu)
     #chapterreport.do_chapter_report()
     #rebuild_milestones.build_staff_project_json()
     #with open('meetup_results.txt', 'w+') as outfile:
