@@ -1323,10 +1323,59 @@ def do_stripe_verify_recurring():
 
     print(f"done: {users}")
 
+def get_custom_field(fields, id):
+    for field in fields:
+        if field['custom_field_definition_id'] == id:
+            return field['value']
+
+    return None
+
+def get_membership_data():
+    member_data = { 'month':0, 'one':0, 'two':0, 'lifetime':0, 'student':0, 'complimentary':0, 'honorary':0 }
+    cp = OWASPCopper()
+    done = False
+    page = 1
+    today = datetime.today()
+    while(not done):
+        retopp = cp.ListOpportunities(page_number=page, status_ids=[1], pipeline_ids=[cp.cp_opportunity_pipeline_id_membership]) # all Won Opportunities for Individual Membership
+        if retopp != '':
+            opportunities = json.loads(retopp)
+            if len(opportunities) < 200:
+                done = True
+            for opp in opportunities:
+                end_date = cp.GetDatetimeHelper(get_custom_field(opp['custom_fields'], cp.cp_opportunity_end_date))
+                if end_date and end_date < today:
+                    continue
+                close_date = cp.GetDatetimeHelper(opp['close_date'])
+                if close_date == None:
+                    close_date = datetime.fromtimestamp(opp['date_created'])
+                if close_date.month == today.month:
+                    member_data['month'] = member_data['month'] + 1
+
+                if 'student' in opp['name'].lower():
+                    member_data['student'] = member_data['student'] + 1
+                elif 'complimentary' in opp['name'].lower():
+                    member_data['complimentary'] = member_data['complimentary'] + 1
+                elif 'honorary' in opp['name'].lower():
+                    member_data['honorary'] = member_data['honorary'] + 1
+                elif 'one' in opp['name'].lower():
+                    member_data['one'] = member_data['one'] + 1
+                elif 'two' in opp['name'].lower():
+                    member_data['two'] = member_data['two'] + 1
+                elif 'lifetime' in opp['name'].lower():
+                    member_data['lifetime'] = member_data['lifetime'] + 1
+
+            page = page + 1
+    total_members = member_data['student'] + member_data['complimentary'] + member_data['honorary'] + member_data['one'] + member_data['two'] + member_data['lifetime']
+
+    msgtext = f"member total:{total_members}\tthis month:{member_data['month']}\n\tone:{member_data['one']}\ttwo:{member_data['two']}\n\tstudent:{member_data['student']}\tcomplimentary:{member_data['complimentary']}\n\tlifetime:{member_data['lifetime']}\thonorary:{member_data['honorary']}"
+    print(msgtext)
+
 def main():
+    get_membership_data()
     # TODO: Verify that events (chapter/community) updated in azure funcs
 
-    do_stripe_verify_recurring()
+    #do_stripe_verify_recurring()
     #update_customer_metadata_null()
 
     #update_www_repos_main()

@@ -77,7 +77,9 @@ class OWASPCopper:
     cp_opportunity_autorenew_checkbox = 419575
     cp_opportunity_invoice_no = 407333  # can be the URL to the stripe payment for membership
     cp_opportunity_stripe_transaction_id = 440903
-    
+    # pipeline ids
+    cp_opportunity_pipeline_id_membership = 721986
+
     def GetHeaders(self):
         headers = {
             'X-PW-AccessToken':os.environ['COPPER_API_KEY'],
@@ -133,11 +135,17 @@ class OWASPCopper:
         
         return ''
         
-    def ListOpportunities(self):
+    def ListOpportunities(self, page_number = 1, pipeline_ids=None, status_ids=[0, 1, 2, 3]):
         data = {
             'page_size': 200,
-            'sort_by': 'name'
+            'sort_by': 'name',
+            'page_number': page_number,
+            'status_ids': status_ids,
         }
+
+        if pipeline_ids:
+            data['pipeline_ids'] = pipeline_ids
+
         url = f'{self.cp_base_url}{self.cp_opp_fragment}{self.cp_search_fragment}'
         r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
         if r.ok:
