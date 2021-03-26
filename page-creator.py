@@ -37,6 +37,7 @@ from docusign_esign import EnvelopesApi
 from docusign_esign import ApiClient
 
 import random
+import emoji
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -941,18 +942,24 @@ def DoCopperCreate():
 
 
 def deEmojify(text):
-    # was included but should be covered by enclosed characters u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-        
-    # regex_pattern = re.compile(pattern = "["
-    #     u"\U0001F600-\U0001F64F"  # emoticons
-    #     u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-    #     u"\U0001F680-\U0001F6FF"  # transport & map symbols
-    #     u"\U00002702-\U000027B0"  # dingbats
-    #     u"\U000024C2-\U0001F251"  # enclosed characters
-    #                        "]+", flags = re.UNICODE)
-    regex_pattern = re.compile(u"[^\U00000000-\U0000d7ff\U0000e000-\U0000ffff]", flags=re.UNICODE)
+    EMOJI_PATTERN = re.compile(
+        "(["
+        "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+        "\U0001F300-\U0001F5FF"  # symbols & pictographs
+        "\U0001F600-\U0001F64F"  # emoticons
+        "\U0001F680-\U0001F6FF"  # transport & map symbols
+        "\U0001F700-\U0001F77F"  # alchemical symbols
+        "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
+        "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
+        "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
+        "\U0001FA00-\U0001FA6F"  # Chess Symbols
+        "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
+        "\U00002702-\U000027B0"  # Dingbats
+        "\U000024C2-\U0001F251" 
+        "])"
+    )
 
-    return regex_pattern.sub(r'',text)
+    return EMOJI_PATTERN.sub(u'', text)
 
 def add_to_events(gh, mue, events, repo):
     
@@ -1331,21 +1338,30 @@ def get_custom_field(fields, id):
     return None
 
 def get_membership_data():
+    start = time.time()
+
     member_data = { 'month':0, 'one':0, 'two':0, 'lifetime':0, 'student':0, 'complimentary':0, 'honorary':0 }
     cp = OWASPCopper()
     done = False
     page = 1
     today = datetime.today()
+
     while(not done):
         retopp = cp.ListOpportunities(page_number=page, status_ids=[1], pipeline_ids=[cp.cp_opportunity_pipeline_id_membership]) # all Won Opportunities for Individual Membership
         if retopp != '':
             opportunities = json.loads(retopp)
             if len(opportunities) < 200:
                 done = True
+
             for opp in opportunities:
-                end_date = cp.GetDatetimeHelper(get_custom_field(opp['custom_fields'], cp.cp_opportunity_end_date))
-                if end_date and end_date < today:
+                end_val = get_custom_field(opp['custom_fields'], cp.cp_opportunity_end_date)
+                if end_val != None:
+                    end_date = datetime.fromtimestamp(end_val)
+                    if end_date and end_date < today:
+                        continue
+                if end_val == None and 'lifetime' not in opp['name'].lower():
                     continue
+                
                 close_date = cp.GetDatetimeHelper(opp['close_date'])
                 if close_date == None:
                     close_date = datetime.fromtimestamp(opp['date_created'])
@@ -1365,14 +1381,29 @@ def get_membership_data():
                 elif 'lifetime' in opp['name'].lower():
                     member_data['lifetime'] = member_data['lifetime'] + 1
 
+                #memrecurr = get_custom_field(opp['custom_fields'], cp.cp_opportunity_autorenew_checkbox)
+                #primary_contact_id = opp['primary_contact_id']
+                #person_json = cp.GetPerson(primary_contact_id)
+                
+                #customer_email = 'none'
+                #customer_name = 'none'
+                #if person_json != '':
+                #    person = json.loads(person_json)
+                #    if 'emails' in person:
+                #        customer_email = person['emails']
+                #    customer_name = person['name']
             page = page + 1
     total_members = member_data['student'] + member_data['complimentary'] + member_data['honorary'] + member_data['one'] + member_data['two'] + member_data['lifetime']
 
     msgtext = f"member total:{total_members}\tthis month:{member_data['month']}\n\tone:{member_data['one']}\ttwo:{member_data['two']}\n\tstudent:{member_data['student']}\tcomplimentary:{member_data['complimentary']}\n\tlifetime:{member_data['lifetime']}\thonorary:{member_data['honorary']}"
-    print(msgtext)
+    end = time.time()
+    print(msgtext + f"\n Time Taken: {end - start}")
 
 def main():
-    get_membership_data()
+    str = "\ud83e\uddb8\ud83c\udffc\u200d\u2640\ufe0f\ud83e\uddb8\ud83e\uddb8\ud83c\udffd\u200d\u2642\ufe0f Return of The Security Champions! Ep. 2 [en,jitsi,yt,ch]"
+    print(deEmojify(str))
+
+    #get_membership_data()
     # TODO: Verify that events (chapter/community) updated in azure funcs
 
     #do_stripe_verify_recurring()
@@ -1479,9 +1510,7 @@ def main():
 
     #add_users_to_repos()
 
-    #gh = OWASPGitHub()
-    #mu = OWASPMeetup()
-    #create_chapter_events(gh, mu)
+    #create_chapter_events(OWASPGitHub(), OWASPMeetup())
     #create_community_events(gh, mu)
     #chapterreport.do_chapter_report()
     #rebuild_milestones.build_staff_project_json()

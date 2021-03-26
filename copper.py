@@ -80,14 +80,16 @@ class OWASPCopper:
     # pipeline ids
     cp_opportunity_pipeline_id_membership = 721986
 
-    def GetHeaders(self):
-        headers = {
+    default_headers = {
             'X-PW-AccessToken':os.environ['COPPER_API_KEY'],
             'X-PW-Application':'developer_api',
             'X-PW-UserEmail':os.environ['COPPER_USER'],
             'Content-Type':'application/json'
-        }
-        return headers
+    }
+
+    def GetHeaders(self):
+        
+        return self.default_headers
     
     def GetCustomFieldHelper(self, custom_field_id, fields):
         for field in fields:
@@ -156,7 +158,7 @@ class OWASPCopper:
     def GetPerson(self, pid):
         url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
         
-        r = requests.get(url, headers=self.GetHeaders())
+        r = requests.get(url, headers=self.default_headers)
         if r.ok and r.text != '[]':
             return r.text
         
