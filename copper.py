@@ -499,6 +499,35 @@ class OWASPCopper:
         
         return ''
     
+    def FindOpportunities(self, email):
+        opps = []
+        contact_json = self.FindPersonByEmail(email)
+        pid = None
+        if contact_json != '' and contact_json !='[]':
+            jsonp = json.loads(contact_json)
+            if len(jsonp) > 0:
+                pid = jsonp[0]['id']
+
+        if pid != None:
+            url = f'{self.cp_base_url}{self.cp_related_fragment}'
+            url = url.replace(':entity_id', str(pid)).replace(':entity', 'people')
+            url = url + '/opportunities'
+            r = requests.get(url, headers=self.GetHeaders())
+            if r.ok and r.text:
+                opps = json.loads(r.text)
+
+        return opps
+
+    def GetOpportunity(self, oid):
+        opp = None
+        
+        url = f'{self.cp_base_url}{self.cp_opp_fragment}{oid}'
+        r = requests.get(url, headers=self.GetHeaders())
+        if r.ok and r.text:
+            opp = json.loads(r.text)
+
+        return opp
+
     def FindMemberOpportunity(self, email, subscription_data):
         opp = None
         contact_json = self.FindPersonByEmail(email)
