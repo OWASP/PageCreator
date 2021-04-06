@@ -10,16 +10,36 @@ from httplib2 import http
 import json
 from datetime import datetime
 import random
+from copper import OWASPCopper
 
 class OWASPGoogle:
     def __init__(self):
-        scopes = ['https://www.googleapis.com/auth/admin.directory.user', 'https://www.googleapis.com/auth/admin.directory.group', 'https://www.googleapis.com/auth/apps.groups.settings']
+        scopes = ['https://www.googleapis.com/auth/admin.directory.user', 'https://www.googleapis.com/auth/admin.directory.group', 'https://www.googleapis.com/auth/apps.groups.settings', 'https://www.googleapis.com/auth/admin.directory.userschema']
         client_secret = json.loads(os.environ['GOOGLE_CREDENTIALS'], strict=False)
         creds = service_account.Credentials.from_service_account_info(client_secret, scopes=scopes)
         creds = creds.with_subject(os.environ['GOOGLE_ADMIN'])
 
         self.admin = build('admin', 'directory_v1', credentials=creds, cache_discovery=False)
         self.groupSettings = build('groupssettings', 'v1', credentials=creds, cache_discovery=False)
+
+    def UpdateUserData(self, email_address, membership_data):
+        cp = OWASPCopper()
+        user = {
+            "customSchemas": {
+                "OWASP_Membership":{
+                    "membership_type": membership_data['membership_type'],
+                    "membership_start": membership_data['membership_start'],
+                    "membership_end": membership_data['membership_end'],
+                    "membership_recurring": membership_data['membership_recurring']
+                }
+            }
+        }
+
+        result = f"User {email_address} updated."
+        results = self.admin.users().update(userKey=email_address, body = user).execute()
+        if 'primaryEmail' not in results:
+            result = f"Failed to update User {email_address}."
+        return result
 
     def CreateSpecificEmailAddress(self, altemail, first, last, email_address, fail_if_exists=True):
         
@@ -66,7 +86,7 @@ class OWASPGoogle:
             },
             "primaryEmail": first + '.' + last + '@owasp.org',
             "recoveryEmail": altemail,
-            "password": "@123OWASP123@"
+            "password": "@123OWASP123@",
         }
         
         if fail_if_exists:

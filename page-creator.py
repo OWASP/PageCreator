@@ -12,7 +12,7 @@ from meetup import *
 import random
 import time
 import unicodedata
-
+import hashlib
 import base64
 import datetime
 import re
@@ -1399,9 +1399,98 @@ def get_membership_data():
     end = time.time()
     print(msgtext + f"\n Time Taken: {end - start}")
 
+def verify_membership():
+    twofile = open('twoyears.txt', 'r')
+    lines = twofile.readlines()
+    total = len(lines)
+    count = 0
+    cp = OWASPCopper()
+    for member in lines:
+        opps = cp.FindOpportunities(member)
+        found = False
+        for opp in opps:
+            topp = cp.GetOpportunity(opp['id'])
+            if topp != None and 'Two' in topp['name']: # Good enough for now
+                found = True
+                break
+        
+        if not found:
+            print(f"Member not found in Copper: {member}")
+            count = count + 1
+        
+    print(f"Total Checked: {total}\nNot Found:{count}")
+
+def do_fix_twoyear():
+    # need to loop through Stripe customers
+    # if membership_type = two and membership_recurring=yes
+    # look up customer in mailchimp
+    # update mailchimp to membership_recurring=no
+    # update stripe to membership_recurring=no
+    stripe.api_key = os.environ['STRIPE_SECRET']
+    customers = stripe.Customer.list(limit=100)
+    count = 0
+    for customer in customers.auto_paging_iter():
+        metadata = customer.get('metadata', None)
+        if metadata and metadata.get('membership_type', None) == 'two' and metadata.get('membership_recurring', 'no') == 'yes':
+            list_id = os.environ['MAILCHIMP_LIST_ID']
+            email = customer.get('email').lower()
+            stripe.Customer.modify(customer.id, metadata={'membership_recurring':'no'})
+            searchres = mailchimp.search_members.get(query=f"{email}", list_id=list_id)
+            members = searchres['exact_matches']['members']
+            merge_fields = {}
+            merge_fields['MEMRECUR'] = 'no'
+            member_data = {
+                "email_address": email,
+                "status_if_new": "subscribed",
+                "merge_fields": merge_fields
+            }
+
+            for member in members:
+                subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
+                list_member = mailchimp.lists.members.create_or_update(os.environ['MAILCHIMP_LIST_ID'], subscriber_hash, member_data) # status_if_new is required and this may be more info than expected/needed
+                count = count + 1
+                print(f"Updating {count}", end="\r", flush=True)
+
+def do_check_for_members(): # using Christian's 'not found' list, let's see if we can find a member...
+
+    f = open('owasp-email-not-found.txt', 'r')
+    emails = f.readlines()
+    cp = OWASPCopper()
+    today = datetime.today()
+    for email in emails:
+        opps = cp.FindOpportunities(email)
+        for opp in opps:
+            topp = cp.GetOpportunity(opp['id'])
+            if topp != None and 'Membership' in topp['name']: # Good enough for now
+                end = cp.GetCustomFieldHelper(cp.cp_opportunity_end_date, topp['custom_fields'])
+                if end != None and datetime.fromtimestamp(end) >= today:
+                    print(f'Found membership for {email}')
+                elif end == None:
+                    print(f"Check membership for {email}.  Found opportunity: {topp['name']}")
+
+    print('Done')    
+        
 def main():
-    str = "\ud83e\uddb8\ud83c\udffc\u200d\u2640\ufe0f\ud83e\uddb8\ud83e\uddb8\ud83c\udffd\u200d\u2642\ufe0f Return of The Security Champions! Ep. 2 [en,jitsi,yt,ch]"
-    print(deEmojify(str))
+
+    do_check_for_members()
+
+    #do_fix_twoyear()
+    #cp = OWASPCopper()
+
+    #membership_data = {
+    #    'membership_type':'one',
+    #    'membership_start': '2018-01-19',
+    #    'membership_end': '2023-03-03',
+    #    'membership_recurring': 'no'
+    #}
+
+    #gu = OWASPGoogle()
+    #gu.UpdateUserData('harold.blankenship@owasp.org', membership_data)
+    #gu.CreateEmailAddress('harold.blankenship@owasp.org', 'harold', 'blankenship')
+    #str = "\ud83e\uddb8\ud83c\udffc\u200d\u2640\ufe0f\ud83e\uddb8\ud83e\uddb8\ud83c\udffd\u200d\u2642\ufe0f Return of The Security Champions! Ep. 2 [en,jitsi,yt,ch]"
+    #print(deEmojify(str))
+
+    #verify_membership()
 
     #get_membership_data()
     # TODO: Verify that events (chapter/community) updated in azure funcs
