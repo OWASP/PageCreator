@@ -4,6 +4,7 @@ import base64
 from pathlib import Path
 import os
 import datetime
+import urllib
 
 class OWASPGitHub:
     apitoken = os.environ["GH_APITOKEN"]
@@ -16,7 +17,8 @@ class OWASPGitHub:
     pages_fragment = "repos/OWASP/:repo/pages"
     team_addrepo_fragment = "teams/:team_id/repos/OWASP/:repo"
     team_getbyname_fragment = "orgs/OWASP/teams/:team_slug"
-    
+    search_repos_fragment = "search/repositories"
+
     of_org_fragment = "orgs/OWASP-Foundation/repos"
     of_content_fragment = "repos/OWASP-Foundation/:repo/contents/:path"
     of_pages_fragment = "repos/OWASP-Foundation/:repo/pages"
@@ -212,7 +214,15 @@ class OWASPGitHub:
         headers = {"Authorization": "token " + self.apitoken, "X-PrettyPrint":"1",
             "Accept":"application/vnd.github.switcheroo-preview+json, application/vnd.github.mister-fantastic-preview+json, application/json, application/vnd.github.baptiste-preview+json"
         }
-        
+
+        qurl = "org:owasp is:public"
+        if matching:
+            qurl = qurl + f" {matching} in:name"
+        qdata = {
+            'q': qurl,
+            'per_page':100
+        }
+
         done = False
         pageno = 1
         pageend = -1
@@ -220,26 +230,28 @@ class OWASPGitHub:
         results = []
         while not done:
             pagestr = "?page=%d" % pageno
-            url = self.gh_endpoint + self.org_fragment + pagestr
+            #url = self.gh_endpoint + self.org_fragment + pagestr
+            url = self.gh_endpoint + self.search_repos_fragment + pagestr + "&" + urllib.parse.urlencode(qdata)
             r = requests.get(url=url, headers = headers)
             
             if self.TestResultCode(r.status_code):
                 repos = json.loads(r.text)
                 if pageend == -1:
                     endlink = r.links['last']['url']
-                    pageend = int(endlink[endlink.find('?page=') + 6:])
+                    pageend = int(endlink[endlink.find('?page=') + 6: endlink.find('&')])
                 
                 if pageno == pageend:
                     done = True
                 
                 pageno = pageno + 1
                 
-                for repo in repos:
+                for repo in repos['items']:
                     repoName = repo['name'].lower()
                     istemplate = repo['is_template']
                     haspages = repo['has_pages'] #false for Iran...maybe was never activated?
-                        
-                    if not matching or matching in repoName:
+                    
+                    # even if matching, we still only really want project, chapter, or committee repos here....
+                    if not matching or (matching in repoName and ('-project-' in repoName or '-chapter-' in repoName or '-committee-' in repoName)):
                         if not istemplate:
                             pages = None
                             if haspages:
@@ -258,7 +270,7 @@ class OWASPGitHub:
                         udate = datetime.datetime.strptime(repo['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
                         addrepo['created'] = cdate.strftime('%c')
                         addrepo['updated'] = udate.strftime('%c')
-                        r = self.GetFile(repoName, 'index.md')
+                        r = self.GetFile(repoName, 'index.md')  
                         if self.TestResultCode(r.status_code):
                             doc = json.loads(r.text)
                             content = base64.b64decode(doc['content']).decode()
@@ -310,7 +322,10 @@ class OWASPGitHub:
                                 if len(mu.strip()) > 0:
                                     addrepo['meetup-group'] = mu.strip()
                             results.append(addrepo)
-
+            else:
+                done = True
+                # Failed to get the next page for some reason....
+                logging.info("Failed to get next page.")
 
 
         return results

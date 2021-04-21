@@ -101,6 +101,13 @@ class OWASPGoogle:
 
         return result
 
+    def GetUser(self, cid):
+        results = self.admin.users().list(domain='owasp.org', query=f'email={cid}').execute()
+        if 'users' in results and len(results['users']) > 0:
+            return results['users'][0]
+        
+        return None
+
     def GetPossibleEmailAddresses(self, preferred_email):
         emails = []
         results = self.admin.users().list(domain='owasp.org', query=f"email={preferred_email}").execute()
