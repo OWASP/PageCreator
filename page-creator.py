@@ -1461,7 +1461,7 @@ def do_check_for_members(): # using Christian's 'not found' list, let's see if w
         opps = cp.FindOpportunities(email)
         for opp in opps:
             topp = cp.GetOpportunity(opp['id'])
-            if topp != None and 'Membership' in topp['name']: # Good enough for now
+            if topp != None and 'Membership' in topp['name'] and topp['pipeline_stage_id'] == 3381438: # Good enough for now
                 end = cp.GetCustomFieldHelper(cp.cp_opportunity_end_date, topp['custom_fields'])
                 if end != None and datetime.fromtimestamp(end) >= today:
                     print(f'Found membership for {email}')
