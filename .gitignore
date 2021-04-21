@@ -5,3 +5,4 @@ env
 api_responses.txt
 all_copper_custom_properties.txt
 .DS_Store
+*.txt
