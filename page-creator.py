@@ -33,11 +33,11 @@ from repo_users import add_users_to_repos
 from import_members import import_members, MemberData
 from googleapi import OWASPGoogle
 from owaspjira import OWASPJira
-from docusign_esign import EnvelopesApi
-from docusign_esign import ApiClient
+#from docusign_esign import EnvelopesApi
+#from docusign_esign import ApiClient
 
 import random
-import emoji
+#import emoji
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -1472,10 +1472,15 @@ def do_check_for_members(): # using Christian's 'not found' list, let's see if w
         
 def main():
 
-    do_check_for_members()
+    #do_check_for_members()
 
     #do_fix_twoyear()
-    #cp = OWASPCopper()
+    cp = OWASPCopper()
+    opp = json.loads(cp.FindMemberOpportunity('harold.blankenship@owasp.org'))
+    print(f"Opportunity: {opp}")
+    pers = cp.FindPersonByEmail('harold.blankenship@owasp.org')
+    if len(pers) > 0:
+        print(f"Person: {json.loads(pers)[0]}")
 
     #membership_data = {
     #    'membership_type':'one',
