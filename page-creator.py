@@ -33,11 +33,11 @@ from repo_users import add_users_to_repos
 from import_members import import_members, MemberData
 from googleapi import OWASPGoogle
 from owaspjira import OWASPJira
-from docusign_esign import EnvelopesApi
-from docusign_esign import ApiClient
+#from docusign_esign import EnvelopesApi
+#from docusign_esign import ApiClient
 
 import random
-import emoji
+#import emoji
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
 
@@ -1491,7 +1491,7 @@ def get_member_info():
 
 def main():
 
-    #do_check_for_members()
+    do_check_for_members()
 
     #build_chapter_json(OWASPGitHub())
     #do_fix_twoyear()
