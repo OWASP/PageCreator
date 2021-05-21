@@ -88,7 +88,7 @@ def build_project_json():
         doc = json.loads(r.text)
         sha = doc['sha']
 
-    contents = json.dumps(repos)
+    contents = json.dumps(repos, indent=4)
     r = gh.UpdateFile('owasp.github.io', '_data/projects.json', contents, sha)
     if gh.TestResultCode(r.status_code):
         logging.info('Updated _data/projects.json successfully')
@@ -1491,9 +1491,9 @@ def get_member_info():
 
 def main():
 
-    do_check_for_members()
+   #do_check_for_members()
 
-    #build_chapter_json(OWASPGitHub())
+    build_project_json()
     #do_fix_twoyear()
     #get_member_info()
     #membership_data = {
