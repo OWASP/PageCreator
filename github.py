@@ -270,6 +270,11 @@ class OWASPGitHub:
                         udate = datetime.datetime.strptime(repo['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
                         addrepo['created'] = cdate.strftime('%c')
                         addrepo['updated'] = udate.strftime('%c')
+                        if pages:
+                            addrepo['build'] = pages['status']
+                        else:
+                            addrepo['build'] = 'no pages'
+
                         r = self.GetFile(repoName, 'index.md')  
                         if self.TestResultCode(r.status_code):
                             doc = json.loads(r.text)

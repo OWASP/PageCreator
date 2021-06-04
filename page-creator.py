@@ -816,7 +816,7 @@ def build_chapter_json(gh):
         doc = json.loads(r.text)
         sha = doc['sha']
 
-    contents = json.dumps(repos)
+    contents = json.dumps(repos, indent=4)
     r = gh.UpdateFile('owasp.github.io', '_data/chapters.json', contents, sha)
     if gh.TestResultCode(r.status_code):
         print('Updated _data/chapters.json successfully')
@@ -1554,7 +1554,25 @@ def update_stripe_with_owasp_email():
             except Exception as e:
                 print(f"Exception: {e}")
                 pass
-           
+
+def get_member_info():
+    email = 'andrew.vanderstock@owasp.com'
+    cp = OWASPCopper()
+    opp = None
+    person = None
+
+    opptxt = cp.FindMemberOpportunity(email)
+    if opptxt != None:
+        opp = json.loads(opptxt)
+    
+    pertext = cp.FindPersonByEmail(email)
+    if pertext != '':
+        people = json.loads(pertext)
+        if len(people) > 0:
+            person = people[0]
+
+    if opp and person:
+        print(cp.GetCustomFieldHelper(cp.cp_person_stripe_number, person['custom_fields']))           
 
 def main():
 

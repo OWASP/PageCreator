@@ -579,7 +579,7 @@ class OWASPCopper:
 
         return opp
 
-    def FindMemberOpportunity(self, email, subscription_data=None ):
+    def FindMemberOpportunity(self, email, subscription_data = None):
         opp = None
         contact_json = self.FindPersonByEmail(email)
         pid = None
