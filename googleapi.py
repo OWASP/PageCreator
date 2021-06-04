@@ -11,9 +11,14 @@ import json
 from datetime import datetime
 import random
 from copper import OWASPCopper
+import time
+import random 
+from requests.exceptions import HTTPError
+import socket
 
 class OWASPGoogle:
     def __init__(self):
+        #socket.setdefaulttimeout(10)
         scopes = ['https://www.googleapis.com/auth/admin.directory.user', 'https://www.googleapis.com/auth/admin.directory.group', 'https://www.googleapis.com/auth/apps.groups.settings', 'https://www.googleapis.com/auth/admin.directory.userschema']
         client_secret = json.loads(os.environ['GOOGLE_CREDENTIALS'], strict=False)
         creds = service_account.Credentials.from_service_account_info(client_secret, scopes=scopes)
@@ -21,7 +26,7 @@ class OWASPGoogle:
 
         self.admin = build('admin', 'directory_v1', credentials=creds, cache_discovery=False)
         self.groupSettings = build('groupssettings', 'v1', credentials=creds, cache_discovery=False)
-
+        
     def UpdateUserData(self, email_address, membership_data):
         cp = OWASPCopper()
         user = {
@@ -101,11 +106,23 @@ class OWASPGoogle:
 
         return result
 
-    def GetUser(self, cid):
-        results = self.admin.users().list(domain='owasp.org', query=f'email={cid}').execute()
-        if 'users' in results and len(results['users']) > 0:
-            return results['users'][0]
-        
+    def GetUser(self, cid, showDeleted=False):
+        done = False
+        while not done:
+            try:
+                results = self.admin.users().list(domain='owasp.org', query=f'email:{cid}', showDeleted=showDeleted).execute()
+                if 'users' in results and len(results['users']) > 0:
+                    return results['users'][0]
+                else:
+                    done = True
+            except HTTPError as e:
+                print('error waiting 8 to 10 seconds....')
+                done = (e.status != 503)
+                if not done:
+                    dropoff = 4 + random.randint(1, 4)
+                    time.sleep(drop_off * 1.25)
+                pass
+
         return None
 
     def GetPossibleEmailAddresses(self, preferred_email):

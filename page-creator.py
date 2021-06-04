@@ -1268,14 +1268,33 @@ def verify_cleanup(cfile):
 #     docs = env_api.list_documents(account_id=os.environ['DOCUSIGN_ACCOUNT'], envelope_id=err...we need to list envelopes first?)
 
 def update_customer_metadata_null():
-    customers = stripe.Customer.list(email="mohamed.mahdy4@gmail.com", api_key=os.environ['STRIPE_SECRET'])
-    for customer in customers.auto_paging_iter():
-        metadata = customer.get('metadata', None)
-        if metadata['membership_type'] == 'lifetime' and 'membership_end' in metadata and metadata['membership_end'] != None:
-            metadata.membership_end = None
-            customer.metadata['membership_end'] = None
-            customer.save()
+    # customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
+    # for customer in customers.auto_paging_iter():
+    #     metadata = customer.get('metadata', None)
+    #     metadata.membership_end = None
+    #     customer.metadata['membership_end'] = None
+    #     customer.save()
 
+    # The above works to save Stripe data...what about Mailchimp...
+
+    list_id = os.environ['MAILCHIMP_LIST_ID']
+    email = customer.get('email').lower()
+    stripe.Customer.modify(customer.id, metadata={'membership_recurring':'no'})
+    searchres = mailchimp.search_members.get(query=f"{email}", list_id=list_id)
+    members = searchres['exact_matches']['members']
+    merge_fields = {}
+    merge_fields['MEMRECUR'] = 'no'
+    member_data = {
+        "email_address": email,
+        "status_if_new": "subscribed",
+        "merge_fields": merge_fields
+    }
+
+    for member in members:
+        subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
+        list_member = mailchimp.lists.members.create_or_update(os.environ['MAILCHIMP_LIST_ID'], subscriber_hash, member_data) # status_if_new is required and this may be more info than expected/needed
+        count = count + 1
+        print(f"Updating {count}", end="\r", flush=True)
 
     print("done")
 
@@ -1451,24 +1470,90 @@ def do_fix_twoyear():
                 count = count + 1
                 print(f"Updating {count}", end="\r", flush=True)
 
-def do_check_for_members(): # using Christian's 'not found' list, let's see if we can find a member...
 
-    f = open('owasp-email-not-found.txt', 'r')
+def do_check_for_members(): # using Christian's 'not found' list, let's see if we can find a member...
+    f = open('email-not-in-copper.txt', 'r')
     emails = f.readlines()
     cp = OWASPCopper()
     today = datetime.today()
-    for email in emails:
-        opps = cp.FindOpportunities(email)
-        for opp in opps:
-            topp = cp.GetOpportunity(opp['id'])
-            if topp != None and 'Membership' in topp['name'] and topp['pipeline_stage_id'] == 3381438: # Good enough for now
-                end = cp.GetCustomFieldHelper(cp.cp_opportunity_end_date, topp['custom_fields'])
-                if end != None and datetime.fromtimestamp(end) >= today:
-                    print(f'Found membership for {email}')
-                elif end == None:
-                    print(f"Check membership for {email}.  Found opportunity: {topp['name']}")
+    gh = OWASPGitHub()
+    leaders = []
+    r = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    if r.ok:
+        doc = json.loads(r.text)
+        content = base64.b64decode(doc['content']).decode()
+        ldrobjs = json.loads(content)
+        for leader in ldrobjs:
+            leaders.append(leader['email'].lower())
 
+    for email in emails:
+        email = email.strip().lower()
+        opp = cp.FindMemberOpportunity(email) # this will return an unexpired member opportunity if one exists....            
+        if opp != None: # Good enough for now
+            print(f'Found membership for {email}')
+        
+        if email in leaders:
+            print(f'Found email in leaders list for {email}')
+                
     print('Done')    
+
+def add_email_to_stripe_if_not_exist(customer, owasp_email):
+    try:
+        metadata = customer.get('metadata', None)
+        if metadata and not 'owasp_email' in metadata:
+            print(f"{owasp_email} will be added to customer {customer['name']}")
+            stripe.Customer.modify(customer.id, metadata={'owasp_email': owasp_email})
+            print("Email added.")
+        else:
+            print('metadata is null or else owasp_email already exists')
+    except:
+        print('failure add_email_to_stripe_if_not_exist')
+        pass
+
+def find_owasp_email(member, cp):
+    result = ''
+    if member:
+        for email in member['emails']:
+            if '@owasp.org' in email['email']:
+                return email
+    
+        og = OWASPGoogle()
+        for email in member['emails']:
+            user = og.GetUser(email['email'])
+            if user:
+                for email in user['emails']:
+                    if '@owasp.org' in email['address']: # the user has a Google user but the email was not in Copper Member
+                        cp.UpdatePerson(member['id'], other_email=email['address'])
+                        return { 'email': email['address'] }
+
+    return result
+
+def update_stripe_with_owasp_email():
+    # go through members...<-- what to use for this?  Copper?  Stripe?  Stripe is too slow, use Copper
+    # get copper user
+    # if copper user has an @owasp.org email address, update stripe owasp_email with address
+    cp = OWASPCopper()
+    members = cp.ListMembers(member_type='one') #lifetime, complimentary, student, two, one
+    for member in members:
+        stripe_customer = cp.GetCustomFieldHelper(cp.cp_person_stripe_number, member['custom_fields'])
+        if stripe_customer != None:
+            stripe.api_key = os.environ['STRIPE_SECRET']
+            customer_id = stripe_customer
+            if 'https' in stripe_customer:
+                customer_id = stripe_customer[stripe_customer.rfind('/') + 1:]
+            try:
+                customer = stripe.Customer.retrieve(customer_id)
+                metadata = customer.get('metadata', None)
+                if metadata and not 'owasp_email' in metadata: # change to only query for email from Google if we do not know it....
+                    print(f"No owasp email found in Stripe for {customer['name']}")
+                    owasp_email = find_owasp_email(member, cp)
+                    if owasp_email:
+                        add_email_to_stripe_if_not_exist(customer, owasp_email['email'])
+                    else:
+                        print('No owasp email found')
+            except Exception as e:
+                print(f"Exception: {e}")
+                pass
 
 def get_member_info():
     email = 'andrew.vanderstock@owasp.com'
@@ -1487,15 +1572,30 @@ def get_member_info():
             person = people[0]
 
     if opp and person:
-        print(cp.GetCustomFieldHelper(cp.cp_person_stripe_number, person['custom_fields']))
+        print(cp.GetCustomFieldHelper(cp.cp_person_stripe_number, person['custom_fields']))           
 
 def main():
 
-   #do_check_for_members()
+    update_customer_metadata_null()
 
-    build_project_json()
+    #do_check_for_members()
+
+    #cop = OWASPCopper()
+    #print(cop.FindPersonByEmail("nicole@geekymoms.com"))
+    #update_stripe_with_owasp_email()
+
+    # og = OWASPGoogle()
+    # user = og.GetUser('aaron.blankenbeker@gmail.com')
+    # print(user)
+
     #do_fix_twoyear()
-    #get_member_info()
+    # cp = OWASPCopper()
+    # opp = json.loads(cp.FindMemberOpportunity('harold.blankenship@owasp.org'))
+    # print(f"Opportunity: {opp}")
+    # pers = cp.FindPersonByEmail('harold.blankenship@owasp.org')
+    # if len(pers) > 0:
+    #     print(f"Person: {json.loads(pers)[0]}")
+
     #membership_data = {
     #    'membership_type':'one',
     #    'membership_start': '2018-01-19',
@@ -1512,11 +1612,9 @@ def main():
     #verify_membership()
 
     #get_membership_data()
-    # TODO: Verify that events (chapter/community) updated in azure funcs
 
     #do_stripe_verify_recurring()
-    #update_customer_metadata_null()
-
+    
     #update_www_repos_main()
 
     # trying to figure out what Top 10 Card Game not in repos...
