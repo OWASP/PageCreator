@@ -190,10 +190,11 @@ class OWASPCopper:
         
         return ''
 
-    def ListMembers(self):
+    def ListMembers(self, member_type='all'):
         members = []
+        # This function returns all members in the CRM of the requested type, regardless of status (current/expired/etc)
 
-        #Get One year
+        # One year
         data = {
             'page_size': 200,
             'sort_by': 'name',
@@ -203,80 +204,130 @@ class OWASPCopper:
             }]
         }
 
-        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
-        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
-        if 'X-PW-TOTAL' in r.headers:
-            count = r.headers['X-PW-TOTAL']
-        if not r.ok:
-            return members
-        
-        members = json.loads(r.text)
+        if member_type == 'all' or 'one' in member_type:
+            page = 1
+            done = False
+            while not done:
+                data['page_number'] = page
+                url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+                r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+                if 'X-PW-TOTAL' in r.headers:
+                    count = r.headers['X-PW-TOTAL']
+                if r.ok:
+                    add_members = json.loads(r.text)
+                    if len(add_members) > 0:
+                        members = members + add_members
+                    done = len(add_members) < 200
+                    page = page + 1
+                    
+
+        # Two Year
         data = {
             'page_size': 200,
             'sort_by': 'name',
             'custom_fields': [{
                 'custom_field_definition_id': self.cp_person_membership,
                 'value': self.cp_person_membership_option_twoyear,
-            }]
+            }],
+            'page_number': 1
         }
 
-        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
-        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
-        if 'X-PW-TOTAL' in r.headers:
-            count = r.headers['X-PW-TOTAL']
-        if not r.ok:
-            return members
-        members.append(json.loads(r.text))
+        if member_type == 'all' or 'two' in member_type:
+            page = 1
+            done = False
+            while not done:
+                data['page_number'] = page
+                url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+                r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+                if 'X-PW-TOTAL' in r.headers:
+                    count = r.headers['X-PW-TOTAL']
+                if r.ok:
+                    add_members = json.loads(r.text)
+                    if len(add_members) > 0:
+                        members = members + add_members
+                    done = len(add_members) < 200
+                    page = page + 1
+        
+        # Student (should be one year...these do not exist)
         data = {
             'page_size': 200,
             'sort_by': 'name',
             'custom_fields': [{
                 'custom_field_definition_id': self.cp_person_membership,
                 'value': self.cp_person_membership_option_student,
-            }]
+            }],
+            'page_number': 1
         }
 
-        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
-        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
-        if 'X-PW-TOTAL' in r.headers:
-            count = r.headers['X-PW-TOTAL']
-        if not r.ok:
-            return members
-        members.append(json.loads(r.text))
+        if member_type == 'all' or 'student' in member_type:
+            page = 1
+            done = False
+            while not done:
+                data['page_number'] = page
+                url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+                r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+                if 'X-PW-TOTAL' in r.headers:
+                    count = r.headers['X-PW-TOTAL']
+                if r.ok:
+                    add_members = json.loads(r.text)
+                    if len(add_members) > 0:
+                        members = members + add_members
+                    done = len(add_members) < 200
+                    page = page + 1
 
+        # Lifetime
         data = {
             'page_size': 200,
             'sort_by': 'name',
             'custom_fields': [{
                 'custom_field_definition_id': self.cp_person_membership,
                 'value': self.cp_person_membership_option_lifetime,
-            }]
+            }],
+            'page_number': 1
         }
 
-        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
-        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
-        if 'X-PW-TOTAL' in r.headers:
-            count = r.headers['X-PW-TOTAL']
-        if not r.ok:
-            return members
-        members.append(json.loads(r.text))
+        if member_type == 'all' or 'lifetime' in member_type:
+            page = 1
+            done = False
+            while not done:
+                data['page_number'] = page
+                url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+                r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+                if 'X-PW-TOTAL' in r.headers:
+                    count = r.headers['X-PW-TOTAL']
+                if r.ok:
+                    add_members = json.loads(r.text)
+                    if len(add_members) > 0:
+                        members = members + add_members
+                    done = len(add_members) < 200
+                    page = page + 1
 
+        # Complimentary
         data = {
             'page_size': 200,
             'sort_by': 'name',
             'custom_fields': [{
                 'custom_field_definition_id': self.cp_person_membership,
                 'value': self.cp_person_membership_option_complimentary,
-            }]
+            }],
+            'page_number': 1
         }
 
-        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
-        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
-        if 'X-PW-TOTAL' in r.headers:
-            count = r.headers['X-PW-TOTAL']
-        if not r.ok:
-            return members
-        members.append(json.loads(r.text))
+        if member_type == 'all' or 'complimentary' in member_type:
+            page = 1
+            done = False
+            while not done:
+                data['page_number'] = page
+                url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+                r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+                if 'X-PW-TOTAL' in r.headers:
+                    count = r.headers['X-PW-TOTAL']
+                if r.ok:
+                    add_members = json.loads(r.text)
+                    if len(add_members) > 0:
+                        members = members + add_members
+                    done = len(add_members) < 200
+                    page = page + 1
 
         return members
 
@@ -548,9 +599,9 @@ class OWASPCopper:
                     r = requests.get(url, headers=self.GetHeaders())
                     if r.ok:
                         opportunity = json.loads(r.text)
-                        if 'Lifetime' in opportunity['name'] or (opportunity['name'] == 'Membership' and opportunity['monetary_value'] == 500):
+                        if 'Lifetime' in opportunity['name'] or ('Membership' in opportunity['name'] and opportunity['monetary_value'] == 500):
                             return r.text
-                        elif 'Membership' not in opportunity['name']:
+                        elif 'Membership' not in opportunity['name'] or 'Corporate' in opportunity['name']:
                             continue
                         
                         for cfield in opportunity['custom_fields']:
@@ -559,11 +610,13 @@ class OWASPCopper:
                                 if subscription_data == None: # no data, just find first non-expired membership, if any
                                     today = datetime.today()
                                     tdstamp = int(today.timestamp())
-                                    if mend > tdstamp:
+                                    if mend and mend > tdstamp:
                                         return r.text
+                                    elif mend == None:
+                                        print(f'Membership end is None for {email}')
                                 elif subscription_data['membership_end']:
                                     tend = int(datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").timestamp())
-                                    if mend == tend:
+                                    if mend and mend == tend:
                                         return r.text
 
         return opp
