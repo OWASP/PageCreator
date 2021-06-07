@@ -3,8 +3,11 @@ import json
 import base64
 from pathlib import Path
 import os
+import logging
 import datetime
 import urllib
+
+# Major update 6.7.2021 to match, upgrade Azure version of similar file
 
 class OWASPGitHub:
     apitoken = os.environ["GH_APITOKEN"]
@@ -28,11 +31,22 @@ class OWASPGitHub:
     user_fragment = "users/:username"
     collaborator_fragment = "repos/OWASP/:repo/collaborators/:username"
 
+    PERM_TYPE_PULL = "pull"
+    PERM_TYPE_PUSH = "push"
+    PERM_TYPE_ADMIN = "admin"
+    PERM_TYPE_MAINTAIN = "maintain"
+    PERM_TYPE_TRIAGE = "triage"
+
+    GH_REPOTYPE_PROJECT = 0
+    GH_REPOTYPE_CHAPTER = 1
+    GH_REPOTYPE_COMMITTEE = 2
+    GH_REPOTYPE_EVENT = 3
+
     def CreateRepository(self, repoName, rtype):
         repoName = self.FormatRepoName(repoName, rtype)
         description = "OWASP Foundation Web Respository"
         data = { 
-              "repo" : repoName, 
+            "name": repoName, 
             "description": description
         }
 
@@ -41,28 +55,65 @@ class OWASPGitHub:
 
         return r
 
-    def InitializeRepositoryPages(self, repoName, rtype):
+    def InitializeRepositoryPages(self, repoName, rtype, basedir = "", region="", proj_type = "", group_site = ""):
+        if basedir and not basedir.endswith('/'):
+            basedir = basedir + '/'
+
         groupName = repoName
         repoName = self.FormatRepoName(repoName, rtype)
         url = self.gh_endpoint + self.content_fragment
         url = url.replace(":repo", repoName)
         # change to use files.json....
-        sfile = open("files.json")
+        sfile = open(basedir + "files.json")
         filestosend = json.load(sfile)
         for f in filestosend["files"]:
-            r = self.SendFile( url, f['path'], "[GROUPNAME]", groupName)
+            fpath = basedir + f['path']
+            
+            r = self.SendFile( url, fpath, ["[GROUPNAME]", "[:REGION]", "[:PROJTYPE]", "[:GROUPSITE_URL]"], [groupName, region, proj_type, group_site])
             if not self.TestResultCode(r.status_code):
                 break
 
         return r
 
-    def SendFile(self, url, filename, replacetag = None, replacestr = None):
-        pathname = filename.replace("docs/", "")
+    def GetFile(self, repo, filepath):
+        url = self.gh_endpoint + self.content_fragment
+        url = url.replace(":repo", repo)
+        url = url.replace(":path", filepath)
+        
+        #bytestosend = base64.b64encode(filecstr.encode())   
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.get(url = url, headers=headers)
+        return r
+
+    def GetOFFile(self, repo, filepath):
+        return self.GetFile(repo, filepath, self.of_content_fragment)
+
+    def DeleteFile(self, repo, filepath):
+        url = self.gh_endpoint + self.content_fragment
+        url = url.replace(":repo", repo)
+        url = url.replace(":path", filepath)
+
+        committer = {
+            "name" : "OWASP Foundation",
+            "email" : "owasp.foundation@owasp.org"
+        }
+        headers = {"Authorization": "token " + self.apitoken}
+        r = requests.delete(url = url, headers=headers)
+        return r
+
+    def SendFile(self, url, filename, replacetags = None, replacestrs = None):
+        pathname = filename[filename.find("docs/") + 5:]
+        if pathname == "gitignore":
+            pathname = "." + pathname
+            
         url = url.replace(":path", pathname)
         sfile = open(filename)
         filecstr = sfile.read()
-        if replacetag and replacestr:
-            filecstr = filecstr.replace(replacetag, replacestr)
+    
+        if replacetags and replacestrs and len(replacetags) > 0 and len(replacetags) == len(replacestrs):
+            for idx, replacetag in enumerate(replacetags):
+                replacestr = replacestrs[idx] # this is liquid, not python...
+                filecstr = filecstr.replace(replacetag, replacestr)
 
         bytestosend = base64.b64encode(filecstr.encode())   
         committer = {
@@ -86,7 +137,7 @@ class OWASPGitHub:
         url = self.gh_endpoint + self.pages_fragment
         url = url.replace(":repo", repoName)
 
-        data = { "source" : { "branch" : "master" }}
+        data = { "source" : { "branch" : "main" }}
         r = requests.post(url = url, headers=headers, data=json.dumps(data))
 
         return r
@@ -98,15 +149,16 @@ class OWASPGitHub:
         return False
 
     def FormatRepoName(self, repoName, rtype):
-        repoName = repoName.lower()
-        repoName = repoName.replace('owasp', '')
-        repoName = repoName.replace('project', '')
-        repoName = repoName.strip()
+        
         resName = ""
-        if rtype == 0:
+        if rtype == self.GH_REPOTYPE_PROJECT:
             resName = "www-project-"
-        else:
+        elif rtype == self.GH_REPOTYPE_CHAPTER:
             resName = "www-chapter-"
+        elif rtype == self.GH_REPOTYPE_EVENT:
+            resName = "www-revent-"
+        else:
+            resName = "www-committee-"
     
         return resName + repoName.replace(" ", "-").lower()
 
@@ -139,38 +191,14 @@ class OWASPGitHub:
                 for repo in repos:
                     repoName = repo["name"].lower()
                     istemplate = repo["is_template"]
-                    print("checking " + repoName + "\n")
                     if not istemplate and (repoName.startswith("www-project") or repoName.startswith("www-chapter") or repoName.startswith("www--") or repoName.startswith("owasp.github")):
-                        print("rebuilding " + repoName + "\n")
+                        logging.info("rebuilding " + repoName + "\n")
                         url = self.gh_endpoint + self.pages_fragment
                         url = url.replace(":repo",repoName)
                         r = requests.post(url = url + "/builds", headers=headers)
+                        if not self.TestResultCode(r.status_code):
+                            logging.warn(repoName + " not rebuilt: " + r.text)
 
-        return r
-
-    def GetFile(self, repo, filepath, content_fragment = "repos/OWASP/:repo/contents/:path"):
-        url = self.gh_endpoint + content_fragment
-        url = url.replace(":repo", repo)
-        url = url.replace(":path", filepath)
-        
-        headers = {"Authorization": "token " + self.apitoken}
-        r = requests.get(url = url, headers=headers)
-        return r
-
-    def GetOFFile(self, repo, filepath):
-        return self.GetFile(repo, filepath, self.of_content_fragment)
-
-    def DeleteFile(self, repo, filepath):
-        url = self.gh_endpoint + self.content_fragment
-        url = url.replace(":repo", repo)
-        url = url.replace(":path", filepath)
-
-        committer = {
-            "name" : "OWASP Foundation",
-            "email" : "owasp.foundation@owasp.org"
-        }
-        headers = {"Authorization": "token " + self.apitoken}
-        r = requests.delete(url = url, headers=headers)
         return r
 
     def UpdateFile(self, repo, filepath, contents, sha):
@@ -200,12 +228,12 @@ class OWASPGitHub:
         result = ''
         url = self.gh_endpoint + self.pages_fragment
         url = url.replace(':repo', repoName)
+
         r = requests.get(url=url, headers = headers)
         if r.ok:
             result = json.loads(r.text)
         
         return result
-        
 
     def GetInactiveRepositories(self, matching=""):
        return self.GetPublicRepositories(matching=matching, inactive=True)
@@ -214,7 +242,7 @@ class OWASPGitHub:
         headers = {"Authorization": "token " + self.apitoken, "X-PrettyPrint":"1",
             "Accept":"application/vnd.github.switcheroo-preview+json, application/vnd.github.mister-fantastic-preview+json, application/json, application/vnd.github.baptiste-preview+json"
         }
-
+        
         qurl = "org:owasp is:public"
         if matching:
             qurl = qurl + f" {matching} in:name"
@@ -230,7 +258,7 @@ class OWASPGitHub:
         results = []
         while not done:
             pagestr = "?page=%d" % pageno
-            #url = self.gh_endpoint + self.org_fragment + pagestr
+            #url = self.gh_endpoint + self.org_fragment + pagestr + '&per_page=100'
             url = self.gh_endpoint + self.search_repos_fragment + pagestr + "&" + urllib.parse.urlencode(qdata)
             r = requests.get(url=url, headers = headers)
             
@@ -238,7 +266,7 @@ class OWASPGitHub:
                 repos = json.loads(r.text)
                 if pageend == -1:
                     endlink = r.links['last']['url']
-                    pageend = int(endlink[endlink.find('?page=') + 6: endlink.find('&')])
+                    pageend = int(endlink[endlink.find('?page=') + 6:endlink.find('&')])
                 
                 if pageno == pageend:
                     done = True
@@ -249,9 +277,9 @@ class OWASPGitHub:
                     repoName = repo['name'].lower()
                     istemplate = repo['is_template']
                     haspages = repo['has_pages'] #false for Iran...maybe was never activated?
-                    
-                    # even if matching, we still only really want project, chapter, or committee repos here....
-                    if not matching or (matching in repoName and ('-project-' in repoName or '-chapter-' in repoName or '-committee-' in repoName)):
+                        
+                    # even if matching, we still only really want project, chapter, event, or committee repos here....
+                    if not matching or (matching in repoName and ('-project-' in repoName or '-chapter-' in repoName or '-committee-' in repoName or '-revent-' in repoName)):
                         if not istemplate:
                             pages = None
                             if haspages:
@@ -262,6 +290,7 @@ class OWASPGitHub:
                                 continue
                         else:
                             continue
+                        
                         addrepo = {}
                         addrepo['name'] = repoName
                         addrepo['url'] = f"https://owasp.org/{ repoName }/"
@@ -275,7 +304,7 @@ class OWASPGitHub:
                         else:
                             addrepo['build'] = 'no pages'
 
-                        r = self.GetFile(repoName, 'index.md')  
+                        r = self.GetFile(repoName, 'index.md')
                         if self.TestResultCode(r.status_code):
                             doc = json.loads(r.text)
                             content = base64.b64decode(doc['content']).decode()
@@ -318,23 +347,44 @@ class OWASPGitHub:
                             else:
                                 gtype = 'More info soon...' 
                             addrepo['pitch'] = gtype.strip()
+                            
                             ndx = content.find('meetup-group:')
                             if ndx > -1:
                                 ndx += 13
-                                eol = content.find('\n', ndx)
-                            
+                                eol=content.find('\n', ndx)
                                 mu = content[ndx:eol]
                                 if len(mu.strip()) > 0:
                                     addrepo['meetup-group'] = mu.strip()
+
+                            if 'meetup-group' not in addrepo:        
+                                ndx = content.find('meetup.com/')
+                                if ndx > -1:
+                                    ndx += 11
+                                    eolfs = content.find('/', ndx)
+                                    
+                                    if eolfs - ndx <= 6:
+                                        ndx = eolfs
+                                        eolfs = content.find('/', ndx + 1)
+
+                                    eolp = content.find(')', ndx + 1)
+                                    eols = content.find(' ', ndx + 1)
+                                    eol = eolfs
+                                    if eolp > -1 and eolp < eol:
+                                        eol = eolp
+                                    if eols > -1 and eols < eol:
+                                        eol = eols
+
+                                    mu = content[ndx:eol]
+                                    if '/' in mu:
+                                        mu = mu.replace('/','')
+                                    if len(mu.strip()) > 0:
+                                        addrepo['meetup-group'] = mu.strip()
+
                             results.append(addrepo)
-            else:
-                done = True
-                # Failed to get the next page for some reason....
-                logging.info("Failed to get next page.")
+
 
 
         return results
-
 
     def GetFilesMatching(self, repo, path, matching=''):
         rfiles = []
@@ -354,8 +404,8 @@ class OWASPGitHub:
     
         return r, rfiles
 
-    def AddRepoToTeam(self, team, repo):
-        getTeamUrl = self.team_getbyname_fragment.replace(':team_slug', team)
+    def GetTeamId(self, team_name):
+        getTeamUrl = self.team_getbyname_fragment.replace(':team_slug', team_name)
         headers = {"Authorization": "token " + self.apitoken,
             "Accept":"application/vnd.github.hellcat-preview+json, application/vnd.github.inertia-preview+json"
         }
@@ -366,20 +416,81 @@ class OWASPGitHub:
             jsonTeam = json.loads(r.text)
             team_id = jsonTeam['id']
 
-        if team_id:
-            repofrag = self.team_addrepo_fragment.replace(':team_id', str(team_id))
-            repofrag = repofrag.replace(':repo', repo)
-            headers = {"Authorization": "token " + self.apitoken,
-                "Accept":"application/vnd.github.hellcat-preview+json, application/vnd.github.inertia-preview+json"
-            }
+        return team_id
 
-            url = self.gh_endpoint + repofrag
+    def AddRepoToTeam(self, team_id, repo):
+        repofrag = self.team_addrepo_fragment.replace(':team_id', team_id)
+        repofrag = repofrag.replace(':repo', repo)
+        headers = {"Authorization": "token " + self.apitoken,
+            "Accept":"application/vnd.github.hellcat-preview+json, application/vnd.github.inertia-preview+json"
+        }
 
+        url = self.gh_endpoint + repofrag
+
+        data = { "permission" : self.PERM_TYPE_ADMIN}
+        jsonData = json.dumps(data)
+        r = requests.put(url = url, headers=headers, data=jsonData)
+
+        return r
+
+    def AddPersonToRepo(self, person, repo):
+        collabfrag = self.collab_fragment.replace(':repo', repo)
+        collabfrag = collabfrag.replace(':username', person)
+        headers = {"Authorization": "token " + self.apitoken,
+            "Accept":"application/vnd.github.hellcat-preview+json, application/vnd.github.inertia-preview+json"
+        }
+
+        url = self.gh_endpoint + collabfrag
+
+        # first do a get to see if they are already a user
+        r = requests.get(url = url, headers=headers)
+        if not r.ok:
             data = { "permission" : "admin"}
             jsonData = json.dumps(data)
             r = requests.put(url = url, headers=headers, data=jsonData)
 
         return r
+
+    def ParseLeaderline(self, line):
+        ename = line.find(']')
+        name = line[line.find('[') + 1:line.find(']')]
+        email = line[line.find('(', ename) + 1:line.find(')', ename)]
+        return name, email
+    
+    def GetLeadersForRepo(self, repo):
+        repo_leaders = []
+        r = self.GetFile(repo, 'leaders.md')
+        if r.ok:
+            doc = json.loads(r.text)
+            content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+            lines = content.split('\n')
+            in_leaders = False
+            for line in lines:
+                testline = line.lower()
+                if in_leaders and '###' in testline:
+                    in_leaders = False
+                    break
+                
+                if in_leaders and not testline.startswith('*'):
+                    continue
+                
+                if(testline.startswith('###') and 'leader' not in testline):
+                    continue
+                elif(testline.startswith('###') and 'leader' in testline):
+                    in_leaders = True
+                    continue
+                if in_leaders:
+                    fstr = line.find('[')
+                    if(line.startswith('*') and fstr > -1 and fstr < 4):
+                        name, email = self.ParseLeaderline(line)
+                        leader = {}
+                        leader['name'] = name
+                        leader['email'] = email.replace('mailto://','').replace('mailto:','')
+                        
+                        repo_leaders.append(leader)
+
+        return repo_leaders
+
 
     def MoveFromOFtoOWASP(self, frompath, topath):
         r = self.GetOFFile('OWASP-wiki-md', frompath)
@@ -445,63 +556,3 @@ class OWASPGitHub:
                 pass
 
         return user
-
-    def AddUserToRepo(self, user, repo):
-        repofrag = self.collaborator_fragment
-        repofrag = repofrag.replace(':repo', repo)
-        repofrag = repofrag.replace(':username', user)
-
-        headers = {"Authorization": "token " + self.apitoken,
-            "Accept":"application/vnd.github.hellcat-preview+json, application/vnd.github.inertia-preview+json"
-        }
-
-        url = self.gh_endpoint + repofrag
-
-        # first do a get to see if they are already a user
-        r = requests.get(url = url, headers=headers)
-        if not r.ok:
-            data = { "permission" : "admin"}
-            jsonData = json.dumps(data)
-            r = requests.put(url = url, headers=headers, data=jsonData)
-
-        return r
-
-    def ParseLeaderline(self, line):
-        ename = line.find(']')
-        name = line[line.find('[') + 1:line.find(']')]
-        email = line[line.find('(', ename) + 1:line.find(')', ename)]
-        return name, email
-
-    def GetLeadersForRepo(self, repo):
-        repo_leaders = []
-        r = self.GetFile(repo, 'leaders.md')
-        if r.ok:
-            doc = json.loads(r.text)
-            content = base64.b64decode(doc['content']).decode(encoding='utf-8')
-            lines = content.split('\n')
-            in_leaders = False
-            for line in lines:
-                testline = line.lower()
-                if in_leaders and '###' in testline:
-                    in_leaders = False
-                    break
-                
-                if in_leaders and not testline.startswith('*'):
-                    continue
-                
-                if(testline.startswith('###') and 'leader' not in testline):
-                    continue
-                elif(testline.startswith('###') and 'leader' in testline):
-                    in_leaders = True
-                    continue
-                if in_leaders:
-                    fstr = line.find('[')
-                    if(line.startswith('*') and fstr > -1 and fstr < 4):
-                        name, email = self.ParseLeaderline(line)
-                        leader = {}
-                        leader['name'] = name
-                        leader['email'] = email.replace('mailto://','').replace('mailto:','')
-                        
-                        repo_leaders.append(leader)
-
-        return repo_leaders

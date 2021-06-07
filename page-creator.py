@@ -739,8 +739,9 @@ def build_leaders_json(gh):
     for repo in repos:
         stype = ''
 
-        if 'www-projectchapter-example' in repo['url']:
-            continue
+        # temporary suspend check for testing
+        #if 'www-projectchapter-example' in repo['url']:
+        #    continue
 
         if 'www-chapter' in repo['url']:
             stype = 'chapter'
@@ -748,6 +749,8 @@ def build_leaders_json(gh):
             stype = 'committee'
         elif 'www-project' in repo['url']:
             stype = 'project'
+        elif 'www-revent' in repo['url']:
+            stype = 'event'
         else:
             continue
 
@@ -756,12 +759,10 @@ def build_leaders_json(gh):
             doc = json.loads(r.text)
             content = base64.b64decode(doc['content']).decode(encoding='utf-8')
 
-
             add_to_leaders(repo, content, all_leaders, stype)
         else:
             print(f"Could not get leaders.md file for {repo['name']}: {r.text}")
 
-    print(len(all_leaders))
     r = gh.GetFile('owasp.github.io', '_data/leaders.json')
     sha = ''
     if r.ok:
@@ -1268,28 +1269,23 @@ def verify_cleanup(cfile):
 #     docs = env_api.list_documents(account_id=os.environ['DOCUSIGN_ACCOUNT'], envelope_id=err...we need to list envelopes first?)
 
 def update_customer_metadata_null():
-    # customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
-    # for customer in customers.auto_paging_iter():
-    #     metadata = customer.get('metadata', None)
-    #     metadata.membership_end = None
-    #     customer.metadata['membership_end'] = None
-    #     customer.save()
-
-    # The above works to save Stripe data...what about Mailchimp...
+    #stripe.api_key = os.environ['STRIPE_SECRET']
+    customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
+    for customer in customers.auto_paging_iter():
+        stripe.Customer.modify(customer.id, metadata={'membership_end': ''}, api_key=os.environ['STRIPE_SECRET']) # this version works so long as emptry string is passed....passing None does NOT work
 
     list_id = os.environ['MAILCHIMP_LIST_ID']
-    email = customer.get('email').lower()
-    stripe.Customer.modify(customer.id, metadata={'membership_recurring':'no'})
+    email = 'harold.blankenship@owasp.com'
     searchres = mailchimp.search_members.get(query=f"{email}", list_id=list_id)
     members = searchres['exact_matches']['members']
     merge_fields = {}
-    merge_fields['MEMRECUR'] = 'no'
+    merge_fields['MEMEND'] = '' # blank is correct way to do mailchimp (not None)
     member_data = {
         "email_address": email,
         "status_if_new": "subscribed",
         "merge_fields": merge_fields
     }
-
+    count = 0
     for member in members:
         subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
         list_member = mailchimp.lists.members.create_or_update(os.environ['MAILCHIMP_LIST_ID'], subscriber_hash, member_data) # status_if_new is required and this may be more info than expected/needed
@@ -1575,8 +1571,10 @@ def get_member_info():
         print(cp.GetCustomFieldHelper(cp.cp_person_stripe_number, person['custom_fields']))           
 
 def main():
+    
+    build_leaders_json(OWASPGitHub())
 
-    update_customer_metadata_null()
+    #update_customer_metadata_null()
 
     #do_check_for_members()
 
