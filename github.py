@@ -445,7 +445,7 @@ class OWASPGitHub:
         # first do a get to see if they are already a user
         r = requests.get(url = url, headers=headers)
         if not r.ok:
-            data = { "permission" : "admin"}
+            data = { "permission" : self.PERM_TYPE_ADMIN}
             jsonData = json.dumps(data)
             r = requests.put(url = url, headers=headers, data=jsonData)
 
