@@ -33,6 +33,7 @@ from repo_users import add_users_to_repos
 from import_members import import_members, MemberData
 from googleapi import OWASPGoogle
 from owaspjira import OWASPJira
+import helperfuncs
 #from docusign_esign import EnvelopesApi
 #from docusign_esign import ApiClient
 
@@ -1554,29 +1555,101 @@ def update_stripe_with_owasp_email():
             except Exception as e:
                 print(f"Exception: {e}")
                 pass
+def get_membership_type(opp):
+    memtype = 'Unknown'
+    if 'Complimentary' in opp['name']:
+        memtype = 'complimentary'
+    elif 'One' in opp['name']:
+        memtype = 'one'
+    elif 'Two' in opp['name']:
+        memtype = 'two'
+    elif 'Lifetime' in opp['name']:
+        memtype = 'lifetime'
 
-def get_member_info():
-    email = 'andrew.vanderstock@owasp.com'
+    return memtype
+
+def get_membership_start(opp):
+    start = helperfuncs.get_datetime_helper(opp['close_date'])
+    retstr = 'YYYY-mm-dd'
+    if start != None:
+        retstr = start.strftime('%Y-%m-%d')
+    
+    return retstr
+
+def get_membership_end(cp, opp):
+    end = helperfuncs.get_datetime_helper(cp.GetCustomFieldHelper(cp.cp_opportunity_end_date, opp['custom_fields']))
+    endstr = ''
+    if end != None:
+        endstr = end.strftime('%Y-%m-%d')
+
+    return endstr
+
+def get_membership_recurring(cp, opp):
+    retstr = 'no'
+    if cp.GetCustomFieldHelper(cp.cp_opportunity_autorenew_checkbox, opp['custom_fields']):
+        retstr = 'yes'
+
+    return retstr
+
+def fill_leader_details(memberinfo):
+    gh = OWASPGitHub()
+    r = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    leader_infos = []
+    if r.ok:
+        doc = json.loads(r.text)
+        content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+        leaders = json.loads(content)
+        for email in memberinfo['emails']:
+            leader = next((sub for sub in leaders if sub['email'] == email['email']), None)
+            if leader:
+                leader_infos.append(leader)
+        
+        memberinfo['leader_info'] = leader_infos
+
+    return memberinfo
+
+
+def get_member_info(data):
+    logging.info(data)
+    emailaddress = data['email']
+    today = datetime.today()
+    member_info = {}
     cp = OWASPCopper()
     opp = None
     person = None
-
-    opptxt = cp.FindMemberOpportunity(email)
+    opptxt = cp.FindMemberOpportunity(emailaddress)
     if opptxt != None:
         opp = json.loads(opptxt)
-    
-    pertext = cp.FindPersonByEmail(email)
+    pertext = cp.FindPersonByEmail(emailaddress)
     if pertext != '':
         people = json.loads(pertext)
         if len(people) > 0:
             person = people[0]
 
     if opp and person:
-        print(cp.GetCustomFieldHelper(cp.cp_person_stripe_number, person['custom_fields']))           
+        member_info['membership_type'] = get_membership_type(opp)
+        member_info['membership_start'] = get_membership_start(opp)
+        member_info['membership_end'] = get_membership_end(cp, opp)
+        member_info['membership_recurring'] = get_membership_recurring(cp, opp)
+        member_info['name'] = person['name']
+        member_info['emails'] = person['emails']
+        member_info['address'] = person['address']
+        member_info['phone_numbers'] = person['phone_numbers']
+        member_info['member_number'] = cp.GetCustomFieldHelper(cp.cp_person_stripe_number, person['custom_fields'])
+        member_info = fill_leader_details(member_info)
+    elif not opp:
+        logging.info(f"Failed to get opportunity")
+    else:
+        logging.info(f"Failed to get person")
+        
+    logging.info(f"Member information: {member_info}")
+    return member_info         
 
 def main():
-
-    update_customer_metadata_null()
+    data = { 'email': 'harold.blankenship@owasp.org' }
+    print(get_member_info(data))
+    
+    #update_customer_metadata_null()
 
     #do_check_for_members()
 
