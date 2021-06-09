@@ -808,7 +808,23 @@ def build_chapter_json(gh):
             repo['updated'] = dobj.strftime("%Y-%m-%d")
         except ValueError:
             pass
+        
+        ecount = 0
+        if 'meetup-group' in repo:
+            mu = OWASPMeetup()
+            mu.Login()
+            estr = mu.GetGroupEvents(repo['meetup-group'], "past")
+            if estr:
+                events = json.loads(estr)
+                today = datetime.today()
+                for event in events:
+                    eventdate = datetime.strptime(event['local_date'], '%Y-%m-%d')
+                    tdelta = today - eventdate
+                    if tdelta.days > 0 and tdelta.days < 365:
+                        ecount = ecount + 1
+        repo['meetings'] = ecount
 
+                
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['region'], reverse=True)
 
@@ -1642,9 +1658,15 @@ def get_member_info(data):
     return member_info         
 
 def main():
-    data = { 'email': 'harold.blankenship@owasp.org' }
-    print(get_member_info(data))
+
+    #data = { 'email': 'harold.blankenship@owasp.org' }
+    #print(get_member_info(data))
     
+    # Next Question: how to get class data for members?
+
+    # Also update chapters to show # of meetings in last 12 months....
+
+
     #update_customer_metadata_null()
 
     #do_check_for_members()
@@ -1866,7 +1888,7 @@ def main():
     #print(repos)
     #build_inactive_chapters_json(gh)
 
-    #build_chapter_json(gh)
+    build_chapter_json(OWASPGitHub())
 
     #CollectMailchimpTags()
     #build_staff_project_json()

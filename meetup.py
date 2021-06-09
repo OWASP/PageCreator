@@ -3,6 +3,7 @@ import json
 import base64
 from pathlib import Path
 import os
+from datetime import datetime
 
 class OWASPMeetup:
     meetup_api_url = "https://api.meetup.com"
@@ -46,12 +47,15 @@ class OWASPMeetup:
 
         return result    
 
-    def GetGroupEvents(self, groupname):
+    def GetGroupEvents(self, groupname, status='upcoming'):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.oauth_token}'
         }
-        event_url = self.meetup_api_url + f'/{groupname}/events?desc=true&sign=true'
+        today = datetime.today()
+        #2018-06-01T00:00:00.000
+        earliest = f"{today.year - 1}-01-01T00:00:00.000"
+        event_url = self.meetup_api_url + f'/{groupname}/events?desc=true&sign=true&status={status}&no_earlier_than={earliest}'
         res = requests.get(event_url, headers=headers)
         #json_res = json.loads(res.text)
         json_res = ''
