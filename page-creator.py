@@ -1188,7 +1188,7 @@ def AddStripeMembershipToCopper():
 
         metadata = customer.get('metadata', None)
         count = count + 1
-        if metadata and metadata.get('membership_type', None):
+        if metadata and metadata.get('membership_type', None) and metadata.get('membership_start', None):
             AddToMemberOpportunityIfNotExist(customer, metadata)
 
         print(f"Checking {count}", end="\r", flush=True)
@@ -1746,7 +1746,7 @@ def main():
     #     print(email_list)
     #verify_cleanup('customers_1.csv')
 
-    # AddStripeMembershipToCopper()
+    AddStripeMembershipToCopper()
     # copper = OWASPCopper()
     # pjson = copper.FindPersonByEmail('harold.blankenship@owasp.com')
     # person = json.loads(pjson)[0]
@@ -1888,7 +1888,7 @@ def main():
     #print(repos)
     #build_inactive_chapters_json(gh)
 
-    build_chapter_json(OWASPGitHub())
+    #build_chapter_json(OWASPGitHub())
 
     #CollectMailchimpTags()
     #build_staff_project_json()
