@@ -1658,6 +1658,11 @@ def get_member_info(data):
     return member_info         
 
 def main():
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-')
+    for repo in repos:
+        if 'san-jose' in repo['name']:
+            print(repo['name'])
 
     #data = { 'email': 'harold.blankenship@owasp.org' }
     #print(get_member_info(data))
@@ -1746,7 +1751,7 @@ def main():
     #     print(email_list)
     #verify_cleanup('customers_1.csv')
 
-    AddStripeMembershipToCopper()
+    #AddStripeMembershipToCopper()
     # copper = OWASPCopper()
     # pjson = copper.FindPersonByEmail('harold.blankenship@owasp.com')
     # person = json.loads(pjson)[0]

@@ -264,10 +264,12 @@ class OWASPGitHub:
             
             if self.TestResultCode(r.status_code):
                 repos = json.loads(r.text)
-                if pageend == -1:
+                if pageend == -1 and r.links and 'last' in r.links:
                     endlink = r.links['last']['url']
                     pageend = int(endlink[endlink.find('?page=') + 6:endlink.find('&')])
-                
+                else:
+                    pageend = pageno
+                    
                 if pageno == pageend:
                     done = True
                 
