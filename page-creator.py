@@ -1659,9 +1659,9 @@ def get_member_info(data):
 
 def main():
     gh = OWASPGitHub()
-    repos = gh.GetPublicRepositories('www-')
+    repos = gh.GetPublicRepositories('www-chapter-')
     for repo in repos:
-        if 'san-jose' in repo['name']:
+        if 'miami' in repo['name'] or 'kuala' in repo['name'] or 'jose' in repo['name']:
             print(repo['name'])
 
     #data = { 'email': 'harold.blankenship@owasp.org' }

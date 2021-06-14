@@ -42,6 +42,14 @@ class OWASPGitHub:
     GH_REPOTYPE_COMMITTEE = 2
     GH_REPOTYPE_EVENT = 3
 
+    def GetHeaders(self):
+        # application/vnd.github.baptiste-preview+json used for is_template
+        headers = {"Authorization": "token " + self.apitoken, "X-PrettyPrint":"1",
+            "Accept":"application/vnd.github.v3+json, application/vnd.github.baptiste-preview+json"
+        }
+
+        return headers;
+
     def CreateRepository(self, repoName, rtype):
         repoName = self.FormatRepoName(repoName, rtype)
         description = "OWASP Foundation Web Respository"
@@ -239,13 +247,11 @@ class OWASPGitHub:
        return self.GetPublicRepositories(matching=matching, inactive=True)
 
     def GetPublicRepositories(self, matching="", inactive=False):
-        headers = {"Authorization": "token " + self.apitoken, "X-PrettyPrint":"1",
-            "Accept":"application/vnd.github.switcheroo-preview+json, application/vnd.github.mister-fantastic-preview+json, application/json, application/vnd.github.baptiste-preview+json"
-        }
+        headers = self.GetHeaders()
         
         qurl = "org:owasp is:public"
         if matching:
-            qurl = qurl + f" {matching} in:name"
+            qurl = qurl + f" in:name {matching} "
         qdata = {
             'q': qurl,
             'per_page':100
@@ -258,16 +264,16 @@ class OWASPGitHub:
         results = []
         while not done:
             pagestr = "?page=%d" % pageno
-            #url = self.gh_endpoint + self.org_fragment + pagestr + '&per_page=100'
-            url = self.gh_endpoint + self.search_repos_fragment + pagestr + "&" + urllib.parse.urlencode(qdata)
+            url = self.gh_endpoint + self.org_fragment + pagestr + '&per_page=100'
+            #url = self.gh_endpoint + self.search_repos_fragment + pagestr + "&" + urllib.parse.urlencode(qdata) + "&per_page=100" # I am concerned that this search might use a cache and I wonder how often the cache is updated...
             r = requests.get(url=url, headers = headers)
             
-            if self.TestResultCode(r.status_code):
+            if r.ok:
                 repos = json.loads(r.text)
                 if pageend == -1 and r.links and 'last' in r.links:
                     endlink = r.links['last']['url']
                     pageend = int(endlink[endlink.find('?page=') + 6:endlink.find('&')])
-                else:
+                elif pageend == -1:
                     pageend = pageno
                     
                 if pageno == pageend:
@@ -275,13 +281,14 @@ class OWASPGitHub:
                 
                 pageno = pageno + 1
                 
-                for repo in repos['items']:
+                #for repo in repos['items']: # This works for search fragment
+                for repo in repos:
                     repoName = repo['name'].lower()
                     istemplate = repo['is_template']
                     haspages = repo['has_pages'] #false for Iran...maybe was never activated?
                         
                     # even if matching, we still only really want project, chapter, event, or committee repos here....
-                    if not matching or (matching in repoName and ('-project-' in repoName or '-chapter-' in repoName or '-committee-' in repoName or '-revent-' in repoName)):
+                    if not matching or (matching in repoName):
                         if not istemplate:
                             pages = None
                             if haspages:
@@ -292,7 +299,7 @@ class OWASPGitHub:
                                 continue
                         else:
                             continue
-                        
+                            
                         addrepo = {}
                         addrepo['name'] = repoName
                         addrepo['url'] = f"https://owasp.org/{ repoName }/"
@@ -307,7 +314,7 @@ class OWASPGitHub:
                             addrepo['build'] = 'no pages'
 
                         r = self.GetFile(repoName, 'index.md')
-                        if self.TestResultCode(r.status_code):
+                        if r.ok:
                             doc = json.loads(r.text)
                             content = base64.b64decode(doc['content']).decode()
                             ndx = content.find('title:')
