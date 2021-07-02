@@ -24,6 +24,7 @@ import gspread
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import stripe
+import io
 from datetime import datetime
 from datetime import timedelta
 import csv
@@ -32,6 +33,7 @@ import rebuild_milestones
 from repo_users import add_users_to_repos
 from import_members import import_members, MemberData
 from googleapi import OWASPGoogle
+from googleapiclient.http import MediaIoBaseDownload
 from owaspjira import OWASPJira
 import helperfuncs
 #from docusign_esign import EnvelopesApi
@@ -1658,12 +1660,41 @@ def get_member_info(data):
     return member_info         
 
 def main():
-    gh = OWASPGitHub()
-    repos = gh.GetPublicRepositories('www-chapter-')
-    for repo in repos:
-        if 'miami' in repo['name'] or 'kuala' in repo['name'] or 'jose' in repo['name']:
-            print(repo['name'])
+    # customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
+    # for customer in customers.auto_paging_iter():
+    #     stripe.Customer.modify(
+    #             customer.id,
+    #             metadata={
+    #                 "membership_notified": "",
+    #                 "membership_notified_date": "",
+    #                 "membership_last_notification": ""
+    #             },
+    #             api_key=os.environ["STRIPE_SECRET"]
+    #         )
 
+    
+    # gh = OWASPGitHub()
+    # repos = gh.GetPublicRepositories('www-chapter-')
+    # for repo in repos:
+    #     if 'miami' in repo['name'] or 'kuala' in repo['name'] or 'jose' in repo['name']:
+    #         print(repo['name'])
+
+    #create_community_events(OWASPGitHub(), OWASPMeetup())
+    # google = OWASPGoogle()
+    # files = google.GetUserFiles('harold.blankenship@owasp.org')
+    # for file in files:
+    #     if('.jpg' in file['name']):
+    #         request = google.drive.files().get_media(fileId=file['id'])
+    #         fh = io.BytesIO()
+    #         downloader = MediaIoBaseDownload(fh, request)
+    #         done = False
+    #         while done is False:
+    #             status, done = downloader.next_chunk()
+    #             print("Download %d%%." % int(status.progress() * 100))
+
+    #         with open(file['name'], "wb") as outfile:
+    #             outfile.write(fh.getbuffer())
+    # print('done')
     #data = { 'email': 'harold.blankenship@owasp.org' }
     #print(get_member_info(data))
     
@@ -1879,9 +1910,7 @@ def main():
     #print(person[0]['id'])
     #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
     #print(r)
-    #cp = OWASPCopper()
-    #r = cp.GetCustomFields()
-    #print(r)
+    
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()

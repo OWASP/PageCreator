@@ -43,10 +43,14 @@ class OWASPCopper:
     cp_project_chapter_region = 399739
     cp_project_chapter_region_option_africa = 899465
     cp_project_chapter_region_option_asia = 899466
-    cp_project_chapter_region_option_europe = 899467
+    cp_project_chapter_region_option_central_america = 1607249
+    cp_project_chapter_region_option_eastern_europe = 1607250
+    cp_project_chapter_region_option_european_union = 899467
+    cp_project_chapter_region_option_middle_east = 1607251
     cp_project_chapter_region_option_northamerica = 899468
     cp_project_chapter_region_option_oceania = 899469
     cp_project_chapter_region_option_southamerica = 899470
+    cp_project_chapter_region_option_the_caribbean = 1607252
     cp_project_chapter_country = 399738
     cp_project_chapter_postal_code = 399737
     #person specific
@@ -84,7 +88,8 @@ class OWASPCopper:
             'X-PW-AccessToken':os.environ['COPPER_API_KEY'],
             'X-PW-Application':'developer_api',
             'X-PW-UserEmail':os.environ['COPPER_USER'],
-            'Content-Type':'application/json'
+            'Content-Type':'application/json',
+            'X-PrettyPrint':'1'
     }
 
     def GetHeaders(self):

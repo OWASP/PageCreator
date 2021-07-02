@@ -46,6 +46,18 @@ class OWASPGoogle:
             result = f"Failed to update User {email_address}."
         return result
 
+    def GetUserFiles(self, email_address):
+        items = {}
+        scopes = ['https://www.googleapis.com/auth/admin.directory.user', 'https://www.googleapis.com/auth/admin.directory.group', 'https://www.googleapis.com/auth/apps.groups.settings', 'https://www.googleapis.com/auth/admin.directory.userschema', 'https://www.googleapis.com/auth/drive.readonly', 'https://www.googleapis.com/auth/drive.photos.readonly']
+        client_secret = json.loads(os.environ['GOOGLE_CREDENTIALS'], strict=False)
+        creds = service_account.Credentials.from_service_account_info(client_secret, scopes=scopes)
+        creds = creds.with_subject(email_address)
+        self.drive = build('drive', 'v3', credentials=creds)
+        results = self.drive.files().list(pageSize=100, fields="nextPageToken, files(id, name)").execute()
+        items = results.get('files', [])
+
+        return items
+
     def CreateSpecificEmailAddress(self, altemail, first, last, email_address, fail_if_exists=True):
         
         user = {
