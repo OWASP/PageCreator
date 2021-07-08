@@ -1331,6 +1331,25 @@ def update_www_repos_main():
                 else:
                     print(f'Updated repo {repoName}\n')
 
+def update_www_repos_site():
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-')
+    for repo in repos:
+        repoName = repo['name']
+        r = gh.GetFile(repoName, '.gitignore')
+        if r.ok and 'www-' in repoName:
+            doc = json.loads(r.text)
+            sha = doc['sha']
+            content = base64.b64decode(doc['content']).decode()
+            if not '_site' in content:
+                content += '\n_site/\n'
+                                
+                r = gh.UpdateFile(repoName, '.gitignore', content, sha)
+                if not r.ok:
+                    print(f'Failed to update {repoName}: {r.text}\n')
+                else:
+                    print(f'Updated repo {repoName}\n')
+
 def do_stripe_verify_recurring():
     users = []
     stripe.api_key = os.environ['STRIPE_SECRET']
@@ -1660,6 +1679,7 @@ def get_member_info(data):
     return member_info         
 
 def main():
+    update_www_repos_site()
     # customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
     # for customer in customers.auto_paging_iter():
     #     stripe.Customer.modify(
