@@ -1678,8 +1678,69 @@ def get_member_info(data):
     logging.info(f"Member information: {member_info}")
     return member_info         
 
+def update_mailchimp_memend(email, end, marketing):
+    searchres = mailchimp.search_members.get(query=f"{email}", list_id=os.environ['MAILCHIMP_LIST_ID'])
+    members = searchres['exact_matches']['members']
+    merge_fields = {}
+    merge_fields['MEMEND'] = end
+    member_data = {
+        "email_address": email,
+        "status_if_new": "subscribed",
+        "status": "subscribed",
+        "merge_fields": merge_fields,
+        "marketing_permissions": [{ "marketing_permission_id": os.environ["MAILCHIMP_MKTG_PERMISSIONS_ID"], "enabled": marketing }]
+    }
+
+    for member in members:
+        subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
+        try:
+            mailchimp.lists.members.create_or_update(os.environ['MAILCHIMP_LIST_ID'], subscriber_hash, member_data) # status_if_new is required and this may be more info than expected/needed
+        except MailChimpError as me:
+            if 'Compliance' in me.args[0]['title']:
+                continue                
+        
+
+def update_subscription_members():
+    subs = stripe.Subscription.list(api_key=os.environ['STRIPE_SECRET'])
+    count = 0
+    for sub in subs.auto_paging_iter():
+        if sub['status'] == 'active' or sub['status'] == 'trialing':
+            metadata = sub.get('metadata', None)
+            if metadata and metadata.get('purchase_type', None) == 'membership':
+                mem_end = datetime.utcfromtimestamp(sub['current_period_end']).strftime("%m/%d/%Y")
+                mem_end_date = helperfuncs.get_datetime_helper(mem_end)
+                customer = stripe.Customer.retrieve(sub['customer'], api_key=os.environ['STRIPE_SECRET'])
+                custmeta = customer.get('metadata', None)
+                cmem_end = custmeta.get('membership_end', None)
+                if cmem_end:
+                    cmem_end_date = helperfuncs.get_datetime_helper(custmeta['membership_end'])
+                    if custmeta and mem_end_date.year > cmem_end_date.year:       
+                        mailing_list = metadata.get('mailing_list', 'False')
+                        market = False
+                        if mailing_list == 'True':
+                            market = True                 
+                        update_mailchimp_memend(customer.email.lower(), mem_end, market)
+                        cp = OWASPCopper()
+                        
+                        opp = cp.FindMemberOpportunity(customer.email)
+                        jperson = cp.FindPersonByEmail(customer.email)
+                        person = None
+                        if jperson and jperson != '':
+                            person = json.loads(jperson)[0]
+
+                        if opp == None and person:
+                            custmeta['membership_end'] = mem_end
+                            if 'membership_start' not in custmeta:
+                                custmeta['membership_start'] = datetime.utcfromtimestamp(sub['start_date']).strftime("%m/%d/%Y")
+                            cp.CreateOWASPMembership(person['id'], customer.name, customer.email, custmeta)
+                        stripe.Customer.modify(customer.id, metadata={ "membership_end": mem_end }, api_key=os.environ['STRIPE_SECRET'])
+        count = count + 1
+
+    print(f"Done with {count} subscriptions.")
+
 def main():
-    update_www_repos_site()
+    update_subscription_members()
+    # update_www_repos_site()
     # customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
     # for customer in customers.auto_paging_iter():
     #     stripe.Customer.modify(
