@@ -454,7 +454,9 @@ class OWASPCopper:
             if memstart == None:
                 # so we have no start...must calculate it
                 memstart = self.GetStartdateHelper(subscription_data)
-                
+
+            memend = self.GetDatetimeHelper(subscription_data['membership_end'])
+
             fields = []
             if subscription_data['membership_type'] == 'lifetime':
                 fields.append({
@@ -706,7 +708,7 @@ class OWASPCopper:
             else:
                 fields.append({
                         'custom_field_definition_id' : self.cp_opportunity_end_date, 
-                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': self.GetDatetimeHelper(subscription_data['membership_end']).strftime("%m/%d/%Y")
                     })
                 renew = False
                 if subscription_data['membership_recurring'] == 'yes':
@@ -865,6 +867,8 @@ class OWASPCopper:
                 person = person[0]
                 pid = person['id']
         
+        mend=None
+
         if pid == None or pid <= 0:
             pid = self.CreatePerson(name, email, subscription_data, stripe_id)
         else: #should only update if sub data membership end is later or nonexistent (and not a lifetime member)
@@ -889,10 +893,11 @@ class OWASPCopper:
             return
 
         opp_name = subscription_data['membership_type'].capitalize()
+    
         if opp_name == 'Honorary':
             opp_name = "Complimentary One"
         if subscription_data['membership_type'] != 'lifetime':
-            opp_name += f" Year Membership until {subscription_data['membership_end']}"
+            opp_name += f" Year Membership until {mend.strftime('%Y-%m-%d')}"
         else:
             opp_name += " Membership"
         
