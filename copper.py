@@ -448,10 +448,9 @@ class OWASPCopper:
         data = {
         }
 
-        
-
         if subscription_data != None:
             memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+            memend = self.GetDatetimeHelper(subscription_data['membership_end'])
             if memstart == None:
                 # so we have no start...must calculate it
                 memstart = self.GetStartdateHelper(subscription_data)
@@ -473,7 +472,7 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': memend.strftime("%m/%d/%Y")
                     })
             elif subscription_data['membership_type'] == 'honorary' or subscription_data['membership_type'] == 'complimentary':
                 fields.append({
@@ -482,7 +481,7 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': memend.strftime("%m/%d/%Y")
                     })
             elif subscription_data['membership_type'] == 'two':
                 fields.append({
@@ -491,7 +490,7 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': memend.strftime("%m/%d/%Y")
                     })
             elif subscription_data['membership_type'] == 'student':
                 fields.append({
@@ -500,7 +499,7 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").strftime("%m/%d/%Y")
+                        'value': memend.strftime("%m/%d/%Y")
                     })
 
             fields.append({
@@ -600,6 +599,7 @@ class OWASPCopper:
             r = requests.get(url, headers=self.GetHeaders())
             if r.ok and r.text:
                 for item in json.loads(r.text):
+                    time.sleep(2.0)
                     url = url = f"{self.cp_base_url}{self.cp_opp_fragment}{item['id']}"
                     r = requests.get(url, headers=self.GetHeaders())
                     if r.ok:
@@ -612,6 +612,9 @@ class OWASPCopper:
                         for cfield in opportunity['custom_fields']:
                             if cfield['custom_field_definition_id'] == self.cp_opportunity_end_date:
                                 mend = cfield['value']
+                                mend_date = None
+                                if mend:
+                                    mend_date = datetime.utcfromtimestamp(mend)
                                 if subscription_data == None: # no data, just find first non-expired membership, if any
                                     today = datetime.today()
                                     tdstamp = int(today.timestamp())
@@ -620,8 +623,11 @@ class OWASPCopper:
                                     elif mend == None:
                                         print(f'Membership end is None for {email}')
                                 elif subscription_data['membership_end']:
-                                    tend = int(datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d").timestamp())
+                                    tend_date = datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d") 
+                                    tend = int(tend_date.timestamp())
                                     if mend and mend == tend:
+                                        return r.text
+                                    elif mend_date and mend_date.year == tend_date.year:
                                         return r.text
 
         return opp
@@ -868,7 +874,14 @@ class OWASPCopper:
             elif memtype != self.cp_person_membership_option_lifetime:
                 mend = self.GetDatetimeHelper(subscription_data['membership_end'])
                 cp_mend = self.GetCustomFieldHelper(self.cp_person_membership_end, person['custom_fields'])
-                if mend == None or cp_mend == None or mend > datetime.fromtimestamp(cp_mend):
+                cp_start = self.GetCustomFieldHelper(self.cp_person_membership_start, person['custom_fields'])
+                current_start = datetime.fromtimestamp(cp_start)
+                current_end = datetime.fromtimestamp(cp_mend)
+                new_start = self.GetDatetimeHelper(subscription_data['membership_start'])
+                if new_start < current_end: # set it back to the current start
+                    subscription_data['membership_start'] = current_start.strftime('%Y-%m-%d')
+
+                if mend == None or cp_mend == None or mend > current_end:
                     self.UpdatePerson(pid, subscription_data, stripe_id)
 
         if pid == None or pid <= 0:

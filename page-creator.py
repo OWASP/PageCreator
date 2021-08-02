@@ -1195,6 +1195,28 @@ def AddStripeMembershipToCopper():
 
         print(f"Checking {count}", end="\r", flush=True)
 
+def DetectStripeMembershipNotInCopper():
+    stripe.api_key = os.environ['STRIPE_SECRET']
+    customers = stripe.Customer.list(limit=100)
+    count = 0
+    for customer in customers.auto_paging_iter():
+        metadata = customer.get('metadata', None)
+        count = count + 1
+        if metadata and metadata.get('membership_type', None) and metadata.get('membership_start', None):
+            copper = OWASPCopper()
+            mstart = metadata.get('membership_start', None)
+            mend = metadata.get('membership_end', None)
+            mtype = metadata.get('membership_type', None)
+            mrecurr = metadata.get('membership_recurring', None)
+
+            member = MemberData(customer.get('name'), customer.email.lower(), "", "", "", mstart, mend, mtype, mrecurr)
+            sub = member.GetSubscriptionData()
+            if not copper.FindMemberOpportunity(customer.email, sub):
+                #copper.CreateOWASPMembership(customer.id, customer.name, customer.email, sub)
+                print(f"Customer {customer.email} with membership type {mtype}, starting on {mstart} and ending on {mend} NOT in Copper")
+
+        print(f"Checking {count}", end="\r", flush=True)
+
 def UpdateCustomerName(stripe, cust):
     payments = stripe.PaymentIntent.list(customer=cust.id)
     subscriptions = stripe.Subscription.list(customer=cust.id)
@@ -1678,8 +1700,68 @@ def get_member_info(data):
     logging.info(f"Member information: {member_info}")
     return member_info         
 
+def payments_match_years(customer, mem_type, years):
+    if mem_type == 'complimentary' and years > 1:
+        return False
+    elif mem_type == 'complimentary':
+        return True
+
+    payment_intents = stripe.PaymentIntent.list(api_key=os.environ['STRIPE_SECRET'],customer=customer, limit=100)
+    paycount = 0
+    for pi in payment_intents.auto_paging_iter():
+        descriptor = pi.get('statement_descriptor', None)
+        purchase_type = None
+        pi_metadata = pi.get('metadata', None)
+        if pi_metadata:
+            purchase_type = pi_metadata.get('purchase_type', None)
+        if ((descriptor and 'MEMBERSHIP' in descriptor) or (purchase_type == 'membership')) and pi.status == 'succeeded':
+            if mem_type == 'two':
+                paycount += 2
+            else:
+                paycount += 1
+
+    return (paycount >= years)
+
+
+def find_extended_enddate_members():
+    check_list = []
+    customers = stripe.Customer.list(api_key=os.environ['STRIPE_SECRET'], limit=100)
+    count = 0
+    for customer in customers.auto_paging_iter():
+        count = count + 1
+        print(f"Current: {count}, check_list size: {len(check_list)}", end="\r", flush=True)
+        metadata = customer.get('metadata', None)
+        if metadata and metadata.get('membership_type', None): #this is a member
+            mem_type = metadata.get('membership_type')
+            mem_end = metadata.get('membership_end', None)
+            if mem_type == 'lifetime':
+                continue # we are not looking at lifetime members
+
+            if not mem_end: # should not happen except for lifetime members and we skip those
+                print(f"Failed to retrieve membership end date for customer {customer.email}\n")
+            else:
+                memend_date = helperfuncs.get_datetime_helper(mem_end)
+                today = datetime.today()
+                years = memend_date.year - today.year
+                if years > 0 and not payments_match_years(customer, mem_type, years):
+                    check_list.append(customer.email + '\t' + mem_end + '\t' + mem_type + '\n') 
+                
+    with open('check_members.txt', 'w+') as f:
+        f.writelines(check_list)
+
+    print('check_members.txt written')            
+
 def main():
-    update_www_repos_site()
+    find_extended_enddate_members()    
+    # These were done 7.29.2021
+    #import_members('2021-appsec-us-member-import.csv')
+    
+    # cp = OWASPCopper()
+    # opp = cp.FindMemberOpportunity('ervin.hegedus@owasp.org')
+    # print(opp)
+    # DetectStripeMembershipNotInCopper()
+
+    #update_www_repos_site()
     # customers = stripe.Customer.list(email="harold.blankenship@owasp.com", api_key=os.environ['STRIPE_SECRET'])
     # for customer in customers.auto_paging_iter():
     #     stripe.Customer.modify(
@@ -1693,9 +1775,9 @@ def main():
     #         )
 
     
-    # gh = OWASPGitHub()
-    # repos = gh.GetPublicRepositories('www-chapter-')
-    # for repo in repos:
+    #gh = OWASPGitHub()
+    #repos = gh.GetPublicRepositories('www-chapter-')
+    #for repo in repos:
     #     if 'miami' in repo['name'] or 'kuala' in repo['name'] or 'jose' in repo['name']:
     #         print(repo['name'])
 

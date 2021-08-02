@@ -73,7 +73,7 @@ class MemberData:
                 }
         return metadata
 
-# Import Members, assumption this is complimentary members
+# Import Members
 def import_members(filename):
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -94,16 +94,17 @@ def import_members(filename):
                     continue
 
                 membership_type = member.type
-                if membership_type and membership_type != 'lifetime':
-                    mendstr = metadata.get('membership_end', None)
+                if membership_type and membership_type != 'lifetime': 
+                    mendstr = metadata.get('membership_end', None) # current membership end say 8/1/2022
                     if mendstr != None:
                         mend_dt = datetime.strptime(mendstr, '%m/%d/%Y')
-                        #possible case: member got complimentary AND has membership already...update end date to be +time
-                        if member.end > mend_dt:
-                            add_days = 364
-                            if membership_type == 'two':
-                                add_days = 729
-                            member.end = mend_dt + timedelta(days=add_days)
+                        #possible case: has membership already...update end date to be +time
+                        # This needs to be re-evaluated....
+                        if membership_type != 'two':
+                            add_days = 365
+                        else: 
+                            add_days = 730
+                        member.end = mend_dt + timedelta(days=add_days)
 
                         member.UpdateMetadata(customer_id,
                             {
