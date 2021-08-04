@@ -1719,6 +1719,18 @@ def payments_match_years(customer, mem_type, years):
                 paycount += 2
             else:
                 paycount += 1
+                
+    #Some subscriptions have invoices instead of payment_intents....
+    invoices = stripe.Invoice.list(api_key=os.environ['STRIPE_SECRET'],customer=customer, limit=100)
+    for inv in invoices.auto_paging_iter():
+        lines = inv.get('lines', None)
+        for line in lines:
+            descriptor = line.get('description', None)
+            if descriptor and 'Membership' in descriptor:
+                if mem_type == 'two':
+                    paycount += 2
+                else:
+                    paycount += 1
 
     return (paycount >= years)
 
@@ -1812,7 +1824,9 @@ def update_subscription_members():
     print(f"Done with {count} subscriptions.")
 
 def main():
-    find_extended_enddate_members()    
+    do_stripe_verify_recurring()
+
+    #find_extended_enddate_members()    
     # These were done 7.29.2021
     #import_members('2021-appsec-us-member-import.csv')
     
