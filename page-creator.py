@@ -1824,8 +1824,12 @@ def update_subscription_members():
     print(f"Done with {count} subscriptions.")
 
 def main():
-    do_stripe_verify_recurring()
+    #do_stripe_verify_recurring()
 
+    google = OWASPGoogle()
+    users = google.GetAllUsers('brian.mcgroarty@owasp.org')
+    print(users)
+    
     #find_extended_enddate_members()    
     # These were done 7.29.2021
     #import_members('2021-appsec-us-member-import.csv')

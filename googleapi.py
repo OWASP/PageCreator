@@ -118,6 +118,25 @@ class OWASPGoogle:
 
         return result
 
+    def GetAllUsers(self, email, showDeleted=False):
+        done = False
+        while not done:
+            try:
+                results = self.admin.users().list(domain='owasp.org', query=f'email:{email}', showDeleted=showDeleted).execute()
+                if 'users' in results and len(results['users']) > 0:
+                    return results['users']
+                else:
+                    done = True
+            except HTTPError as e:
+                print('error waiting 8 to 10 seconds....')
+                done = (e.status != 503)
+                if not done:
+                    dropoff = 4 + random.randint(1, 4)
+                    time.sleep(drop_off * 1.25)
+                pass
+
+        return []
+
     def GetUser(self, cid, showDeleted=False):
         done = False
         while not done:
