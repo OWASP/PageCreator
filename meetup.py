@@ -47,18 +47,23 @@ class OWASPMeetup:
 
         return result    
 
-    def GetGroupEvents(self, groupname, status='upcoming'):
+    def GetGroupEvents(self, groupname, earliest='', status=''):
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {self.oauth_token}'
         }
-        today = datetime.today()
-        #2018-06-01T00:00:00.000
-        earliest = f"{today.year - 1}-01-01T00:00:00.000"
-        event_url = self.meetup_api_url + f'/{groupname}/events?desc=true&sign=true&status={status}&no_earlier_than={earliest}'
+        
+        event_url = self.meetup_api_url + f'/{groupname}/events?desc=true&sign=true'
+        if earliest:
+            event_url += f'&no_earlier_than={earliest}'
+        if status:
+            event_url += f'&status={status}'
         res = requests.get(event_url, headers=headers)
         #json_res = json.loads(res.text)
         json_res = ''
         if res.ok:
             json_res = res.text
+        else:
+            print(res.text)
+
         return json_res
