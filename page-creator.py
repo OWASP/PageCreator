@@ -1826,14 +1826,16 @@ def update_subscription_members():
 def main():
     #do_stripe_verify_recurring()
 
-    edate = datetime.today() + timedelta(-30)
-    earliest = edate.strftime('%Y-%m-') + '01T00:00:00.000'
+    #edate = datetime.today() + timedelta(-30)
+    #earliest = edate.strftime('%Y-%m-') + '01T00:00:00.000'
 
-    mu = OWASPMeetup()
-    mu.Login()
-    estr = mu.GetGroupEvents("OWASP-OC", earliest)
-    print(estr)
-
+    #mu = OWASPMeetup()
+    #mu.Login()
+    #estr = mu.GetGroupEvents("OWASP-OC", earliest)
+    #print(estr)
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-')
+    print('done')
     #find_extended_enddate_members()    
     # These were done 7.29.2021
     #import_members('2021-appsec-us-member-import.csv')
