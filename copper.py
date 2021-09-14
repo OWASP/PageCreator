@@ -8,7 +8,7 @@ from datetime import timedelta
 
 class OWASPCopper:
 
-    cp_base_url = "https://api.prosperworks.com/developer_api/v1/"
+    cp_base_url = "https://api.copper.com/developer_api/v1/"
     cp_projects_fragment = "projects/"
     cp_opp_fragment = "opportunities/"
     cp_pipeline_fragment = "pipelines/"
@@ -449,13 +449,13 @@ class OWASPCopper:
         }
 
         if subscription_data != None:
+            memend = None
             memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
-            memend = self.GetDatetimeHelper(subscription_data['membership_end'])
+            if 'membership_end' in subscription_data:
+                memend = self.GetDatetimeHelper(subscription_data['membership_end'])
             if memstart == None:
                 # so we have no start...must calculate it
                 memstart = self.GetStartdateHelper(subscription_data)
-
-            memend = self.GetDatetimeHelper(subscription_data['membership_end'])
 
             fields = []
             if subscription_data['membership_type'] == 'lifetime':
@@ -504,7 +504,8 @@ class OWASPCopper:
                         'value': memend.strftime("%m/%d/%Y")
                     })
 
-            fields.append({
+            if stripe_id != None:
+                fields.append({
                         'custom_field_definition_id' : self.cp_person_stripe_number, 
                         'value': f"https://dashboard.stripe.com/customers/{stripe_id}"
                     })
@@ -738,6 +739,30 @@ class OWASPCopper:
         if r.ok:
             return r.text
         
+        return ''
+
+    def GetRelatedPeople(self, entity, entity_id):
+        url = f'{self.cp_base_url}{self.cp_related_fragment}/people'
+        url = url.replace(':entity_id', str(entity_id)).replace(':entity', entity)
+        r = requests.get(url, headers=self.GetHeaders())
+        if r.ok:
+            return r.text
+
+        return ''
+
+    def UnrelateRecord(self, entity, entity_id, person_id):
+        data = {
+            'resource': {
+                'id': person_id,
+                'type': 'person'
+            }
+        }
+        url = f'{self.cp_base_url}{self.cp_related_fragment}'
+        url = url.replace(':entity_id', str(entity_id)).replace(':entity', entity)
+        r = requests.delete(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            return r.text
+
         return ''
 
     def RelateRecord(self, entity, entity_id, person_id):

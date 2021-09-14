@@ -795,7 +795,8 @@ def build_chapter_json(gh):
     # store in json
     #write json file out to github.owasp.io _data folder
     repos = gh.GetPublicRepositories('www-chapter')
-
+    mu = OWASPMeetup()
+    mu.Login()
     fmt_str = "%a %b %d %H:%M:%S %Y"
     for repo in repos:
         repo['name'] = repo['name'].replace('www-chapter-','').replace('-', ' ')
@@ -812,13 +813,12 @@ def build_chapter_json(gh):
             pass
         
         ecount = 0
-        if 'meetup-group' in repo:
-            mu = OWASPMeetup()
-            mu.Login()
-            estr = mu.GetGroupEvents(repo['meetup-group'], '', "past")
+        today = datetime.today()
+        earliest = f"{today.year - 1}-01-01T00:00:00.000"
+        if 'meetup-group' in repo:            
+            estr = mu.GetGroupEvents(repo['meetup-group'], earliest, "past")
             if estr:
                 events = json.loads(estr)
-                today = datetime.today()
                 for event in events:
                     eventdate = datetime.strptime(event['local_date'], '%Y-%m-%d')
                     tdelta = today - eventdate
@@ -1823,7 +1823,107 @@ def update_subscription_members():
 
     print(f"Done with {count} subscriptions.")
 
+def parse_leaderline(line):
+    ename = line.find(']')
+    name = line[line.find('[') + 1:line.find(']')]
+    email = line[line.find('(', ename) + 1:line.find(')', ename)]
+    return name, email
+
+def add_to_leaders(repo, content, all_leaders):
+    lines = content.split('\n')
+    for line in lines:
+        fstr = line.find('[')
+        testline = line.lower()
+        if(testline.startswith('###') and 'leader' not in testline):
+            break
+        
+        if(line.startswith('*') and fstr > -1 and fstr < 4):
+            name, email = parse_leaderline(line)
+            leader = {}
+            leader['name'] = name
+            leader['email'] = email
+            leader['group'] = repo['title']
+            leader['group_url'] = repo['url']
+            
+            all_leaders.append(leader)
+
+def update_copper_leaders():
+    gh = OWASPGitHub()
+    cp =  OWASPCopper()
+
+    repos = gh.GetPublicRepositories('www-')
+    for repo in repos:
+        if 'www-chapter-' in repo['name'] or 'www-project-' in repo['name'] or 'www-committee-' in repo['name'] or 'www-revent-' in repo['name']:
+            projr = cp.GetProject(repo['title']) 
+            fr = gh.GetFile(repo['name'], 'leaders.md')
+            if projr and fr.ok:
+                projects = json.loads(projr)
+                peopler = cp.GetRelatedPeople('projects', projects[0]['id'])
+                people = []
+                if peopler:
+                    people = json.loads(peopler)
+
+                doc = json.loads(fr.text)
+                content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+                # need to grab the leaders....
+                leaders = []
+                add_to_leaders(repo, content, leaders)           
+                for leader in leaders:
+                    pers = cp.FindPersonByEmail(leader['email'].replace('mailto:','').replace('//',''))
+                    if pers:
+                        person = json.loads(pers)[0]
+                        cp.RelateRecord('projects', projects[0]['id'], person['id']) # all chapters, committees, projects, etc are 'projects' in Copper
+
+                for person in people:
+                    pers = cp.GetPerson(person['id'])
+                    if pers:
+                        pjson = json.loads(pers)
+                        emails = pjson['emails']
+                        for email in emails:
+                            if email not in leaders:
+                                cp.UnrelateRecord('projects', projects[0]['id'], pjson['id'])
+                    
+
+def update_lifetime_starts():
+    cp = OWASPCopper()
+    with open('lifetime_sf.txt') as f:
+        lines = f.readlines()
+        for line in lines:
+            details = line.split('\t')
+            start_date = datetime.strptime(details[0], '%m/%d/%Y').strftime('%m/%d/%Y')
+            customers = stripe.Customer.list(email=details[1].strip(), api_key=os.environ['STRIPE_SECRET'])
+            if len(customers.data) > 0: # exists
+                customer_id = customers.data[0].get('id', None)
+                metadata = customers.data[0].get('metadata', {})
+                stripe_member_type = metadata.get('membership_type')
+                metadata['membership_start'] = start_date
+                if stripe_member_type == 'lifetime':
+                    stripe.Customer.modify(customer_id, metadata=metadata, api_key=os.environ['STRIPE_SECRET'])
+                    person = cp.FindPersonByEmail(customers.data[0].email)
+                    if person:
+                        pers = json.loads(person)
+                        cp.UpdatePerson(pers[0]['id'], metadata, customer_id)
+                    else:
+                        print(f'could not find {details[0]} in Copper')
+            else:
+                print(f'could not find {details[0]} in Stripe')
+
+            print(f'Done with {details[0]}')
+
+
 def main():
+    
+    #update_lifetime_starts()
+    #update_copper_leaders()
+    gh = OWASPGitHub()
+    repos = gh.GetPublicRepositories('www-')
+    for repo in repos:
+        lfile = gh.GetFile(repo['name'], 'Gemfile.lock')
+        if lfile.ok:
+            doc = json.loads(lfile.text)
+            sha = doc['sha']
+            gh.DeleteFile(repo['name'], 'Gemfile.lock', sha)
+        
     #do_stripe_verify_recurring()
 
     #edate = datetime.today() + timedelta(-30)
@@ -1833,9 +1933,6 @@ def main():
     #mu.Login()
     #estr = mu.GetGroupEvents("OWASP-OC", earliest)
     #print(estr)
-    gh = OWASPGitHub()
-    repos = gh.GetPublicRepositories('www-')
-    print('done')
     #find_extended_enddate_members()    
     # These were done 7.29.2021
     #import_members('2021-appsec-us-member-import.csv')

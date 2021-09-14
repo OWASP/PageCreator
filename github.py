@@ -6,6 +6,8 @@ import os
 import logging
 import datetime
 import urllib
+import random
+import time
 
 # Major update 6.7.2021 to match, upgrade Azure version of similar file
 
@@ -96,17 +98,17 @@ class OWASPGitHub:
     def GetOFFile(self, repo, filepath):
         return self.GetFile(repo, filepath, self.of_content_fragment)
 
-    def DeleteFile(self, repo, filepath):
+    def DeleteFile(self, repo, filepath, sha):
         url = self.gh_endpoint + self.content_fragment
         url = url.replace(":repo", repo)
         url = url.replace(":path", filepath)
-
-        committer = {
-            "name" : "OWASP Foundation",
-            "email" : "owasp.foundation@owasp.org"
+        data = {
+            "message": "remote delete",
+            "sha": sha
         }
         headers = {"Authorization": "token " + self.apitoken}
-        r = requests.delete(url = url, headers=headers)
+        
+        r = requests.delete(url = url, headers=headers, data=json.dumps(data))
         return r
 
     def SendFile(self, url, filename, replacetags = None, replacestrs = None):
@@ -264,8 +266,8 @@ class OWASPGitHub:
         results = []
         while not done:
             pagestr = "?page=%d" % pageno
-            url = self.gh_endpoint + self.org_fragment + pagestr + '&per_page=100'
-            #url = self.gh_endpoint + self.search_repos_fragment + pagestr + "&" + urllib.parse.urlencode(qdata) + "&per_page=100" # I am concerned that this search might use a cache and I wonder how often the cache is updated...
+            #url = self.gh_endpoint + self.org_fragment + pagestr + '&per_page=100'
+            url = self.gh_endpoint + self.search_repos_fragment + pagestr + "&" + urllib.parse.urlencode(qdata) + "&per_page=100" # I am concerned that this search might use a cache and I wonder how often the cache is updated...
             r = requests.get(url=url, headers = headers)
             
             if r.ok:
@@ -280,9 +282,10 @@ class OWASPGitHub:
                     done = True
                 
                 pageno = pageno + 1
-                
-                #for repo in repos['items']: # This works for search fragment
-                for repo in repos:
+
+                final_repos = []
+                for repo in repos['items']:# This works for search fragment
+                #for repo in repos:
                     repoName = repo['name'].lower()
                     istemplate = repo['is_template']
                     haspages = repo['has_pages'] #false for Iran...maybe was never activated?
@@ -297,99 +300,106 @@ class OWASPGitHub:
                                 continue
                             elif (pages and pages['status'] != None) and inactive:
                                 continue
+                            final_repos.append(repo)
                         else:
                             continue
-                            
-                        addrepo = {}
-                        addrepo['name'] = repoName
-                        addrepo['url'] = f"https://owasp.org/{ repoName }/"
-                    
-                        cdate = datetime.datetime.strptime(repo['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-                        udate = datetime.datetime.strptime(repo['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
-                        addrepo['created'] = cdate.strftime('%c')
-                        addrepo['updated'] = udate.strftime('%c')
-                        if pages:
-                            addrepo['build'] = pages['status']
-                        else:
-                            addrepo['build'] = 'no pages'
 
-                        r = self.GetFile(repoName, 'index.md')
-                        if r.ok:
-                            doc = json.loads(r.text)
-                            content = base64.b64decode(doc['content']).decode()
-                            ndx = content.find('title:')
-                            eol = content.find('\n', ndx + 7)
-                            if ndx >= 0:
-                                title = content[ndx + 7:eol]
-                                addrepo['title'] = title.strip()
-                            else:
-                                addrepo['title'] = repoName
-                                
-                            ndx = content.find('level:') + 6
-                            eol = content.find("\n", ndx)
-                            not_updated = (content.find("This is an example of a Project") >= 0)
-                            if ndx < 0 or not_updated:
-                                level = "-1"
-                            else:
-                                level = content[ndx:eol]
-                            addrepo['level'] = level.strip() 
-                            ndx = content.find('type:') + 5
+                
+                for repo in final_repos: 
+                    repoName = repo['name'].lower()
+                    istemplate = repo['is_template']
+                    haspages = repo['has_pages'] #false for Iran...maybe was never activated?
+                                                    
+                    addrepo = {}
+                    addrepo['name'] = repoName
+                    addrepo['url'] = f"https://owasp.org/{ repoName }/"
+                
+                    cdate = datetime.datetime.strptime(repo['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+                    udate = datetime.datetime.strptime(repo['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
+                    addrepo['created'] = cdate.strftime('%c')
+                    addrepo['updated'] = udate.strftime('%c')
+                    if pages:
+                        addrepo['build'] = pages['status']
+                    else:
+                        addrepo['build'] = 'no pages'
+
+                    r = self.GetFile(repoName, 'index.md')
+                    if r.ok:
+                        doc = json.loads(r.text)
+                        content = base64.b64decode(doc['content']).decode()
+                        ndx = content.find('title:')
+                        eol = content.find('\n', ndx + 7)
+                        if ndx >= 0:
+                            title = content[ndx + 7:eol]
+                            addrepo['title'] = title.strip()
+                        else:
+                            addrepo['title'] = repoName
+                            
+                        ndx = content.find('level:') + 6
+                        eol = content.find("\n", ndx)
+                        not_updated = (content.find("This is an example of a Project") >= 0)
+                        if ndx < 0 or not_updated:
+                            level = "-1"
+                        else:
+                            level = content[ndx:eol]
+                        addrepo['level'] = level.strip() 
+                        ndx = content.find('type:') + 5
+                        eol = content.find("\n", ndx)
+                        gtype = content[ndx:eol]
+                        addrepo['type'] = gtype.strip()
+                        ndx = content.find('region:') + 7
+                        
+                        if not_updated:
+                            gtype = 'Needs Website Update'
+                        elif ndx > 6: # -1 + 7
                             eol = content.find("\n", ndx)
                             gtype = content[ndx:eol]
-                            addrepo['type'] = gtype.strip()
-                            ndx = content.find('region:') + 7
+                        else: 
+                            gtype = 'Unknown'
                             
-                            if not_updated:
-                                gtype = 'Needs Website Update'
-                            elif ndx > 6: # -1 + 7
-                                eol = content.find("\n", ndx)
-                                gtype = content[ndx:eol]
-                            else: 
-                                gtype = 'Unknown'
-                                
-                            addrepo['region'] = gtype.strip()
+                        addrepo['region'] = gtype.strip()
 
-                            ndx = content.find('pitch:') + 6
-                            if ndx > 5: # -1 + 6
-                                eol = content.find('\n', ndx)
-                                gtype = content[ndx:eol]
-                            else:
-                                gtype = 'More info soon...' 
-                            addrepo['pitch'] = gtype.strip()
-                            
-                            ndx = content.find('meetup-group:')
+                        ndx = content.find('pitch:') + 6
+                        if ndx > 5: # -1 + 6
+                            eol = content.find('\n', ndx)
+                            gtype = content[ndx:eol]
+                        else:
+                            gtype = 'More info soon...' 
+                        addrepo['pitch'] = gtype.strip()
+                        
+                        ndx = content.find('meetup-group:')
+                        if ndx > -1:
+                            ndx += 13
+                            eol=content.find('\n', ndx)
+                            mu = content[ndx:eol]
+                            if len(mu.strip()) > 0:
+                                addrepo['meetup-group'] = mu.strip()
+
+                        if 'meetup-group' not in addrepo:        
+                            ndx = content.find('meetup.com/')
                             if ndx > -1:
-                                ndx += 13
-                                eol=content.find('\n', ndx)
+                                ndx += 11
+                                eolfs = content.find('/', ndx)
+                                
+                                if eolfs - ndx <= 6:
+                                    ndx = eolfs
+                                    eolfs = content.find('/', ndx + 1)
+
+                                eolp = content.find(')', ndx + 1)
+                                eols = content.find(' ', ndx + 1)
+                                eol = eolfs
+                                if eolp > -1 and eolp < eol:
+                                    eol = eolp
+                                if eols > -1 and eols < eol:
+                                    eol = eols
+
                                 mu = content[ndx:eol]
+                                if '/' in mu:
+                                    mu = mu.replace('/','')
                                 if len(mu.strip()) > 0:
                                     addrepo['meetup-group'] = mu.strip()
 
-                            if 'meetup-group' not in addrepo:        
-                                ndx = content.find('meetup.com/')
-                                if ndx > -1:
-                                    ndx += 11
-                                    eolfs = content.find('/', ndx)
-                                    
-                                    if eolfs - ndx <= 6:
-                                        ndx = eolfs
-                                        eolfs = content.find('/', ndx + 1)
-
-                                    eolp = content.find(')', ndx + 1)
-                                    eols = content.find(' ', ndx + 1)
-                                    eol = eolfs
-                                    if eolp > -1 and eolp < eol:
-                                        eol = eolp
-                                    if eols > -1 and eols < eol:
-                                        eol = eols
-
-                                    mu = content[ndx:eol]
-                                    if '/' in mu:
-                                        mu = mu.replace('/','')
-                                    if len(mu.strip()) > 0:
-                                        addrepo['meetup-group'] = mu.strip()
-
-                            results.append(addrepo)
+                        results.append(addrepo)
 
 
 
