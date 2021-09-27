@@ -1910,19 +1910,20 @@ def update_lifetime_starts():
 
             print(f'Done with {details[0]}')
 
-
 def main():
     
     #update_lifetime_starts()
     #update_copper_leaders()
-    gh = OWASPGitHub()
-    repos = gh.GetPublicRepositories('www-')
-    for repo in repos:
-        lfile = gh.GetFile(repo['name'], 'Gemfile.lock')
-        if lfile.ok:
-            doc = json.loads(lfile.text)
-            sha = doc['sha']
-            gh.DeleteFile(repo['name'], 'Gemfile.lock', sha)
+    import_members('dist_life_members_9.23.2021.csv', True)
+    
+    # gh = OWASPGitHub()
+    # repos = gh.GetPublicRepositories('www-')
+    # for repo in repos:
+    #     lfile = gh.GetFile(repo['name'], 'Gemfile.lock')
+    #     if lfile.ok:
+    #         doc = json.loads(lfile.text)
+    #         sha = doc['sha']
+    #         gh.DeleteFile(repo['name'], 'Gemfile.lock', sha)
         
     #do_stripe_verify_recurring()
 
@@ -2112,8 +2113,6 @@ def main():
     #og = OWASPGoogle()
     #print(og.GetPossibleEmailAddresses('harold.blankenship@owasp.org'))
     #print(og.CreateEmailAddress("kithwood@gmail.com", "harold", "test2"))
-
-    #import_members('gappsec_members_9.30.2020.csv')
 
     # cp = OWASPCopper()
     # person = cp.FindPersonByEmail('plupiani@bcgeng.com')

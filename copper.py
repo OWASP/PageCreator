@@ -536,6 +536,37 @@ class OWASPCopper:
         
         return pid
 
+    def GetPersonTags(self, pid):
+        pjson = self.GetPerson(pid)
+        rettags = []
+        person = None
+        if pjson:
+            person = json.loads(pjson)
+
+        if person:
+            if 'tags' in person:
+                rettags = person['tags']
+
+        return rettags
+
+    def AddTagsToPerson(self, pid, tags):
+        current_tags = self.GetPersonTags(pid)
+        for tag in current_tags:
+            tags.append(tag)
+
+        data = {
+            'tags': tags # should be an array of string
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
+        r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
+        pid = None
+        if r.ok:
+            person = json.loads(r.text)
+            pid = person['id']
+        
+        return pid
+
     def CreateOpportunity(self, opp_name, contact_email):
 
         contact_json = self.FindPersonByEmail(contact_email)
@@ -879,7 +910,7 @@ class OWASPCopper:
         
         return None
 
-    def CreateOWASPMembership(self, stripe_id, name, email, subscription_data):
+    def CreateOWASPMembership(self, stripe_id, name, email, subscription_data, tags = None):
         # Multiple steps here
         # CreatePerson
         # CreateOpportunity
@@ -912,6 +943,8 @@ class OWASPCopper:
 
                 if mend == None or cp_mend == None or mend > current_end:
                     self.UpdatePerson(pid, subscription_data, stripe_id)
+        
+        self.AddTagsToPerson(pid, tags)
 
         if pid == None or pid <= 0:
             logging.error(f'Failed to create person for {email}')
