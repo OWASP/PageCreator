@@ -63,7 +63,5 @@ class OWASPMeetup:
         json_res = ''
         if res.ok:
             json_res = res.text
-        else:
-            print(res.text)
 
         return json_res

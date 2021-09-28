@@ -1912,9 +1912,24 @@ def update_lifetime_starts():
 
 def main():
     
+    mu = OWASPMeetup()
+    today = datetime.today()
+    count = 0
+    early = f"{today.year -1}-01-01T00:00:00.000"
+    ejson = mu.GetGroupEvents('OWASP-Ottawa', earliest=early, status='past')
+    if ejson:
+        events = json.loads(ejson)
+        for event in events:
+            print(f"{event['local_date']}")
+            eventdate = datetime.strptime(event['local_date'], '%Y-%m-%d')
+            tdelta = today - eventdate
+            if tdelta.days > 0 and tdelta.days < 365:
+                count = count + 1
+
+    print(count)
     #update_lifetime_starts()
     #update_copper_leaders()
-    import_members('dist_life_members_9.23.2021.csv', True)
+    #import_members('dist_life_members_9.23.2021.csv', True)
     
     # gh = OWASPGitHub()
     # repos = gh.GetPublicRepositories('www-')
