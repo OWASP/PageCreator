@@ -28,11 +28,18 @@ class MemberData:
         
         self.last = self.last.strip()
 
+        copper = OWASPCopper()
+
         self.email = email
         self.company = company
         self.country = country
         self.postal_code = postal_code
-        self.end = None
+    
+        if end:
+            self.end = copper.GetDatetimeHelper(end)
+        else:
+            self.end = None
+
         self.start = None
         self.tags = []
         
@@ -45,11 +52,10 @@ class MemberData:
                 if memstart:
                     start = memstart # don't change a start date
 
-        copper = OWASPCopper()
+        
         if start:
             self.start = copper.GetDatetimeHelper(start)
-        if end:
-            self.end = copper.GetDatetimeHelper(end)
+        
             
         self.type = type
         self.recurring = recurring
@@ -157,7 +163,11 @@ def import_members(filename, override_lifetime_add_tags=False):
                 stripe_id = member.CreateCustomer()
             
             if stripe_id != None:
-                cop.CreateOWASPMembership(stripe_id, member.name, member.email, member.GetSubscriptionData(), tags)
+                sub_data = member.GetSubscriptionData()
+                if sub_data['membership_type'] != 'lifetime' and sub_data.get('membership_end', None) == None:
+                    sub_data['membership_end'] = '2000-01-01' # faking this data so we can look it up later and fix it
+
+                cop.CreateOWASPMembership(stripe_id, member.name, member.email, sub_data, tags)
                 mailchimp = OWASPMailchimp()
                 mailchimpdata = {
                     'name': member.name,

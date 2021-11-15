@@ -25,7 +25,8 @@ class OWASPMailchimp:
             "interests": self.GetInterests(metadata),
             "marketing_permissions": self.GetMarketingPermissions(metadata)
         }
-        
+
+        list_member = None        
         try:
             list_member = self.mailchimp.lists.members.create_or_update(os.environ["MAILCHIMP_LIST_ID"], subscriber_hash, request_data)
         except:

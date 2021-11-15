@@ -1425,17 +1425,18 @@ def get_membership_data():
         retopp = cp.ListOpportunities(page_number=page, status_ids=[1], pipeline_ids=[cp.cp_opportunity_pipeline_id_membership]) # all Won Opportunities for Individual Membership
         if retopp != '':
             opportunities = json.loads(retopp)
-            if len(opportunities) < 200:
+            if len(opportunities) < 100:
                 done = True
 
             for opp in opportunities:
-                end_val = get_custom_field(opp['custom_fields'], cp.cp_opportunity_end_date)
-                if end_val != None:
-                    end_date = datetime.fromtimestamp(end_val)
-                    if end_date and end_date < today:
+                if 'lifetime' not in opp['name'].lower():
+                    end_val = get_custom_field(opp['custom_fields'], cp.cp_opportunity_end_date)
+                    if end_val != None:
+                        end_date = datetime.fromtimestamp(end_val)
+                        if end_date and end_date < today:
+                            continue
+                    if end_val == None:
                         continue
-                if end_val == None and 'lifetime' not in opp['name'].lower():
-                    continue
                 
                 close_date = cp.GetDatetimeHelper(opp['close_date'])
                 if close_date == None:
@@ -1910,26 +1911,112 @@ def update_lifetime_starts():
 
             print(f'Done with {details[0]}')
 
-def main():
-    
-    mu = OWASPMeetup()
-    today = datetime.today()
-    count = 0
-    early = f"{today.year -1}-01-01T00:00:00.000"
-    ejson = mu.GetGroupEvents('OWASP-Ottawa', earliest=early, status='past')
-    if ejson:
-        events = json.loads(ejson)
-        for event in events:
-            print(f"{event['local_date']}")
-            eventdate = datetime.strptime(event['local_date'], '%Y-%m-%d')
-            tdelta = today - eventdate
-            if tdelta.days > 0 and tdelta.days < 365:
-                count = count + 1
+def check_for_lifetime(filename):
 
-    print(count)
+    with open(filename) as csvfile:
+        reader = csv.DictReader(csvfile)
+        stripe.api_key = os.environ['STRIPE_SECRET']
+        for row in reader:
+            email = f"{row['Email']}".strip().lower()
+            customers = stripe.Customer.list(email=email)
+            if len(customers.data) > 0: # exists
+                metadata = customers.data[0].get('metadata', {})
+                stripe_member_type = metadata.get('membership_type')
+                if stripe_member_type == 'lifetime':
+                    print(f"Found lifetime membership for {email}")
+            else:
+                print(f"Customer not found in copper: {email}")
+
+def check_copper_for_lifetime(filename):
+     with open(filename) as csvfile:
+        reader = csv.DictReader(csvfile)
+        cp = OWASPCopper()
+        for row in reader:
+            email = f"{row['Email']}".strip().lower()
+            opp = cp.FindMemberOpportunity(email)
+            if not opp or opp == '[]': 
+                print(f'Lifetime membership not found for {email}')
+
+def membership_found(email): # check copper for membership data and then Stripe, for good measure
+    cp = OWASPCopper()
+    try:
+        opp = cp.FindMemberOpportunity(email)
+        if opp != None:
+            return True
+        else:
+            customers = stripe.Customer.list(email=email, api_key=os.environ['STRIPE_SECRET'])
+            if customers is not None and len(customers) > 0:
+                customer = customers.data[0]
+                metadata = customer['metadata']
+                membership_type = metadata.get('membership_type', None)
+
+                # keep email if customer has a lifetime membership
+                if membership_type != None and membership_type == 'lifetime':
+                    logging.warn(f"Customer found with Stripe membership but no Copper membership: {email}")
+                    return True
+
+                membership_end = metadata.get('membership_end', None)
+                memend_date = None
+                if membership_end != None:
+                    memend_date = datetime.strptime(membership_end, "%m/%d/%Y")
+
+                # membership not expired, keep
+                if memend_date != None and memend_date > datetime.utcnow():
+                    logging.warn(f"Customer found with Stripe membership but no Copper membership: {email}")
+                    return True            
+                return False
+    except Exception as ex:
+        logging.exception(f"An exception of type {type(ex).__name__} occurred while processing a customer: {ex}")
+        raise
+
+def print_list_not_members():
+    og = OWASPGoogle()
+    next_page_token = None
+    errors_count = 0
+    while True:
+        google_users = og.GetActiveUsers(next_page_token)
+        next_page_token = google_users.get('nextPageToken')
+        for user in google_users['users']:
+            try:
+                user_email = user['primaryEmail'].lower()
+
+                created = datetime.strptime(user['creationTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                if (datetime.today() - created).days < 7:
+                    continue
+
+                if not membership_found(user_email):
+                    print(f'NOT MEMBER: {user_email}')
+                else:
+                    print(f'MEMBER: {user_email}')
+                
+            except Exception as ex:
+                template = "An exception of type {0} occurred while processing a customer. Arguments:\n{1!r}"
+                message = template.format(
+                    type(ex).__name__, ex.args)
+                print(message)
+                errors_count = errors_count + 1
+        
+        if not next_page_token:
+            break
+
+def main():
+    #print_list_not_members()
+
+    userstr = "ulysses.one.suspender@owasp.org,ulysses.two.suspender@owasp.org,ulysses.three.suspender@owasp.org,ulysses.four.suspender@owasp.org,ulysses.five.suspender@owasp.org,email.tester.1@owasp.org,email.tester.2@owasp.org,email.tester.3@owasp.org,email.tester.4@owasp.org,email.tester.5@owasp.org,email.tester.6@owasp.org,email.tester.7@owasp.org,email.tester.8@owasp.org,email.tester.9@owasp.org,email.tester.10@owasp.org,email.tester.10@owasp.org,email.tester.12@owasp.org,email.tester.13@owasp.org,email.tester.14@owasp.org"
+    test_users = userstr.replace(' ','').split(',')  
+    print(test_users)
+    print('ulysses.four.suspender@owasp.org' in test_users)
+    #get_membership_data()
+    #check_copper_for_lifetime('stripe_lifetime.csv')
+    #check_for_lifetime('2021-Global-AppSec-US-_10_14_21.csv')
+    
     #update_lifetime_starts()
     #update_copper_leaders()
-    #import_members('dist_life_members_9.23.2021.csv', True)
+    
+    #gh = OWASPGitHub()
+    #gr = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    #print(gr.text)
+    #import_members('test-users.csv', True)
     
     # gh = OWASPGitHub()
     # repos = gh.GetPublicRepositories('www-')

@@ -118,7 +118,11 @@ class OWASPGoogle:
 
         return result
 
-    def GetAllUsers(self, email, showDeleted=False):
+    def GetActiveUsers(self, next_page_token):
+        results = self.admin.users().list(domain='owasp.org', query='isSuspended=false', pageToken=next_page_token).execute()
+        return results
+
+    def GetAllUsers(self, email, showDeleted=False): # Gets all users with a specified email address
         done = False
         while not done:
             try:
@@ -132,7 +136,7 @@ class OWASPGoogle:
                 done = (e.status != 503)
                 if not done:
                     dropoff = 4 + random.randint(1, 4)
-                    time.sleep(drop_off * 1.25)
+                    time.sleep(dropoff * 1.25)
                 pass
 
         return []
@@ -151,7 +155,7 @@ class OWASPGoogle:
                 done = (e.status != 503)
                 if not done:
                     dropoff = 4 + random.randint(1, 4)
-                    time.sleep(drop_off * 1.25)
+                    time.sleep(dropoff * 1.25)
                 pass
 
         return None
