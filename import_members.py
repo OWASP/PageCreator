@@ -15,6 +15,22 @@ import csv
 from owaspmailchimp import OWASPMailchimp
 
 class MemberData:
+    def __init__(self):
+        self.name = None
+        self.first = None
+        self.last = None
+        self.email = None
+        self.other_emails = None
+        self.company = None
+        self.country = None
+        self.postal_code = None
+        self.start = None
+        self.end = None
+        self.tags = None
+        self.type = None
+        self.recurring = None
+        self.stripe_id = None
+
     def __init__(self, name, email, company, country, postal_code, start, end, type, recurring):
         self.name = name
         names = self.name.split(' ')
@@ -42,24 +58,108 @@ class MemberData:
 
         self.start = None
         self.tags = []
-        
-        customers = stripe.Customer.list(email=email)
-        if len(customers.data) > 0:
-            customer = customers.data[0]
-            cmetadata = customer.get('metadata', None)
-            if cmetadata:
-                memstart = cmetadata.get('membership_start', None)
-                if memstart:
-                    start = memstart # don't change a start date
+        start = None
 
+        #Should pull start date from copper if it exists
+        persons = copper.FindPersonByEmailObj(email)
+        if len(persons) > 0: 
+            person = persons[0]
+            startfield = copper.GetCustomFieldHelper(copper.cp_person_membership_start, person['custom_fields'])
+            if startfield:
+                start = datetime.fromtimestamp(startfield)
+
+        if not start: # if copper did not have it, pull it from Stripe
+            customers = stripe.Customer.list(email=email)
+            if len(customers.data) > 0:
+                customer = customers.data[0]
+                cmetadata = customer.get('metadata', None)
+                if cmetadata:
+                    memstart = cmetadata.get('membership_start', None)
+                    if memstart:
+                        startstr = memstart # don't change a start date
+                        if startstr:
+                            start = copper.GetDatetimeHelper(startstr)
         
-        if start:
-            self.start = copper.GetDatetimeHelper(start)
-        
-            
+        self.start = start    
         self.type = type
         self.recurring = recurring
         self.stripe_id = None
+
+
+    @classmethod
+    def LoadMemberDataByEmail(self, email):
+        # do some stuff
+        member_data = None
+        copper = OWASPCopper()
+        persons = copper.FindPersonByEmailObj(email)
+        use_person, use_customer, use_metadata = self.GetPersonCustomerAndMetadata(copper, persons)
+
+        if use_person and use_customer and use_metadata:
+            first_email = use_customer.get('email')
+            
+
+            member_data = MemberData(use_person['first_name'] + ' ' + use_person['last_name'], first_email.lower(), use_customer.get('company', None), use_customer.get('country', None), use_customer.get('postal_code', None), use_metadata.get('membership_start', None), use_metadata.get('membership_end', None), use_metadata.get('membership_type', None), use_metadata.get('membership_recurring'))
+            member_data.AddEmails(use_person['emails'])
+
+        return member_data
+
+    @classmethod
+    def LoadMemberDataByName(self, name):
+        member_data = None
+        copper = OWASPCopper()
+        persons = copper.FindPersonByNameObj(name)
+        use_person, use_customer, use_metadata = self.GetPersonCustomerAndMetadata(copper, persons)
+
+        if use_person and use_customer and use_metadata:
+            first_email = use_customer.get('email')
+            
+
+            member_data = MemberData(use_person['first_name'] + ' ' + use_person['last_name'], first_email.lower(), use_customer.get('company', None), use_customer.get('country', None), use_customer.get('postal_code', None), use_metadata.get('membership_start', None), use_metadata.get('membership_end', None), use_metadata.get('membership_type', None), use_metadata.get('membership_recurring'))
+            member_data.AddEmails(use_person['emails'])
+
+        return member_data
+        return
+
+    def GetPersonCustomerAndMetadata(copper, persons):
+        use_metadata = None
+        use_customer = None
+        use_person = None
+        stripe.api_key = os.environ['STRIPE_SECRET']
+        if persons and len(persons) == 1:
+            for person in persons:
+                use_person = person
+                if len(person['emails']) > 0: # do not need people we have no email for
+                    for email in person['emails']:
+                        customers = stripe.Customer.list(email=email['email'])                       
+                        for customer in customers:
+                            metadata = customer.get('metadata', None)
+                            if metadata.get('membership_type', None) == 'lifetime': # only one that matters...use this
+                                use_metadata = metadata
+                                use_customer = customer
+                                break
+                            elif metadata.get('membership_type', None) and metadata.get('membership_end', None):
+                                if not use_metadata:
+                                    use_metadata = metadata
+                                    use_customer = customer
+                                else:
+                                    memend = copper.GetDatetimeHelper(metadata.get('membership_end', None))
+                                    currend = copper.GetDatetimeHelper(use_metadata.get('membership_end', None))
+                                    if memend > currend:
+                                        use_metadata = metadata
+                                        use_customer = customer
+                else:
+                    raise Exception("No email address for person")
+        elif len(persons) > 1:
+            raise Exception("Found more than 1 person with email")
+        
+        return use_person, use_customer, use_metadata
+
+    def AddEmails(self, emails):
+        self.other_emails = []
+        for email in emails:
+            if email['email'].lower() != self.email:
+                self.other_emails.append(email['email'].lower())
+
     def UpdateMetadata(self, customer_id, metadata):
         self.stripe_id = customer_id
         stripe.Customer.modify(

@@ -160,6 +160,22 @@ class OWASPCopper:
         
         return ''
     
+    def GetPersonForOpportunity(self, opp_id):
+        #https://api.copper.com/developer_api/v1/people/{{person_id}}/related/opportunities
+        pers = None
+        url = f"{self.cp_base_url}{self.cp_related_fragment}"
+        url = url.replace(':entity_id', str(opp_id)).replace(':entity', 'opportunities')
+        url = url + '/people'
+        r = requests.get(url, headers=self.GetHeaders())
+        if r.ok and r.text:
+            persons = json.loads(r.text)
+            if persons and len(persons) > 1:
+                print(f"More than one person associated with opportunity {opp_id}")
+            for item in persons:
+                pers = self.GetPersonObj(item['id'])
+
+        return pers
+
     def GetPerson(self, pid):
         url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
         
@@ -168,6 +184,43 @@ class OWASPCopper:
             return r.text
         
         return ''
+
+    def GetPersonObj(self, pid):
+        results = None
+        pers_text = self.GetPerson(pid)
+        if pers_text:
+            results = json.loads(pers_text)
+        
+        return results
+
+    def FindPersonByEmailObj(self, searchtext):
+        results = []
+
+        lstxt = searchtext.lower()
+        if len(lstxt) <= 0:
+            return results
+
+        # first use fetch_by_email
+        url = f'{self.cp_base_url}{self.cp_people_fragment}fetch_by_email'
+        data = { 'email': lstxt }
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok and r.text != '[]':
+            results = [json.loads(r.text)]
+
+        if len(results) == 0:
+            data = {
+                'page_size': 5,
+                'sort_by': 'name',
+                'emails': [lstxt]
+            }
+
+            url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'        
+            r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+            if r.ok:
+                results = json.loads(r.text)
+        
+        return results
+
 
     def FindPersonByEmail(self, searchtext):
         lstxt = searchtext.lower()
@@ -195,6 +248,69 @@ class OWASPCopper:
         
         return ''
 
+    def FindPersonByNameObj(self, searchtext):
+        lstxt = searchtext.lower()
+        if len(lstxt) <= 0:
+            return ''
+            
+        data = {
+            'page_size': 5,
+            'sort_by': 'name',
+            'name': lstxt
+        }
+        results = []
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            res = json.loads(r.text)
+            results.extend(res)
+        
+        ## Supposedly this should work, but searching by last or first name does NOT work, only the full name (what crap)
+        data = {
+            'page_size': 5,
+            'sort_by': 'name',
+            'last_name': lstxt
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            res = json.loads(r.text)
+            results.extend(res)
+
+        data = {
+            'page_size': 5,
+            'sort_by': 'name',
+            'first_name': lstxt
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            res = json.loads(r.text)
+            results.extend(res)
+
+
+        return results
+
+    def FindPersonByName(self, searchtext):
+        lstxt = searchtext.lower()
+        if len(lstxt) <= 0:
+            return ''
+            
+        data = {
+            'page_size': 5,
+            'sort_by': 'name',
+            'name': lstxt
+        }
+
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
+        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            return r.text
+        
+        return '[]'
+        
     def ListMembers(self, member_type='all'):
         members = []
         # This function returns all members in the CRM of the requested type, regardless of status (current/expired/etc)
@@ -336,24 +452,6 @@ class OWASPCopper:
 
         return members
 
-    def FindPersonByName(self, searchtext):
-        lstxt = searchtext.lower()
-        if len(lstxt) <= 0:
-            return ''
-            
-        data = {
-            'page_size': 5,
-            'sort_by': 'name',
-            'name': lstxt
-        }
-
-        url = f'{self.cp_base_url}{self.cp_people_fragment}{self.cp_search_fragment}'
-        r = requests.post(url, headers=self.GetHeaders(), data=json.dumps(data))
-        if r.ok:
-            return r.text
-        
-        return '[]'
-
     def CreatePerson(self, name, email, subscription_data = None, stripe_id = None):
         # Needs Name
         if not name:
@@ -368,15 +466,16 @@ class OWASPCopper:
                 }
             ]
         }
-        memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
-        memend = None
-        if memstart == None:
-            # so we have no start...must calculate it
-            memstart = self.GetStartdateHelper(subscription_data)
-        if 'membership_end' in subscription_data and subscription_data['membership_end']:
-            memend = self.GetDatetimeHelper(subscription_data['membership_end'])
 
         if subscription_data != None:
+            memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+            memend = None
+            if memstart == None:
+                # so we have no start...must calculate it
+                memstart = self.GetStartdateHelper(subscription_data)
+            if 'membership_end' in subscription_data and subscription_data['membership_end']:
+                memend = self.GetDatetimeHelper(subscription_data['membership_end'])
+                
             fields = []
             if subscription_data['membership_type'] == 'lifetime':
                 fields.append({
@@ -554,8 +653,9 @@ class OWASPCopper:
 
     def AddTagsToPerson(self, pid, tags):
         current_tags = self.GetPersonTags(pid)
-        for tag in current_tags:
-            tags.append(tag)
+        if tags and current_tags:
+            for tag in current_tags:
+                tags.append(tag)
 
         data = {
             'tags': tags # should be an array of string
@@ -647,26 +747,33 @@ class OWASPCopper:
                         elif 'lifetime' in opportunity['name'].lower() or ('Membership' in opportunity['name'] and opportunity['monetary_value'] and opportunity['monetary_value'] >= 200):
                             return r.text
 
-                        for cfield in opportunity['custom_fields']:
-                            if cfield['custom_field_definition_id'] == self.cp_opportunity_end_date:
-                                mend = cfield['value']
-                                mend_date = None
-                                if mend:
-                                    mend_date = datetime.utcfromtimestamp(mend)
-                                if subscription_data == None: # no data, just find first non-expired membership, if any
-                                    today = datetime.today()
-                                    tdstamp = int(today.timestamp())
-                                    if mend and mend > tdstamp:
-                                        return r.text
-                                    elif mend == None:
-                                        print(f'Membership end is None for {email}')
-                                elif subscription_data['membership_end']:
-                                    tend_date = datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d") 
-                                    tend = int(tend_date.timestamp())
-                                    if mend and mend == tend:
-                                        return r.text
-                                    elif mend_date and mend_date.year == tend_date.year:
-                                        return r.text
+                        mend = self.GetCustomFieldHelper(self.cp_opportunity_end_date, opportunity['custom_fields'])
+                        
+                        mend_date = None
+                        if mend:
+                            mend_date = datetime.utcfromtimestamp(mend)
+                        if subscription_data == None: # no data, just find first non-expired membership, if any
+                            today = datetime.today()
+                            tdstamp = int(today.timestamp())
+                            if mend and mend >= tdstamp:
+                                return r.text
+                            elif mend == None:
+                                print(f'Membership end is None for {email}')
+                        elif subscription_data['membership_end']:
+                            tend_date = self.GetDatetimeHelper(subscription_data['membership_end']) 
+                            tend = int(tend_date.timestamp())
+                            if mend and mend == tend:
+                                return r.text
+                            elif mend_date and mend_date.year == tend_date.year:
+                                return r.text
+                            elif mend == None:
+                                print(f'Membership end with subscription data is None for {email}')
+                    else:
+                        raise Exception(f"Failed to get opportunity: {r.text}")
+            else:
+                opp = f"Failed to get Opportunities for {email}. Retry later."
+        else:
+            opp = f"Failed to find person object for {email}"
 
         return opp
 

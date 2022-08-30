@@ -119,8 +119,23 @@ class OWASPGoogle:
         return result
 
     def GetActiveUsers(self, next_page_token):
-        results = self.admin.users().list(domain='owasp.org', query='isSuspended=false', pageToken=next_page_token).execute()
-        return results
+        done = False
+        while not done:
+            try:
+                results = results = self.admin.users().list(domain='owasp.org', query='isSuspended=false', pageToken=next_page_token).execute()
+                if 'users' in results and len(results['users']) > 0:
+                    return results
+                else:
+                    done = True
+            except HTTPError as e:
+                print('error waiting 8 to 10 seconds....')
+                done = (e.status != 503)
+                if not done:
+                    dropoff = 4 + random.randint(1, 4)
+                    time.sleep(dropoff * 1.25)
+                pass
+
+        return { 'users':[] }
 
     def GetAllUsers(self, email, showDeleted=False): # Gets all users with a specified email address
         done = False
@@ -231,6 +246,26 @@ class OWASPGoogle:
 
         return val
 
+    def GetGroupMembersAsObj(self, group_name):
+        members = []
+        try:
+            val = self.admin.members().list(groupKey=group_name).execute()
+            if 'members'in val:
+                members.extend(val['members'])
+                if 'nextPageToken' in val:
+                    pageToken = val['nextPageToken']
+                    while pageToken != None:
+                        val = self.admin.members().list(groupKey=group_name, pageToken=pageToken).execute()
+                        if 'members' in val:
+                            members.extend(val['members'])
+                            pageToken = val['nextPageToken']
+                        else:
+                            pageTaken = None
+        except:
+            pass
+
+        return members
+
     def AddMemberToGroup(self, group_name, email, role='MANAGER', member_type='USER'):
         data = { 'email': email, 'role': role, 'type':member_type }
         val = ''
@@ -240,9 +275,17 @@ class OWASPGoogle:
             pass
 
         return val
-        
 
-    def GetInitialGroupSettings(self):
+    def RemoveFromGroup(self, group_name, email):
+        val = ''
+        try:
+            val = self.admin.members().delete(groupKey=group_name, memberKey=email).execute()
+        except:
+            pass
+
+        return val        
+
+    def GetInitialGroupSettings(self, admin_only):
         gs = {  'whoCanJoin': 'INVITED_CAN_JOIN', 
                 'whoCanViewMembership': 'ALL_IN_DOMAIN_CAN_VIEW', 
                 'whoCanViewGroup': 'ALL_MEMBERS_CAN_VIEW', 
@@ -251,9 +294,14 @@ class OWASPGoogle:
                 'allowExternalMembers': 'true', 
                 'whoCanPostMessage': 'ANYONE_CAN_POST', 
                 'allowWebPosting': 'true' } 
+                
+        if admin_only:
+            gs['whoCanViewMembership'] = 'ALL_MANAGERS_CAN_VIEW'
+            gs['whoCanPostMessage'] = 'ALL_MEMBERS_CAN_POST'
+            
         return gs
     
-    def CreateGroup(self, group_name):
+    def CreateGroup(self, group_name, admin_only=False):
         group = {
             "adminCreated": True,
             "description": "Group Created by Automation",
@@ -272,6 +320,24 @@ class OWASPGoogle:
         if 'name' not in results:
             result = f"Failed to create Group {group['email']}."
         else:
-            self.SetGroupSettings(group_name, self.GetInitialGroupSettings())
+            self.SetGroupSettings(group_name, self.GetInitialGroupSettings(admin_only))
 
         return result
+
+    def SuspendUser(self, email): #suspend the user with email retrieved possibly from GetUser, for instance
+            user = self.GetUser(email)
+            if user:
+                user['suspended'] = True
+
+            results = self.admin.users().update(userKey=email, body=user).execute()
+
+            return ('primaryEmail' in results)
+
+    def UnsuspendUser(self, email): #suspend the user with email retrieved possibly from GetUser, for instance
+        user = self.GetUser(email)
+        if user:
+            user['suspended'] = False
+
+        results = self.admin.users().update(userKey=email, body= user).execute()
+
+        return ('primaryEmail' in results)

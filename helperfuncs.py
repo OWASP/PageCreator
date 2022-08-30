@@ -40,7 +40,8 @@ def get_owasp_email(member, cp):
     og = OWASPGoogle()
 
     if member:
-        for email in member['emails']:
+        emails = member["emails"]
+        for email in emails:
             if '@owasp.org' in email['email']:
                 return email['email']
             else:
@@ -58,6 +59,15 @@ def unsuspend_google_user(owasp_email):
         for email in user['emails']:
             if '@owasp.org' in email['address']:
                 if not og.UnsuspendUser(email['address']):
+                    logging.warn(f"Failed to unsuspend {email['address']}")
+
+def suspend_google_user(owasp_email):
+    og = OWASPGoogle()
+    user = og.GetUser(owasp_email)
+    if user and not user['suspended']:
+        for email in user['emails']:
+            if '@owasp.org' in email['address']:
+                if not og.SuspendUser(email['address']):
                     logging.warn(f"Failed to unsuspend {email['address']}")
 
 # for leaders, the check should exist in the azure function to not allow 
