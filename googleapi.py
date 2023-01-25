@@ -6,6 +6,7 @@ from httplib2 import http
 import json
 
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from httplib2 import http
 import json
 from datetime import datetime
@@ -160,18 +161,20 @@ class OWASPGoogle:
         done = False
         while not done:
             try:
-                results = self.admin.users().list(domain='owasp.org', query=f'email:{cid}', showDeleted=showDeleted).execute()
+                results = self.admin.users().list(domain="owasp.org", query=f"email:{cid}", showDeleted=showDeleted).execute()
                 if 'users' in results and len(results['users']) > 0:
                     return results['users'][0]
                 else:
                     done = True
-            except HTTPError as e:
+            except HttpError as e:
                 print('error waiting 8 to 10 seconds....')
-                done = (e.status != 503)
+                done = (e.status_code != 503)
                 if not done:
                     dropoff = 4 + random.randint(1, 4)
                     time.sleep(dropoff * 1.25)
                 pass
+            #except Exception as err:
+            #    pass
 
         return None
 

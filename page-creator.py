@@ -16,7 +16,6 @@ import hashlib
 import base64
 import datetime
 import re
-import python_http_client
 from wufoo import *
 from salesforce import *
 from mailchimp3 import MailChimp
@@ -38,6 +37,7 @@ from googleapiclient.http import MediaIoBaseDownload
 from owaspjira import OWASPJira
 import helperfuncs
 import sendgrid
+import markdown
 from sendgrid.helpers.mail import *
 from datetime import datetime, timedelta
 from import_members import MemberData
@@ -817,11 +817,11 @@ def build_chapter_json(gh):
             repo['updated'] = dobj.strftime("%Y-%m-%d")
         except ValueError:
             pass
-        
+
         ecount = 0
         today = datetime.today()
         earliest = f"{today.year - 1}-01-01T00:00:00.000"
-        if 'meetup-group' in repo:            
+        if 'meetup-group' in repo:
             estr = mu.GetGroupEvents(repo['meetup-group'], earliest, "past")
             if estr:
                 events = json.loads(estr)
@@ -832,7 +832,7 @@ def build_chapter_json(gh):
                         ecount = ecount + 1
         repo['meetings'] = ecount
 
-                
+
     repos.sort(key=lambda x: x['name'])
     repos.sort(key=lambda x: x['region'], reverse=True)
 
@@ -981,20 +981,20 @@ def deEmojify(text):
         "\U0001FA00-\U0001FA6F"  # Chess Symbols
         "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
         "\U00002702-\U000027B0"  # Dingbats
-        "\U000024C2-\U0001F251" 
+        "\U000024C2-\U0001F251"
         "])"
     )
 
     return EMOJI_PATTERN.sub(u'', text)
 
 def add_to_events(mue, events, repo):
-    
+
     if len(mue) <= 0 or 'errors' in mue:
         return events
-    
+
     group = repo.replace('www-chapter-','').replace('www-project-','').replace('www-committee-','').replace('www-revent-','').replace('-', ' ')
     group = " ".join(w.capitalize() for w in group.split())
-                
+
     for mevent in mue:
         event = {}
         today = datetime.today()
@@ -1012,14 +1012,14 @@ def add_to_events(mue, events, repo):
                 event['description'] = deEmojify(mevent['node']['description'])
             else:
                 event['description'] = ''
-                
+
             events.append(event)
 
     return events
 
 def create_chapter_events(gh, mu):
     repos = gh.GetPublicRepositories('www-chapter')
-    
+
     events = []
     for repo in repos:
         if 'meetup-group' in repo and repo['meetup-group']:
@@ -1028,17 +1028,17 @@ def create_chapter_events(gh, mu):
                 if mstr:
                     muej = json.loads(mstr)
                     add_to_events(gh, muej, events, repo['name'])
-                
+
 
     if len(events) <= 0:
         return
-        
+
     r = gh.GetFile('owasp.github.io', '_data/chapter_events.json')
     sha = ''
     if r.ok:
         doc = json.loads(r.text)
         sha = doc['sha']
-    
+
     contents = json.dumps(events, indent=4)
     r = gh.UpdateFile('owasp.github.io', '_data/chapter_events.json', contents, sha)
     if r.ok:
@@ -1048,38 +1048,38 @@ def create_chapter_events(gh, mu):
 
 def create_community_events(gh, mu):
     repos = gh.GetPublicRepositories('www-')
-    
+
     events = []
     edate = datetime.today() + timedelta(-30)
     earliest = edate.strftime('%Y-%m-')+"01T00:00:00.000"
     for repo in repos:
         rname = repo['name']
-        
+
         if 'www-chapter' not in repo['name'] and 'www-project' not in repo['name'] and 'www-committee' not in repo['name']:
             continue
-        
+
         meetup_group = repo.get('meetup-group', None)
         if not meetup_group:
             continue
 
         mstr = mu.GetGroupEvents(repo['meetup-group'], earliest)
-        time.sleep(0 + random.randint(0, 2))
+        # time.sleep(0 + random.randint(0, 2))
         if mstr:
             muej = json.loads(mstr)
             if muej and muej['data'] and muej['data']['proNetworkByUrlname']:
                 mue_events = muej['data']['proNetworkByUrlname']['eventsSearch']['edges']
                 add_to_events(mue_events, events, rname)
-                
+
 
     if len(events) <= 0:
         return
-        
+
     r = gh.GetFile('www-community', '_data/community_events.json')
     sha = ''
     if r.ok:
         doc = json.loads(r.text)
         sha = doc['sha']
-    
+
     contents = json.dumps(events, indent=4)
     r = gh.UpdateFile('www-community', '_data/community_events.json', contents, sha)
     if r.ok:
@@ -1199,7 +1199,7 @@ def AddStripeMembershipToCopper(current_only=False, created_since=None, starting
         if starting_after_id:
             starting_after_customer = stripe.Customer.retrieve(starting_after_id)
         customers = stripe.Customer.list(limit=100, starting_after=starting_after_customer)
-    else:   
+    else:
         customers = stripe.Customer.list(limit=100, created=created_since)
     count = 0
     for customer in customers.auto_paging_iter():
@@ -1270,7 +1270,7 @@ def AddToMemberOpportunityIfNotExist(customer, metadata, current_only):
     mtype = metadata.get('membership_type', None)
     mrecurr = metadata.get('membership_recurring', None)
     member = MemberData(customer.get('name'), customer.email.lower(), "", "", "", mstart, mend, mtype, mrecurr)
-    sub = member.GetSubscriptionData()    
+    sub = member.GetSubscriptionData()
     mem_sub = sub
     if current_only:
         mem_sub = None
@@ -1400,7 +1400,7 @@ def update_www_repos_site():
             content = base64.b64decode(doc['content']).decode()
             if not '_site' in content:
                 content += '\n_site/\n'
-                                
+
                 r = gh.UpdateFile(repoName, '.gitignore', content, sha)
                 if not r.ok:
                     print(f'Failed to update {repoName}: {r.text}\n')
@@ -1411,7 +1411,7 @@ def do_stripe_verify_recurring():
     users = []
     stripe.api_key = os.environ['STRIPE_SECRET']
     customers = stripe.Customer.list(limit=500)
-    
+
     start_check = datetime(2019, 1, 1, 0, 0, 0, 0)
     end_check = datetime(2021, 4, 30, 23, 59, 59)
 
@@ -1422,7 +1422,7 @@ def do_stripe_verify_recurring():
         if metadata and metadata.get('membership_type', None):
             endstr = metadata.get('membership_end', None)
             if endstr:
-                mem_end_date = cp.GetDatetimeHelper(endstr) 
+                mem_end_date = cp.GetDatetimeHelper(endstr)
                 if mem_end_date >= start_check and mem_end_date <= end_check:
                     subscriptions = stripe.Subscription.list(customer = customer.id)
                     for sub in subscriptions:
@@ -1472,7 +1472,7 @@ def get_membership_data():
                             continue
                     if end_val == None:
                         continue
-                
+
                 close_date = cp.GetDatetimeHelper(opp['close_date'])
                 if close_date == None:
                     close_date = datetime.fromtimestamp(opp['date_created'])
@@ -1495,7 +1495,7 @@ def get_membership_data():
                 #memrecurr = get_custom_field(opp['custom_fields'], cp.cp_opportunity_autorenew_checkbox)
                 #primary_contact_id = opp['primary_contact_id']
                 #person_json = cp.GetPerson(primary_contact_id)
-                
+
                 #customer_email = 'none'
                 #customer_name = 'none'
                 #if person_json != '':
@@ -1524,11 +1524,11 @@ def verify_membership():
             if topp != None and 'Two' in topp['name']: # Good enough for now
                 found = True
                 break
-        
+
         if not found:
             print(f"Member not found in Copper: {member}")
             count = count + 1
-        
+
     print(f"Total Checked: {total}\nNot Found:{count}")
 
 def do_fix_twoyear():
@@ -1580,14 +1580,14 @@ def do_check_for_members(): # using Christian's 'not found' list, let's see if w
 
     for email in emails:
         email = email.strip().lower()
-        opp = cp.FindMemberOpportunity(email) # this will return an unexpired member opportunity if one exists....            
+        opp = cp.FindMemberOpportunity(email) # this will return an unexpired member opportunity if one exists....
         if opp != None: # Good enough for now
             print(f'Found membership for {email}')
-        
+
         if email in leaders:
             print(f'Found email in leaders list for {email}')
-                
-    print('Done')    
+
+    print('Done')
 
 def add_email_to_stripe_if_not_exist(customer, owasp_email):
     try:
@@ -1608,7 +1608,7 @@ def find_owasp_email(member, cp):
         for email in member['emails']:
             if '@owasp.org' in email['email']:
                 return email
-    
+
         og = OWASPGoogle()
         for email in member['emails']:
             user = og.GetUser(email['email'])
@@ -1664,7 +1664,7 @@ def get_membership_start(opp):
     retstr = 'YYYY-mm-dd'
     if start != None:
         retstr = start.strftime('%Y-%m-%d')
-    
+
     return retstr
 
 def get_membership_end(cp, opp):
@@ -1694,7 +1694,7 @@ def fill_leader_details(memberinfo):
             leader = next((sub for sub in leaders if sub['email'] == email['email']), None)
             if leader:
                 leader_infos.append(leader)
-        
+
         memberinfo['leader_info'] = leader_infos
 
     return memberinfo
@@ -1732,9 +1732,9 @@ def get_member_info(data):
         logging.info(f"Failed to get opportunity")
     else:
         logging.info(f"Failed to get person")
-        
+
     logging.info(f"Member information: {member_info}")
-    return member_info         
+    return member_info
 
 def payments_match_years(customer, mem_type, years):
     if mem_type == 'complimentary' and years > 1:
@@ -1755,7 +1755,7 @@ def payments_match_years(customer, mem_type, years):
                 paycount += 2
             else:
                 paycount += 1
-                
+
     #Some subscriptions have invoices instead of payment_intents....
     invoices = stripe.Invoice.list(api_key=os.environ['STRIPE_SECRET'],customer=customer, limit=100)
     for inv in invoices.auto_paging_iter():
@@ -1792,12 +1792,12 @@ def find_extended_enddate_members():
                 today = datetime.today()
                 years = memend_date.year - today.year
                 if years > 0 and not payments_match_years(customer, mem_type, years):
-                    check_list.append(customer.email + '\t' + mem_end + '\t' + mem_type + '\n') 
-                
+                    check_list.append(customer.email + '\t' + mem_end + '\t' + mem_type + '\n')
+
     with open('check_members.txt', 'w+') as f:
         f.writelines(check_list)
 
-    print('check_members.txt written')            
+    print('check_members.txt written')
 
 def update_mailchimp_memend(email, end, marketing):
     searchres = mailchimp.search_members.get(query=f"{email}", list_id=os.environ['MAILCHIMP_LIST_ID'])
@@ -1818,8 +1818,8 @@ def update_mailchimp_memend(email, end, marketing):
             mailchimp.lists.members.create_or_update(os.environ['MAILCHIMP_LIST_ID'], subscriber_hash, member_data) # status_if_new is required and this may be more info than expected/needed
         except MailChimpError as me:
             if 'Compliance' in me.args[0]['title']:
-                continue                
-        
+                continue
+
 
 def update_subscription_members():
     subs = stripe.Subscription.list(api_key=os.environ['STRIPE_SECRET'])
@@ -1835,14 +1835,14 @@ def update_subscription_members():
                 cmem_end = custmeta.get('membership_end', None)
                 if cmem_end:
                     cmem_end_date = helperfuncs.get_datetime_helper(custmeta['membership_end'])
-                    if custmeta and mem_end_date.year > cmem_end_date.year:       
+                    if custmeta and mem_end_date.year > cmem_end_date.year:
                         mailing_list = metadata.get('mailing_list', 'False')
                         market = False
                         if mailing_list == 'True':
-                            market = True                 
+                            market = True
                         update_mailchimp_memend(customer.email.lower(), mem_end, market)
                         cp = OWASPCopper()
-                        
+
                         opp = cp.FindMemberOpportunity(customer.email)
                         jperson = cp.FindPersonByEmail(customer.email)
                         person = None
@@ -1872,7 +1872,7 @@ def add_to_leaders(repo, content, all_leaders):
         testline = line.lower()
         if(testline.startswith('###') and 'leader' not in testline):
             break
-        
+
         if(line.startswith('*') and fstr > -1 and fstr < 4):
             name, email = parse_leaderline(line)
             leader = {}
@@ -1880,7 +1880,7 @@ def add_to_leaders(repo, content, all_leaders):
             leader['email'] = email
             leader['group'] = repo['title']
             leader['group_url'] = repo['url']
-            
+
             all_leaders.append(leader)
 
 def update_copper_leaders():
@@ -1890,7 +1890,7 @@ def update_copper_leaders():
     repos = gh.GetPublicRepositories('www-')
     for repo in repos:
         if 'www-chapter-' in repo['name'] or 'www-project-' in repo['name'] or 'www-committee-' in repo['name'] or 'www-revent-' in repo['name']:
-            projr = cp.GetProject(repo['title']) 
+            projr = cp.GetProject(repo['title'])
             fr = gh.GetFile(repo['name'], 'leaders.md')
             if projr and fr.ok:
                 projects = json.loads(projr)
@@ -1903,7 +1903,7 @@ def update_copper_leaders():
                 content = base64.b64decode(doc['content']).decode(encoding='utf-8')
                 # need to grab the leaders....
                 leaders = []
-                add_to_leaders(repo, content, leaders)           
+                add_to_leaders(repo, content, leaders)
                 for leader in leaders:
                     pers = cp.FindPersonByEmail(leader['email'].replace('mailto:','').replace('//',''))
                     if pers:
@@ -1918,7 +1918,7 @@ def update_copper_leaders():
                         for email in emails:
                             if email not in leaders:
                                 cp.UnrelateRecord('projects', projects[0]['id'], pjson['id'])
-                    
+
 
 def update_lifetime_starts():
     cp = OWASPCopper()
@@ -1969,7 +1969,7 @@ def check_copper_for_lifetime(filename):
         for row in reader:
             email = f"{row['Email']}".strip().lower()
             opp = cp.FindMemberOpportunity(email)
-            if not opp or opp == '[]': 
+            if not opp or opp == '[]':
                 print(f'Lifetime membership not found for {email}')
 
 def membership_found(email): # check copper for membership data and then Stripe, for good measure
@@ -1998,7 +1998,7 @@ def membership_found(email): # check copper for membership data and then Stripe,
                 # membership not expired, keep
                 if memend_date != None and memend_date > datetime.utcnow():
                     logging.warn(f"Customer found with Stripe membership but no Copper membership: {email}")
-                    return True            
+                    return True
                 return False
     except Exception as ex:
         logging.exception(f"An exception of type {type(ex).__name__} occurred while processing a customer: {ex}")
@@ -2023,25 +2023,25 @@ def print_list_not_members():
                     print(f'NOT MEMBER: {user_email}')
                 else:
                     print(f'MEMBER: {user_email}')
-                
+
             except Exception as ex:
                 template = "An exception of type {0} occurred while processing a customer. Arguments:\n{1!r}"
                 message = template.format(
                     type(ex).__name__, ex.args)
                 print(message)
                 errors_count = errors_count + 1
-        
+
         if not next_page_token:
             break
 
 def list_members(filename):
     cp = OWASPCopper()
-    
+
 
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
         cop = OWASPCopper()
-                    
+
         for row in reader:
             email = row['Email'].lower()
             if cp.FindMemberOpportunity(email):
@@ -2050,7 +2050,7 @@ def list_members(filename):
 def test_double_return(count = 0):
     count = count + 1
     retry = (count < 4)
-    
+
     return retry, count
 
 def get_meetup_events(name, status=None):
@@ -2098,7 +2098,7 @@ def mail_results(results):
             if msg:
                 msg = msg + f"\n{key}: {value}"
             else:
-                msg = f"{key}: {value}"                
+                msg = f"{key}: {value}"
     else:
         msg = 'There were no results. No memberships were added.'
 
@@ -2106,20 +2106,18 @@ def mail_results(results):
     to_email = To(user_email)
     content = Content("text/plain", msg)
     message = Mail(from_email, to_email, subject, content)
-    
+
     try:
         sgClient = sendgrid.SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
         response = sgClient.client.mail.send.post(request_body=message.get())
         print(response)
         return True
-    except python_http_client.exceptions.BadRequestsError as e:
-        print(e)
     except Exception as ex:
         template = "An exception of type {0} occurred while sending an email. Arguments:\n{1!r}"
         err = template.format(type(ex).__name__, ex.args)
         print(err)
-        
-    return False        
+
+    return False
 def add_to_results(results, email, msg):
     if email in results:
         results[email] = results[email] + "\n\t\t" + msg
@@ -2133,8 +2131,8 @@ def find_member(text):
         member = MemberData.LoadMemberDataByEmail(text)
     else:
         member = MemberData.LoadMemberDataByName(text)
-    
-    
+
+
     return member
 
 def add_google_users_to_copper():
@@ -2155,7 +2153,7 @@ def add_google_users_to_copper():
 
             except Exception as ex:
                 print(ex)
-        
+
         if not next_page_token:
             break
 
@@ -2172,7 +2170,7 @@ def get_membership_email(person):
                 elif 'membership_end' in metadata and helperfuncs.get_datetime_helper(metadata['membership_end']) > datetime.today():
                     membership_email = email['email']
                     break
-    
+
     return membership_email
 def check_member_data():
     membership_data = {
@@ -2196,12 +2194,12 @@ def check_values(membership_data):
     #         'name': person_data['name'],
     #         'address': person_data['address'],
     #         'phone_numbers': person_data['phone_numbers'],
-    #         'emails': person_data['emails']            
+    #         'emails': person_data['emails']
     #     }
     name = membership_data.get('name',None)
     if not name or len(name) > 128:
         ret = False
-    
+
     address = membership_data.get('address', None)
     if ret and not address:
         ret = False
@@ -2214,7 +2212,7 @@ def check_values(membership_data):
             ret = False
         else:
             if len(street) > 72 or len(city) > 72 or len(postal_code) > 72 or len(country) > 72:
-                ret = False    
+                ret = False
     if ret:
         emails = membership_data.get('emails', [])
         if len(emails) <= 0:
@@ -2225,7 +2223,7 @@ def check_values(membership_data):
                 if not addr or len(addr) > 72:
                     ret = False
                     break
-    
+
     if ret:
         phone_numbers = membership_data.get('phone_numbers', [])
         if len(phone_numbers)<= 0:
@@ -2257,7 +2255,7 @@ def create_spreadsheet(spreadsheet_name, row_headers):
     client_secret = json.loads(os.environ['GOOGLE_CREDENTIALS'], strict=False)
     creds = ServiceAccountCredentials.from_json_keyfile_dict(client_secret, scope)
     drive = build('drive', 'v3', credentials=creds, cache_discovery=False)
-    
+
 
     file_metadata = {
         'name': spreadsheet_name,
@@ -2271,7 +2269,7 @@ def create_spreadsheet(spreadsheet_name, row_headers):
     client = gspread.authorize(creds)
     sheet = client.open(spreadsheet_name).sheet1
 
-    
+
 
     sheet.append_row(row_headers)
     header_format = {
@@ -2308,7 +2306,7 @@ def add_member_row(rows, headers, name, email, memtype, memstart, memend):
     row_data[2] = memtype
     row_data[3] = memstart
     row_data[4] = memend
-    
+
     rows.append(row_data)
 
 def create_member_report():
@@ -2342,7 +2340,7 @@ def create_member_report():
             if len(opportunities) < 100:
                 logging.debug('listing opportunities done')
                 done = True
-            for opp in opportunities:                
+            for opp in opportunities:
                 end_val = cp.GetCustomFieldHelper(cp.cp_opportunity_end_date, opp['custom_fields'])
                 if end_val != None:
                     end_date = datetime.fromtimestamp(end_val)
@@ -2372,7 +2370,7 @@ def create_member_report():
                     elif 'honorary' in opp['name'].lower():
                         memtype = 'honorary'
                         member_data['honorary'] = member_data['honorary'] + 1
-                    elif 'one' in opp['name'].lower(): 
+                    elif 'one' in opp['name'].lower():
                         memtype = 'one'
                         member_data['one'] = member_data['one'] + 1
                     elif 'two' in opp['name'].lower():
@@ -2381,8 +2379,8 @@ def create_member_report():
                     elif 'lifetime' in opp['name'].lower():
                         memtype = 'lifetime'
                         member_data['lifetime'] = member_data['lifetime'] + 1
-                    
-                
+
+
                     start_val = cp.GetCustomFieldHelper(cp.cp_person_membership_start, person['custom_fields'])
                     start_date = None
                     if start_val is not None:
@@ -2393,10 +2391,10 @@ def create_member_report():
                         if 'owasp.org' in em['email'].lower():
                             email = em['email']
                             break
-                    
+
                     if email is None and len(person['emails']) > 0:
                         email = person['emails'][0]
-                    
+
                     memend = close_date
                     if memend is None:
                         memend = ""
@@ -2410,7 +2408,7 @@ def create_member_report():
                     add_member_row(rows, headers, person['name'], email, memtype, "TBD", memend)
 
             page = page + 1
-    
+
     total_members = member_data['student'] + member_data['complimentary'] + member_data['honorary'] + member_data['one'] + member_data['two'] + member_data['lifetime']
     sheet.append_rows(rows)
     msgtext = 'Your member report is ready at https://docs.google.com/spreadsheets/d/' + file_id
@@ -2418,7 +2416,101 @@ def create_member_report():
     msgtext += f"\t\tone: {member_data['one']}\ttwo:{member_data['two']}\n"
     msgtext += f"\t\tlifetime: {member_data['lifetime']}\tstudent:{member_data['student']}\n"
     msgtext += f"\t\tcomplimentary: {member_data['complimentary']}\thonorary:{member_data['honorary']}\n"
-    
+
+    print (msgtext)
+
+def is_current_month(customer, mdata):
+    # this adds WAY too much time to the call - not worth the inefficiency
+    today = datetime.today()
+    result = False
+
+    payments = stripe.PaymentIntent.list(customer=customer.id, limit=100)
+    for payment in payments:
+        if payment.status=='succeeded':
+            metad = payment.get('metadata', None)
+            if metad and metad['purchase_type'] == 'membership':
+                created = datetime.fromtimestamp(payment.created)
+                if created.year == today.year and created.month == today.month:
+                    result = True
+                    break
+            elif payment.statement_descriptor and 'membership' in payment.statement_descriptor.lower().strip():
+                created = datetime.fromtimestamp(payment.created)
+
+                if created.year == today.year and created.month == today.month:
+                    result = True
+                    break
+
+    return result
+
+def create_member_report_stripe(end_date, add_sheet=False):
+    stripe.api_key = os.environ['STRIPE_SECRET']
+    stripe.api_version = "2020-08-27"
+
+    search = "-metadata['membership_type']:null"
+
+    member_data = {
+        'one':0,
+        'two':0,
+        'lifetime':0,
+        'complimentary':0
+    }
+
+    done = False
+    page = 1
+    today = datetime.today()
+    sheet_name = get_spreadsheet_name('member-report')
+    headers = ['Name', 'Emails', 'Type', 'Start', 'End', 'Address','Address2','City','State','Postal Code', 'Phone Numbers','Company']
+    ret = None
+    sheet = None
+    file_id = None
+    if add_sheet:
+        ret = create_spreadsheet(sheet_name, headers)
+        sheet = ret[0]
+        file_id = ret[1]
+
+    customers = stripe.Customer.search(query=search, limit=100)
+
+    rows=[]
+    for customer in customers.auto_paging_iter():
+        mdata = customer.get('metadata', None)
+        if mdata:
+            member_type = mdata.get('membership_type', None)
+            member_start = mdata.get('membership_start', None)
+
+            if member_type:
+                member_type = member_type.lower().strip()
+
+            if member_type and member_type == 'lifetime':
+                member_data['lifetime']+=1
+                if add_sheet:
+                    add_member_row(rows, headers, customer['name'], customer['email'], member_type, member_start, None)
+            elif member_type and member_type in ['one', 'two', 'complimentary']: # this is a non lifetime member
+                member_end = mdata.get('membership_end', None)
+
+                if not member_end:
+                    print(f"ERROR: No membership end for member {customer['id']} and type {member_type}")
+                else:
+                    member_end_date = helperfuncs.get_datetime_helper(member_end)
+                    if not member_end_date:
+                        print(f"ERROR: Could not convert member end date for member {customer['id']} and type {member_type}")
+                    elif member_end_date >= end_date:
+                        if add_sheet:
+                            add_member_row(rows, headers, customer['name'], customer['email'], member_type, member_start, member_end)
+                        member_data[member_type]+=1
+
+
+    total_members = member_data['complimentary'] + member_data['one'] + member_data['two'] + member_data['lifetime']
+    if add_sheet:
+        sheet.append_rows(rows)
+    if add_sheet:
+        msgtext = 'Your member report is ready at https://docs.google.com/spreadsheets/d/' + file_id + "\n"
+    else:
+        msgtext = ""
+
+    msgtext += f"\ttotal members: {total_members}\n"
+    msgtext += f"\t\tone: {member_data['one']}\ttwo:{member_data['two']}\n"
+    msgtext += f"\t\tlifetime: {member_data['lifetime']}\tcomplimentary:{member_data['complimentary']}\n"
+
     print (msgtext)
 
 def fix_level_one_projects():
@@ -2442,7 +2534,7 @@ def verify_lifetime_stripe_and_copper():
     lifetime_not_found = []
     cp = OWASPCopper()
     with open(cfile) as csvfile:
-        reader = csv.DictReader(csvfile)        
+        reader = csv.DictReader(csvfile)
         for row in reader:
             email = row['Email']
             persons = cp.FindPersonByEmailObj(email)
@@ -2453,52 +2545,154 @@ def verify_lifetime_stripe_and_copper():
                     if membership == cp.cp_person_membership_option_lifetime:
                         found_membership = True
                         break
-            
+
             if not found_membership:
                 print(f"Lifetime Membership not found for {email}")
                 lifetime_not_found.append(email + "\n")
 
     with open("lifetime_not_found_second_round.txt", "w+") as nf:
         nf.writelines(lifetime_not_found)
-                   
+
+def strip_jekyll_from_content(content):
+    fm_index = content.find('---')
+    fm_end_index = content.find('---', fm_index + 4)
+    content = content[fm_end_index + 5:]
+    jekyll_index = content.find('{%')
+    while jekyll_index > -1:
+        jekyll_end_index = content.find('%}', jekyll_index)
+
+        if jekyll_end_index > -1:
+            str_replace = content[jekyll_index:jekyll_end_index + 2]
+            content = content.replace(str_replace, '')
+
+        jekyll_index = content.find('{%')
+
+    return content
+
+def get_index_file_content(gh, repo):
+    html = ''
+    r = gh.GetFile(repo, 'index.md')
+    if r.ok:
+        doc = json.loads(r.text)
+        content = base64.b64decode(doc['content']).decode()
+        content = strip_jekyll_from_content(content)
+        html = markdown.markdown(content)
+
+    return html
+
+def create_ym_chapter(ym, name, region, content):
+    region_type = ym.GROUP_TYPE_UNCLASSIFIED
+    if region == 'Africa':
+        region_type = ym.GROUP_TYPE_AFRICA_CHAPTERS
+    elif region == 'Asia':
+        region_type = ym.GROUP_TYPE_ASIA_CHAPTERS
+    elif 'Caribbean' in region:
+        region_type = ym.GROUP_TYPE_CARIBBEAN_CHAPTERS
+    elif region == 'Central America':
+        region_type = ym.GROUP_TYPE_CENTRAL_AMERICA_CHAPTERS
+    elif 'Europe' in region:
+        region_type = ym.GROUP_TYPE_EUROPE_CHAPTERS
+    elif region == 'North America':
+        region_type = ym.GROUP_TYPE_NORTH_AMERICA_CHAPTERS
+    elif region == 'Oceania':
+        region_type = ym.GROUP_TYPE_OCEANIA_CHAPTERS
+    elif region == 'South America':
+        region_type = ym.GROUP_TYPE_SOUTH_AMERICA_CHAPTERS
+    elif region_type == 'Needs Website Update':
+        print(f"Skipping {name}")
+    shortDesc = 'OWASP Local Chapters build community for application security professionals around the world. Our Local Chapter Meetings are free and open to anyone to attend so both members and non-members are always welcomed.'
+    return ym.CreateGroup(region_type, name, shortDesc, content)
+
+def create_chapters_ym():
+    gh = OWASPGitHub()
+    ym = OWASPYM()
+    lines = []
+    if ym.Login():
+        cfile = "chapter-report-2022-08-31.csv"
+        cp = OWASPCopper()
+        with open(cfile, 'r') as csvfile:
+            reader = csv.DictReader(csvfile)
+            os.remove(cfile)
+            with open(cfile, 'w') as csvwriter:
+                writer = csv.DictWriter(csvwriter, fieldnames = reader.fieldnames)
+                writer.writeheader()
+                for row in reader:
+                    name = row['Chapter Name']
+                    region = row['Region']
+                    content = get_index_file_content(gh, row['Repo'])
+
+                    if len(create_ym_chapter(ym, name, region, content)) == 0:
+                        row['Import Result'] = "Fail"
+                        print(row)
+                    else:
+                        row['Import Result'] = "Success"
+                        print(row)
+
+                    writer.writerow(row)
+
+#def pull_project_licenses():
+#    gh = OWASPGitHub()
+#    project_repos = gh.GetPublicRepositories("www-project-")
+#    for repo in project_repos:
+
+
 def main():
     #verify_lifetime_stripe_and_copper()
-    ym = OWASPYM()
-    ym.Login()
-    ymGroups = ym.GetGroupTypes()
-    print(ymGroups)
-    # if len(ymGroups) > 0:
-    #     ymGroups = ymGroups['GroupTypeList']
-    #     chapterGroupID = None
-    #     for group in ymGroups:
-    #         if group['TypeName'] == 'Chapter':
-    #             chapterGroupID = group['Id']
-        
-    #     if chapterGroupID is not None:
-    #         print(ym.CreateGroup(chapterGroupID, 'Test Chapter', 'A Short Description', 'Welcome to the Test Chapter Group'))
+    #create_chapters_ym()
+    # ym = OWASPYM()
+    # ym.Login()
+    # groupTypes = ym.GetGroups()
+    # for groupType in groupTypes['GroupTypeList']:
+    #     if groupType['Id'] == ym.GROUP_TYPE_UNCLASSIFIED:
+    #         for group in groupType['Groups']:
+    #             ym.SetGroupActive(group['Id'], False)
 
-    #mu = OWASPMeetup()
-    #mu.Login()
-    
+    #goog = OWASPGoogle()
+    #goog.SuspendUser("johnny.o\\'test@owasp.org")
+
+    # cfile = "members.example.csv"
+    # cp = OWASPCopper()
+    # with open(cfile, 'r') as csvfile:
+    #     reader = csv.DictReader(csvfile)
+    #     os.remove(cfile)
+    #     with open(cfile, 'w') as csvwriter:
+    #         writer = csv.DictWriter(csvwriter, fieldnames = reader.fieldnames)
+    #         writer.writeheader()
+    #         for row in reader:
+    #             row['First Name'] = "Account Too"
+    #             writer.writerow(row)
+
+    mu = OWASPMeetup()
+    if mu.Login():
+        print(mu.GetGroupEvents('owasp-maine'))
+    else:
+        print("Phooey")
+
 
     # print("Hi")
 
     #fix_level_one_projects()
     #create_member_report()
+    #end_date = datetime.today()#datetime(2022, 9, 30)
+    #create_member_report_stripe(end_date, False)
 
     #since = datetime.strptime('2022-01-01', '%Y-%m-%d')
     #tstamp = int(datetime.timestamp(since))
     #AddStripeMembershipToCopper(False, None, "cus_JDH3BmEtzcONoN")
 
     # try:
-    #     helperfuncs.suspend_google_user('harold.test2@owasp.org')                    
+    #     helperfuncs.suspend_google_user('harold.test2@owasp.org')
     # except Exception as err:
     #     logging.error(f'Failed attempting to find and possibly unsuspend Google email: {err}')
 
-    #gh = OWASPGitHub()
-    #mu = OWASPMeetup()
-    #create_community_events(gh, mu)
-
+    # gh = OWASPGitHub()
+    # mu = OWASPMeetup()
+    # if mu.Login():
+    #     id = mu.GetGroupIdFromGroupname('OWASP-China-Mainland-Meetup')
+    #     #create_community_events(gh, mu)
+    #     print(f"ID: {id}")
+    # else:
+    #     print("Failed to log in.")
     #users = ['harold.blankenship@owasp.com','lisa.jones@owasp.com','dawn.aitken@owasp.com','kelly.santalucia@owasp.com','harold.blankenship@owasp.org']
     #leaders = ['harold.blankenship@owasp.com','lisa.jones@owasp.com','kelly.santalucia@owasp.com', 'harold.blankenship@owasp.org']
 
@@ -2507,7 +2701,7 @@ def main():
     #for user in users:
     #    ggl.AddMemberToGroup('test-leaders@owasp.org', user, role='MEMBER')
 
-    #members = ggl.GetGroupMembersAsObj('chapter-leaders@owasp.org')  
+    #members = ggl.GetGroupMembersAsObj('chapter-leaders@owasp.org')
     #print(len(members))
 
     #assert(abs(len(members) - len(leaders)) < 50)
@@ -2516,7 +2710,7 @@ def main():
     #    if user not in leaders:
     #        ggl.RemoveFromGroup('test-leaders@owasp.org', user)
 
-    #fmembers = ggl.GetGroupMembers('test-leaders@owasp.org')  
+    #fmembers = ggl.GetGroupMembers('test-leaders@owasp.org')
     #print(fmembers)
     #assert(members != fmembers)
 
@@ -2536,7 +2730,7 @@ def main():
     # print(pages)
 
     # userstr = "ulysses.one.suspender@owasp.org,ulysses.two.suspender@owasp.org,ulysses.three.suspender@owasp.org,ulysses.four.suspender@owasp.org,ulysses.five.suspender@owasp.org,email.tester.1@owasp.org,email.tester.2@owasp.org,email.tester.3@owasp.org,email.tester.4@owasp.org,email.tester.5@owasp.org,email.tester.6@owasp.org,email.tester.7@owasp.org,email.tester.8@owasp.org,email.tester.9@owasp.org,email.tester.10@owasp.org,email.tester.10@owasp.org,email.tester.12@owasp.org,email.tester.13@owasp.org,email.tester.14@owasp.org"
-    # test_users = userstr.replace(' ','').split(',')  
+    # test_users = userstr.replace(' ','').split(',')
     # print(test_users)
     # print('ulysses.four.suspender@owasp.org' in test_users)
 
@@ -2551,7 +2745,7 @@ def main():
     #         dstr += "<strong>Time: " + event['node']['dateTime'][11:16] + " (" + event['node']['timezone'] + ") </strong><br>";
     #         dstr += "<strong>Link: <a href='" + event['node']['eventUrl'] + "'>" + event['node']['eventUrl'] + "</a></strong><br>";
     #         dstr += "<strong>Description:</strong></section>" + event['node']['description'];
-            
+
     # print(dstr)
 
     # if mu.Login():
@@ -2559,29 +2753,29 @@ def main():
     #     if res:
     #         event_json = json.loads(res)
     #         events = event_json['data']['proNetworkByUrlname']['eventsSearch']['edges']
-    #         for event in events:            
+    #         for event in events:
     #             dt = datetime.strptime(event['node']['dateTime'][:10], '%Y-%m-%d')
     #             print(dt)
     # else:
     #     print("Could not log in.")
-    
+
     #mu = OWASPMeetup()
     #mu.Login()
 
     #gname = mu.GetGroupIdFromGroupname('OWASP-London')
     #print(gname)
-    
+
     #get_membership_data()
     #check_copper_for_lifetime('stripe_lifetime.csv')
     #check_for_lifetime('2021-Global-AppSec-US-_10_14_21.csv')
-    
+
     #update_lifetime_starts()
     #update_copper_leaders()
-    
+
     #gh = OWASPGitHub()
     #gr = gh.GetFile('owasp.github.io', '_data/leaders.json')
     #print(gr.text)
-    
+
     #import_members('membersheet.csv', True)
 
     #list_members('holiday_training_members.csv')
@@ -2595,7 +2789,7 @@ def main():
     #         doc = json.loads(lfile.text)
     #         sha = doc['sha']
     #         gh.DeleteFile(repo['name'], 'Gemfile.lock', sha)
-        
+
     #do_stripe_verify_recurring()
 
     #edate = datetime.today() + timedelta(-30)
@@ -2605,10 +2799,10 @@ def main():
     #mu.Login()
     #estr = mu.GetGroupEvents("OWASP-OC", earliest)
     #print(estr)
-    #find_extended_enddate_members()    
+    #find_extended_enddate_members()
     # These were done 7.29.2021
     #import_members('2021-appsec-us-member-import.csv')
-    
+
     # cp = OWASPCopper()
     # opp = cp.FindMemberOpportunity('ervin.hegedus@owasp.org')
     # print(opp)
@@ -2629,7 +2823,7 @@ def main():
     #             api_key=os.environ["STRIPE_SECRET"]
     #         )
 
-    
+
     #gh = OWASPGitHub()
     #repos = gh.GetPublicRepositories('www-chapter-')
     #for repo in repos:
@@ -2654,7 +2848,7 @@ def main():
     # print('done')
     #data = { 'email': 'harold.blankenship@owasp.org' }
     #print(get_member_info(data))
-    
+
     # Next Question: how to get class data for members?
 
     # Also update chapters to show # of meetings in last 12 months....
@@ -2698,7 +2892,7 @@ def main():
     #get_membership_data()
 
     #do_stripe_verify_recurring()
-    
+
     #update_www_repos_main()
 
     # trying to figure out what Top 10 Card Game not in repos...
@@ -2720,7 +2914,7 @@ def main():
 
     # print(first_name + '.' + last_name + '@someother.edu')
 
-    
+
     #get_docusign_docs()
 
     #ipaddrs = ['123.45.234.33:5555']
@@ -2865,7 +3059,7 @@ def main():
     #print(person[0]['id'])
     #r = cp.CreateOpportunity('Test Opportunity', 'harold.blankenship@owasp.com')
     #print(r)
-    
+
     #r = cp.GetProject('Chapter - Los Angeles')
     #print(r)
     #GetContactInfo()

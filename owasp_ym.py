@@ -28,9 +28,18 @@ class OWASPYM():
     GROUP_EMAIL_MEMBER_ADMIN_APPROVAL = 1
     GROUP_EMAIL_MEMBER_AUTOAPPROVE = 2
     
-    #GroupType Options
-    GROUP_TYPE_CHAPTER = 30273
+    #GroupType Options    
     GROUP_TYPE_COMMITTEE = 30274
+    GROUP_TYPE_OTHER = 30277
+    GROUP_TYPE_AFRICA_CHAPTERS = 30278
+    GROUP_TYPE_ASIA_CHAPTERS = 30279
+    GROUP_TYPE_CARIBBEAN_CHAPTERS = 30280
+    GROUP_TYPE_CENTRAL_AMERICA_CHAPTERS = 30281
+    GROUP_TYPE_EUROPE_CHAPTERS = 30282
+    GROUP_TYPE_NORTH_AMERICA_CHAPTERS = 30283
+    GROUP_TYPE_OCEANIA_CHAPTERS = 30284
+    GROUP_TYPE_SOUTH_AMERICA_CHAPTERS = 30285
+    GROUP_TYPE_UNCLASSIFIED = 30286    
     
     def GetHeaders(self):
         headers = {
@@ -81,16 +90,17 @@ class OWASPYM():
         
         return content
 
-    def CreateGroup(self, typeID, name, shortDesc, content):
+    def CreateGroup(self, typeID, name, shortDesc, welcomeContent):
         content = []
         url = self.base_url + self.group_url.replace(':ClientID', os.environ['YM_CLIENTID'])
+        is_active = (typeID == self.GROUP_TYPE_UNCLASSIFIED)
         data = {
             'TypeID': typeID,
             'Name': name,
             'ShortDescription': shortDesc,
-            'WelcomeContent': content,
+            'WelcomeContent': welcomeContent,
             'GroupCode': name.replace(' ','_').lower(),
-            'Active': True,
+            'Active': is_active,
             'Hidden': False,
             'Accessibility': self.GROUP_ACCESSIBILITY_PUBLIC,    
             'Membership': self.GROUP_MEMBERSHIP_ALLOW_ANY,
@@ -106,12 +116,31 @@ class OWASPYM():
         r = requests.post(url = url, headers=self.GetHeaders(), data=json.dumps(data))
         if r.ok:
             content = json.loads(r.content)
-            return content
         elif r.content is not None:
             content = json.loads(r.content)
             if 'ResponseStatus' in content and 'Message' in content['ResponseStatus'] and 'timeout' in content['ResponseStatus']['Message'].lower():
                 raise OWASPYMSessionTimeoutException('Session Timeout')
 
+        return content
+
+    def SetGroupActive(self, groupID, active):
+        content = []
+        url = self.base_url + self.group_url.replace(':ClientID', os.environ['YM_CLIENTID'])
+        
+        data = {
+            'GroupID': groupID,
+            'Active': active,
+        }
+
+        r = requests.put(url = url, headers=self.GetHeaders(), data=json.dumps(data))
+        if r.ok:
+            content = json.loads(r.content)
+        elif r.content is not None:
+            content = json.loads(r.content)
+            if 'ResponseStatus' in content and 'Message' in content['ResponseStatus'] and 'timeout' in content['ResponseStatus']['Message'].lower():
+                raise OWASPYMSessionTimeoutException('Session Timeout')
+
+        return content
 
 class OWASPYMException(Exception):
     __module__ = Exception.__module__
