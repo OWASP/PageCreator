@@ -42,6 +42,7 @@ from sendgrid.helpers.mail import *
 from datetime import datetime, timedelta
 from import_members import MemberData
 from owasp_ym import OWASPYM
+from pathlib import Path
 #from docusign_esign import EnvelopesApi
 #from docusign_esign import ApiClient
 
@@ -2635,8 +2636,39 @@ def create_chapters_ym():
 #    project_repos = gh.GetPublicRepositories("www-project-")
 #    for repo in project_repos:
 
+def GetRepoLevel(repoName, project_levels):
+    level = "-1"
+    for project in project_levels:
+        if project['repo'] == repoName:
+            level = project['level']
+            break
+        
+    return level
+
+def cleanup_project_levels():
+    
+    fin_projects = []
+    projects = json.loads(Path("project_levels.json").read_text())
+
+    with open("project_levels.json", 'r') as pfile:
+        for project in projects:
+            lim_proj = {
+                "name":"",
+                "repo":"",
+                "level":""
+            }
+            lim_proj['name'] = project['name']
+            lim_proj['repo'] = project['repo']
+            lim_proj['level'] = project['level']
+            fin_projects.append(lim_proj)
+    
+    with open("project_levels.json", 'w') as pfile:        
+        pfile.writelines(json.dumps(fin_projects))
 
 def main():
+    project_levels = json.loads(Path("project_levels.json").read_text())
+    level = GetRepoLevel("www-project-zap", project_levels)
+    print(level)
     #verify_lifetime_stripe_and_copper()
     #create_chapters_ym()
     # ym = OWASPYM()
@@ -2662,11 +2694,11 @@ def main():
     #             row['First Name'] = "Account Too"
     #             writer.writerow(row)
 
-    mu = OWASPMeetup()
-    if mu.Login():
-        print(mu.GetGroupEvents('owasp-maine'))
-    else:
-        print("Phooey")
+    # mu = OWASPMeetup()
+    # if mu.Login():
+    #     print(mu.GetGroupEvents('owasp-maine'))
+    # else:
+    #     print("Phooey")
 
 
     # print("Hi")
@@ -2776,7 +2808,7 @@ def main():
     #gr = gh.GetFile('owasp.github.io', '_data/leaders.json')
     #print(gr.text)
 
-    #import_members('membersheet.csv', True)
+    #import_members('membersheet.csv')
 
     #list_members('holiday_training_members.csv')
 

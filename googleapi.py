@@ -344,3 +344,12 @@ class OWASPGoogle:
         results = self.admin.users().update(userKey=email, body= user).execute()
 
         return ('primaryEmail' in results)
+    
+    def DeleteUser(self, email): #suspend the user with email retrieved possibly from GetUser, for instance
+        user = self.GetUser(email)
+        results = None
+        if user and user['suspended']:
+            results = self.admin.users().delete(userKey=email).execute()
+            results = True
+
+        return results
