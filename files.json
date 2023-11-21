@@ -13,9 +13,6 @@
             "path" : "docs/index.md"
         },
         {
-            "path" : "docs/Gemfile"
-        },
-        {
             "path" : "docs/_config.yml"
         },
         {

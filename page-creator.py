@@ -47,6 +47,11 @@ from pathlib import Path
 #from docusign_esign import ApiClient
 
 import random
+from jwcrypto.jwk import JWK
+from jwcrypto.common import base64url_encode
+
+from jira import JIRA
+from jira.resources import Issue
 #import emoji
 
 mailchimp = MailChimp(mc_api=os.environ["MAILCHIMP_API_KEY"])
@@ -2665,10 +2670,285 @@ def cleanup_project_levels():
     with open("project_levels.json", 'w') as pfile:        
         pfile.writelines(json.dumps(fin_projects))
 
+def UpdateCopperAddress(cp, pid, address):
+    cp_address = {
+                "street": address["line1"] + " " + address["line2"],
+                "city": address["city"],
+                "state": address["state"],
+                "postal_code": address["postal_code"]
+            }
+    cp.UpdatePersonAddress(pid, cp_address)
+
+def CheckMembershipFromMailchimp():
+    cp = OWASPCopper()
+    print(cp.FindMemberOpportunity('abimbola.adegbite@owasp.org'))
+    odd_outs = []
+    with open("one_mailchimp.txt", "r") as memfile:
+        emails = memfile.readlines()
+        for email in emails:
+            email = email.strip('\n')
+            opptxt = cp.FindMemberOpportunity(email)
+            if opptxt != None and 'Failed' not in opptxt:
+                opp = json.loads(opptxt)
+                memtype = get_membership_type(opp)
+                if memtype != 'one':
+                    print(f"{email} is not one year: {memtype}")
+                    odd_outs.append(email + "\n")
+                else:
+                    print(f"{email} is a one year")
+            else:
+                print(f"No opp. {email} is not one year")
+                odd_outs.append(email + "\n")
+
+
+    with open("one_year_odd.txt", "w+") as outfile:
+        outfile.writelines(odd_outs)
+
+def get_project_type(project_type):
+    ptype = "unknown"
+    if "Documentation" in project_type:
+        ptype = "documentation"
+    elif "Code" in project_type:
+        ptype = "code"
+
+    return ptype
+
+def jira_project_create(jira_id, function_directory, response_url):
+    jira = JIRA(server=os.environ["JIRA_SERVER"], basic_auth=(os.environ["JIRA_USER"], os.environ["JIRA_API_TOKEN"]))
+    issue = jira.issue(jira_id)
+    try:
+        jira.transition_issue(issue, "In Progress")    
+    except:
+        try:
+            jira.transition_issue(issue, "Back to in progress")
+        except:
+            pass
+
+    nameMap = {field['name']:field['id'] for field in jira.fields()}
+    resString = ""
+    project_name = getattr(issue.fields, nameMap['Project Name'], None)
+    project_name = project_name.replace('OWASP','').replace('Owasp','').replace('owasp','').strip()
+    
+    project_type = getattr(issue.fields, nameMap['Project Type'], None).value
+    #project_class = getattr(issue.fields, nameMap['Project Classification'], None)
+    license = getattr(issue.fields, nameMap['Open Source License'],'Other')
+
+    leader_emails = getattr(issue.fields, nameMap['Leader Emails'], None)
+    if leader_emails == None:
+        leader_emails = getattr(issue.fields, nameMap['Payee Email'], None)
+    
+    leader_names = getattr(issue.fields, nameMap['Leader Names'], None)
+    if leader_names == None:
+        leader_names = getattr(issue.fields, nameMap['Payee Name'], None)
+
+    leader_gh = getattr(issue.fields, nameMap['Leader Github Usernames'], None)
+    if leader_gh == None:
+        leader_gh = getattr(issue.fields, nameMap['Expense'], None)
+    
+    if leader_names == None or leader_emails == None or leader_gh == None:
+        resString = "Failed due to missing leader information."
+
+    if not 'Failed' in resString:    
+        project_deliverable = getattr(issue.fields, nameMap['Generic Text Area 1'], None)
+        project_description = getattr(issue.fields, nameMap['Generic Text Area 2'], None)
+        project_roadmap = getattr(issue.fields, nameMap['Generic Text Area 3'], None)
+        project_comments = getattr(issue.fields, nameMap['Generic Text Area 4'], None)    
+            
+        leaders = leader_names.splitlines()
+        emails = leader_emails.splitlines()
+        gitusers = leader_gh.splitlines()
+        emaillinks = []
+        if len(leaders) == len(emails):
+            count = 0
+            useemails = CreateOWASPEmails(leaders, emails)
+            for leader in leaders:
+                email = useemails[count]
+                count = count + 1
+                logging.info("Adding project leader...")
+
+                emaillinks.append(f'[{leader}](mailto:{email})')
+                
+            logging.info("Creating github repository")
+            proj_type = get_project_type(project_type)
+            resString = CreateGithubStructure(project_name, function_directory, proj_type, emaillinks, gitusers)
+            # do copper integration here
+            if not 'Failed' in resString:
+                resString = CreateCopperObjects(project_name, leaders, emails, proj_type, license)
+            
+        else:
+            resString = "Failed due to non matching leader names with emails"
+    
+    if not 'Failed' in resString:
+        gh = OWASPGitHub()
+        reponame = gh.FormatRepoName(project_name)
+        comment = "Please find your OWASP web page for the project at [link]. You can edit your website page by going to 'Edit on GitHub' at the bottom of the page.\n"
+        comment = comment.replace("[link]", f"https://owasp.org/{reponame}")
+        comment += "It is highly desirable that any source reside under a project repo (outside the above webpage repo) within the http://github.com/OWASP  organization. If it is not an undue burden, we would appreciate that any source outside the OWASP org get moved or mirrored within the OWASP org.\n\n"
+        comment += "Next Steps:\n\n"
+        comment += "* Update the web pages for your project\n"
+        comment += "* Look for other people to help you lead and contribute to your project.Yay for you! Project created."
+        jira.transition_issue(issue, "Resolve this issue", resolution={'id': '10000'}, comment=comment)
+        
+    resp = {
+        "blocks": []
+    }
+    fields = []
+    if "Failed" not in resString:
+        fields.append({
+                "type": "mrkdwn",
+                "text": project_name + " created.\n"
+            })
+    else:
+        fields.append({"type": "mrkdwn",
+                       "text": "Failed to create " + project_name + ". Reason: " + resString
+                       })
+    resp['blocks'].append({
+        "type": "section",
+        "fields": fields
+        })
+    
+    logging.info(resp)
+    requests.post(response_url, json=resp)
+
+def CreateOWASPEmails(leaders :[str], emails :[str]):
+    ggl = OWASPGoogle()
+    cp = OWASPCopper()
+    use_emails = []
+    count = 0
+
+    for leader in leaders:
+        email = emails[count]
+        if 'owasp.org' not in email.lower():
+            person = cp.FindPersonByEmailObj(email)
+            owemail = cp.GetOWASPEmailForPerson(person)
+            if owemail != '':
+                use_emails.append(owemail)
+            else:
+                #create an owasp email and use that....
+                names = leader.split(' ')
+                first = names[0].strip()
+                last = ""
+                if len(names) > 1: ## this should be the case but...you never know
+                    for name in names[1:]:
+                        last += name
+                owemail = ggl.CreateEmailAddress(email, first, last, True)
+                if 'already exists' in owemail:    
+                    preferred_email = first + "." + last + "@owasp.org"
+                    possible_emails = ggl.GetPossibleEmailAddresses(preferred_email)
+                    for pemail in possible_emails:
+                        owemail = ggl.CreateSpecificEmailAddress(email, first, last, pemail)
+                        if 'already exists' not in owemail:
+                            owemail = pemail
+                            break
+                else:
+                    owemail = first + "." + last + "@owasp.org"
+                    use_emails.append(owemail)
+        else:
+            use_emails.append(email)
+
+    return use_emails
+
+def CreateCopperObjects(project_name, leaders, emails, type, license):
+    resString = 'Project created.'
+    cp = OWASPCopper()
+    gh = OWASPGitHub()
+    repo = gh.FormatRepoName(project_name, gh.GH_REPOTYPE_PROJECT)
+    project_name = "Project - OWASP " + project_name
+    project_type = OWASPCopper.cp_project_project_type_option_other
+    if type == "documentation":
+        project_type = OWASPCopper.cp_project_project_type_option_documentation
+    elif type == "code":
+        project_type = OWASPCopper.cp_project_project_type_option_code
+
+    project_options = {
+        "level": OWASPCopper.cp_project_project_level_option_incubator,
+        "type": project_type,
+        "license": license
+    }
+
+    if cp.CreateProject(project_name, leaders, emails, OWASPCopper.cp_project_type_option_project, OWASPCopper.cp_project_chapter_status_option_active, repo = repo, project_options=project_options) == '':
+        resString = "Failed to create Copper objects"
+
+    return resString
+
+def CreateGithubStructure(project_name, func_dir, proj_type, emaillinks, gitusers):
+    gh = OWASPGitHub()
+    r = gh.CreateRepository(project_name, gh.GH_REPOTYPE_PROJECT)
+    resString = "Project created."
+    if not gh.TestResultCode(r.status_code):
+        resString = f"Failed to create repository for {project_name}."
+        logging.error(resString + " : " + r.text)
+    
+
+    if resString.find("Failed") < 0:
+        r = gh.InitializeRepositoryPages(project_name, gh.GH_REPOTYPE_PROJECT, basedir = func_dir, proj_type=proj_type)
+        if not gh.TestResultCode(r.status_code):
+            resString = f"Failed to send initial files for {project_name}."
+            logging.error(resString + " : " + r.text)
+
+    repoName = gh.FormatRepoName(project_name, gh.GH_REPOTYPE_PROJECT)
+
+    if resString.find("Failed") < 0 and len(gitusers) > 0:
+        for user in gitusers:
+            gh.AddPersonToRepo(user, repoName)
+
+    if resString.find("Failed") < 0:
+        r = gh.GetFile(repoName, 'leaders.md')
+        if r.ok:
+            doc = json.loads(r.text)
+            sha = doc['sha']
+            contents = '### Leaders\n'
+            for link in emaillinks:
+                contents += f'* {link}\n'
+            r = gh.UpdateFile(repoName, 'leaders.md', contents, sha)
+            if not r.ok:
+                resString = f'Failed to update leaders.md file: {r.text}'
+
+    if resString.find("Failed") < 0:
+        r = gh.EnablePages(project_name, gh.GH_REPOTYPE_PROJECT)
+        if not gh.TestResultCode(r.status_code):
+            resString = f"Failed to enable pages for {project_name}."
+            logging.error(resString + " : " + r.text)
+
+    return resString
+    
+
 def main():
-    project_levels = json.loads(Path("project_levels.json").read_text())
-    level = GetRepoLevel("www-project-zap", project_levels)
-    print(level)
+    #jira_project_create('NFRSD-5714', ".", "no_response")
+    jira = JIRA(server="https://owasporg.atlassian.net", basic_auth=(os.environ["JIRA_USER"], os.environ["JIRA_API_TOKEN"]))
+    issue = jira.issue('NFRSD-5714')
+    
+
+    
+
+    # cp = OWASPCopper()
+    # fields = json.loads(cp.GetCustomFields())
+    # with open("all_copper_custom_properties_11.07.23.txt", "w+") as outf:
+    #     outf.writelines(json.dumps(fields, indent=4))
+    
+    # with open("projects.json") as infile:
+    #     jsons = infile.read()
+    #     projects = json.loads(jsons)
+    #     fields = ["name", "url", "created", "updated", "build", "codeurl", "title", "level", "type", "region", "pitch", "meetup-group", "country"]
+    #     with open("projects_all.csv", "w+") as outfile:
+    #         writer = csv.DictWriter(outfile, fieldnames=fields)
+    #         writer.writerows(projects)
+
+    #CheckMembershipFromMailchimp()
+
+    # with open("one_year_odd.txt", "w+") as outfile:
+    #     outfile.writelines(odd_outs)
+
+    # key = JWK.generate(kty='RSA', size=2048, alg='RS256', use='enc', kid='a12b99d0eff329a')
+    # public_key = key.export_public()
+    # private_key = key.export_private()
+
+    # print(public_key)
+    # print(private_key)
+
+    #project_levels = json.loads(Path("project_levels.json").read_text())
+    #level = GetRepoLevel("www-project-zap", project_levels)
+    #print(level)
     #verify_lifetime_stripe_and_copper()
     #create_chapters_ym()
     # ym = OWASPYM()
@@ -2695,11 +2975,25 @@ def main():
     #             writer.writerow(row)
 
     # mu = OWASPMeetup()
-    # if mu.Login():
-    #     print(mu.GetGroupEvents('owasp-maine'))
-    # else:
-    #     print("Phooey")
-
+    # mu.Login()
+    # ecount = 0
+    # today = datetime.today()
+    # earliest = f"{today.year - 1}-01-01"                
+    # estr = mu.GetGroupEvents('OWASP-Lusaka', earliest=earliest, status='past')
+    # if estr:
+    #     event_json = json.loads(estr)
+    #     if event_json and event_json['data'] and event_json['data']['proNetworkByUrlname'] and event_json['data']['proNetworkByUrlname']['eventsSearch'] and event_json['data']['proNetworkByUrlname']['eventsSearch']['edges']:
+    #         events = event_json['data']['proNetworkByUrlname']['eventsSearch']['edges']
+            
+    #         for event in events:
+    #             try:
+    #                 eventdate = datetime.strptime(event['node']['dateTime'][:10], '%Y-%m-%d')
+    #                 tdelta = today - eventdate
+    #                 if tdelta.days > 0 and tdelta.days < 365:
+    #                     ecount = ecount + 1    
+    #             except:
+    #                 pass
+    # print(f"Lusaka had {ecount} meetings so far this year")
 
     # print("Hi")
 

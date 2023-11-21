@@ -3,7 +3,9 @@
 layout: col-sidebar
 title: OWASP [GROUPNAME]
 tags: example-tag
-level: 4
+level: 2
+type: [:PROJTYPE]
+pitch: A very brief, one-line description of your project
 
 ---
 
@@ -15,5 +17,6 @@ title: This is the title of your project or chapter page, usually the name.  For
 
 tags: This is a space-delimited list of tags you associate with your project or chapter.  If you are using tabs, at least one of these tags should be unique in order to be used in the tabs files (an example tab is included in this repo) 
 
-level: For projects, this is your project level (2 - Incubator, 3 - Lab, 4 - Flagship)
+level: For projects, this is your project level (2 - Incubator, 3 - Lab, 3.5 - Production, 4 - Flagship)
 
+type: code, documentation, or other

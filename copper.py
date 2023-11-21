@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 import time
 from datetime import timedelta
+import random
 
 class OWASPCopper:
 
@@ -53,6 +54,17 @@ class OWASPCopper:
     cp_project_chapter_region_option_the_caribbean = 1607252
     cp_project_chapter_country = 399738
     cp_project_chapter_postal_code = 399737
+    # project specific 
+    cp_project_project_level = 602485
+    cp_project_project_level_option_incubator = 1838797
+    cp_project_project_level_option_lab = 1838796
+    cp_project_project_level_option_production = 1838795
+    cp_project_project_flagship_checkbox = 602486
+    cp_project_project_license = 602487        
+    cp_project_project_type = 623472
+    cp_project_project_type_option_documentation = 1888133
+    cp_project_project_type_option_code = 1888134
+    cp_project_project_type_option_other = 1888135
     #person specific
     #inactive cp_person_group_url = 394184
     #inactive cp_person_group_type = 394186
@@ -130,6 +142,20 @@ class OWASPCopper:
             
         return startdate
 
+    def CallTimeoutCopperRequest(self, url):
+        r = None
+        while True:
+            r = requests.get(url, headers=self.GetHeaders())
+            if not r.ok:
+                if 'Gateway' in r.text or 'Time-out' in r.text:
+                    time.sleep(random.random() * 2.0 + 2.0)
+                else:
+                    break
+            else: 
+                break
+        
+        return r
+    
     def ListProjects(self):
         data = {
             'page_size': 200,
@@ -545,6 +571,39 @@ class OWASPCopper:
         
         return pid
 
+    def UpdatePersonAddress(self, pid, address_data):
+        logging.info("Copper Update Address")
+        data = { 'address': address_data }
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
+        r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
+        pid = None
+        if r.ok:
+            person = json.loads(r.text)
+            pid = person['id']
+        else:
+            logging.error(f'Copper Failed UpdatePersonAddress: {r.text}')
+
+        return pid
+
+    def UpdatePersonInfo(self, pid, person_data):
+        logging.info('Copper Update Person Info')
+        data = {
+            'name': person_data['name'],
+            'address': person_data['address'],
+            'phone_numbers': person_data['phone_numbers'],
+            'emails': person_data['emails']            
+        }
+        url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
+        r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
+        pid = None
+        if r.ok:
+            person = json.loads(r.text)
+            pid = person['id']
+        else:
+            logging.error(f'Copper Failed UpdatePersonInfo: {r.text}')
+
+        return pid
+    
     def UpdatePerson(self, pid, subscription_data = None, stripe_id = None, other_email = None):
         
         data = {
@@ -733,12 +792,14 @@ class OWASPCopper:
             url = f"{self.cp_base_url}{self.cp_related_fragment}"
             url = url.replace(':entity_id', str(pid)).replace(':entity', 'people')
             url = url + '/opportunities'
-            r = requests.get(url, headers=self.GetHeaders())
+            r = self.CallTimeoutCopperRequest(url)
+            
             if r.ok and r.text:
                 for item in json.loads(r.text):
                     time.sleep(2.0)
                     url = url = f"{self.cp_base_url}{self.cp_opp_fragment}{item['id']}"
-                    r = requests.get(url, headers=self.GetHeaders())
+                    r = self.CallTimeoutCopperRequest(url)    
+                    
                     if r.ok:
                         opportunity = json.loads(r.text)
                         
@@ -747,6 +808,7 @@ class OWASPCopper:
                         elif 'lifetime' in opportunity['name'].lower() or ('Membership' in opportunity['name'] and opportunity['monetary_value'] and opportunity['monetary_value'] >= 200):
                             return r.text
 
+                
                         mend = self.GetCustomFieldHelper(self.cp_opportunity_end_date, opportunity['custom_fields'])
                         
                         mend_date = None
@@ -769,7 +831,7 @@ class OWASPCopper:
                             elif mend == None:
                                 print(f'Membership end with subscription data is None for {email}')
                     else:
-                        raise Exception(f"Failed to get opportunity: {r.text}")
+                        raise Exception(f"Failed to get opportunity: {r.text}")                        
             else:
                 opp = f"Failed to get Opportunities for {email}. Retry later."
         else:
@@ -939,7 +1001,7 @@ class OWASPCopper:
         
         return projects
 
-    def CreateProject(self, proj_name, emails, project_type, status, region, country, postal_code, repo):
+    def CreateProject(self, proj_name, leaders, emails, project_type, status, region = None, country = None, postal_code = None, repo = None, project_options = None):
         data = {
                 'name':proj_name
         }
@@ -969,11 +1031,32 @@ class OWASPCopper:
                     'custom_field_definition_id': self.cp_project_chapter_postal_code,
                     'value': postal_code
                 })
-        fields.append({
+        if repo:
+            fields.append({
                     'custom_field_definition_id': self.cp_project_github_repo,
                     'value': repo
                 })
-                
+        if project_options:
+            license = project_options.get("license", None)
+            if license:
+                fields.append({
+                    'custom_field_definition_id': self.cp_project_project_license,
+                    'value': license.value
+                })
+            type = project_options.get("type", None)
+            if type:
+                fields.append({
+                    'custom_field_definition_id': self.cp_project_project_type,
+                    'value': type
+                })
+
+            level = project_options.get("level", None)
+            if level:
+                fields.append({
+                    'custom_field_definition_id': self.cp_project_project_level,
+                    'value': level
+                })
+
         custom_fields = fields
 
         data['custom_fields'] = custom_fields
@@ -984,14 +1067,15 @@ class OWASPCopper:
             project = json.loads(r.text)
             pid = project['id']
 
+            endx = 0
             for email in emails:
                 sr = self.FindPersonByEmail(email)
                 people = json.loads(sr)
                 if len(people) > 0:
                     person_id = people[0]['id']
                 else: 
-                    person_id = self.CreatePerson(email)    
-                
+                    person_id = self.CreatePerson(leaders[endx], email)    
+                endx = endx + 1
                 if person_id:
                     self.RelateRecord('projects', pid, person_id)
 
@@ -1075,3 +1159,13 @@ class OWASPCopper:
         time.sleep(7.0) # seems to take copper a little while after a person is created for the relation to be able to see it
 
         self.CreateMemberOpportunity(opp_name, pid, subscription_data)
+
+    def GetOWASPEmailForPerson(person):
+            ret_email = ""
+            if person and 'emails' in person:
+                for email in person['emails']:
+                    if 'owasp.org' in email['email'].lower():
+                        ret_email = email['email']
+                        break
+            
+            return ret_email

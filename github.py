@@ -163,7 +163,7 @@ class OWASPGitHub:
         headers = {"Authorization": "token " + self.apitoken}
         r = requests.put(url = url, headers=headers, data=json.dumps(data))
         count = 0
-        retry, count = self.HandlRateLimit(r, count)
+        retry, count = self.HandleRateLimit(r, count)
         while(retry):
             r = requests.put(url = url, headers=headers, data=json.dumps(data))
             retry, count = self.HandleRateLimit(r, count)
@@ -361,7 +361,7 @@ class OWASPGitHub:
                     addrepo['url'] = f"https://owasp.org/{ repoName }/"
                 
                     cdate = datetime.datetime.strptime(repo['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-                    udate = datetime.datetime.strptime(repo['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
+                    udate = datetime.datetime.strptime(repo['pushed_at'], "%Y-%m-%dT%H:%M:%SZ")
                     addrepo['created'] = cdate.strftime('%c')
                     addrepo['updated'] = udate.strftime('%c')
                     addrepo['build'] = repo['build']
