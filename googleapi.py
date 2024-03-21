@@ -27,7 +27,7 @@ class OWASPGoogle:
 
         self.admin = build('admin', 'directory_v1', credentials=creds, cache_discovery=False)
         self.groupSettings = build('groupssettings', 'v1', credentials=creds, cache_discovery=False)
-        
+      
     def UpdateUserData(self, email_address, membership_data):
         cp = OWASPCopper()
         user = {
@@ -173,10 +173,10 @@ class OWASPGoogle:
                     dropoff = 4 + random.randint(1, 4)
                     time.sleep(dropoff * 1.25)
                 pass
-            #except Exception as err:
-            #    pass
+            except Exception as err:
+                done = True
 
-        return None
+        return None        
 
     def GetPossibleEmailAddresses(self, preferred_email):
         emails = []
@@ -345,11 +345,19 @@ class OWASPGoogle:
 
         return ('primaryEmail' in results)
     
+    def DeleteUserById(self, user):
+        results = None
+        if user and user['suspended']:
+            results = self.admin.users().delete(userKey=user["id"]).execute()
+            results = True
+
+        return results
+    
     def DeleteUser(self, email): #suspend the user with email retrieved possibly from GetUser, for instance
         user = self.GetUser(email)
         results = None
-        if user and user['suspended']:
-            results = self.admin.users().delete(userKey=email).execute()
+        if user:
+            results = self.admin.users().delete(userKey=user['id']).execute()
             results = True
 
         return results

@@ -991,7 +991,7 @@ def deEmojify(text):
         "])"
     )
 
-    return EMOJI_PATTERN.sub(u'', text)
+    return EMOJI_PATTERN.sub('', text)
 
 def add_to_events(mue, events, repo):
 
@@ -1160,6 +1160,9 @@ def send_onetime_secret(leaders, secret):
         r = requests.post(f"https://onetimesecret.com/api/v1/share/?secret=Zoom%20Password%20is%20{secret}&recipient={leader['email']}", headers=headers)
         if not r.ok:
             print(r.text)
+
+
+    
 
 def create_zoom_account(chapter_url):
     #creating a zoom account requires
@@ -2124,6 +2127,7 @@ def mail_results(results):
         print(err)
 
     return False
+
 def add_to_results(results, email, msg):
     if email in results:
         results[email] = results[email] + "\n\t\t" + msg
@@ -2911,20 +2915,241 @@ def CreateGithubStructure(project_name, func_dir, proj_type, emaillinks, gituser
             logging.error(resString + " : " + r.text)
 
     return resString
+
+def cleanup_google_users():
+    leaders = []
+    gh = OWASPGitHub()
+    r = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    if r.ok:
+        doc = json.loads(r.text)
+        content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+        leaders = json.loads(content)
+
+    users = None
+    with open("user_download.json", "r") as f:
+        txt = f.read()
+
+        users = json.loads(txt)
+
+    ggl = OWASPGoogle()
+    del_count = 0
+    for user in users["users"]:
+        gmail = user["Email Address [Required]"]
+        guser = ggl.GetUser(gmail)
+        if guser and guser['suspended']: # should be true for these users
+            year = guser['lastLoginTime'][0:4]
+            intYear = int(year)
+            if intYear < 2021 and not is_leader(gmail.lower(), leaders):
+                results = ggl.DeleteUserById(guser)
+                del_count +=1
+
+    print(f"Deleted {del_count} users")
+
+def is_leader(email, leaders):
+    result = False
+    for leader in leaders:
+        if email == leader['email'].lower():
+            result = True
+            return result
     
+    return result
+
+def validate_no_leaders():
+    users = None
+    with open("user_download.json", "r") as f:
+        txt = f.read()
+
+        users = json.loads(txt)
+    
+    gh = OWASPGitHub()
+    r = gh.GetFile('owasp.github.io', '_data/leaders.json')
+    if r.ok:
+        doc = json.loads(r.text)
+        content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+        leaders = json.loads(content)
+    
+        for user in users["users"]:
+            email = user["Email Address [Required]"].lower()
+            
+            if is_leader(email, leaders):
+                    print(f"Found Leader: {email}")
+
+def is_force_majeure_country(country):
+    is_fm = False
+    if country:
+        gh = OWASPGitHub()
+        r = gh.GetFile('owasp.github.io', '_data/countries.json')
+        if r.ok:
+            doc = json.loads(r.text)
+            content = base64.b64decode(doc['content']).decode(encoding='utf-8')
+            countries = json.loads(content)
+            logging.info("Count of countries: " + str(len(countries)))
+            for cntry in countries:
+                if cntry['name'] == country and 'force_majeure' in cntry and cntry['force_majeure'] == True:
+                    logging.info("This is a Force Majeure country")
+                    is_fm = True
+                    break
+        else:
+            logging.info(r.text)
+
+    return is_fm
+
+def cleanup_complimentary_users():
+    # we have all these complimentary users that are questionable
+    #    delete opportunity
+    #    delete copper customer
+    #    delete google user
+    #    delete Stripe user
+    #    delete Mailchimp
+
+    cfile = "12.15stripe_users.csv"
+    cp = OWASPCopper()
+    ggl = OWASPGoogle()
+
+    with open(cfile) as csvfile:
+        reader = csv.DictReader(csvfile)
+        deleted = []
+        errors = []
+        for row in reader:
+            email = f"{row['Email']}".strip().lower()
+            customers = stripe.Customer.list(email=email, api_key=os.environ["STRIPE_SECRET"])
+            customer = None
+            if not customers.is_empty:
+                customer = customers.data[0]
+                metadata = customer.get('metadata', {})
+                if metadata:
+                    country = metadata.get('country', '')
+                    if country not in ['Ukraine', 'Israel', 'West Bank and Gaza']:
+                        continue
+            else:
+                continue
+
+
+            searchres = mailchimp.search_members.get(query=f"{email}", list_id=os.environ['MAILCHIMP_LIST_ID'])
+            mc_members = searchres['exact_matches']['members']            
+            for member in mc_members:
+                subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
+                try:
+                    result = mailchimp.lists.members.delete(list_id = os.environ['MAILCHIMP_LIST_ID'], subscriber_hash=subscriber_hash)
+                except Exception as err:
+                    print(f"Error removing from MailChimp: {err}")
+                    errors.append(f"Error removing {email} from MailChimp: {err}")
+                    pass
+
+            opptxt = cp.FindMemberOpportunity(email)
+            opp = None
+            if opptxt and not 'Failed' in opptxt:
+               opp = json.loads(opptxt)
+            else:
+                errors.append(f"Error removing opportunity for {email}")
+
+            person = cp.FindPersonByEmailObj(email)
+            if person and len(person) > 0:
+                person = person[0]
+            else:
+                errors.append(f"Error finding person for  {email}")
+
+            guser = ggl.GetUser(email)
+            if opp and person:
+                cp.DeleteOpportunity(opp)
+                cp.DeletePerson(person)
+            else:
+                errors.append(f"Error removing {email} from Copper")
+
+            if guser:
+                ggl.DeleteUser(email)
+            else:
+                errors.append(f"GMail person for {email} not found")
+
+
+            deleted.append(email)
+
+
+    for d in deleted:
+        print(f"{d},")
+    for e in errors:
+        print(f"{e},")
+
+def cleanup_complimentary_users_stripe():
+    # we have all these complimentary users that are questionable
+    #    delete opportunity
+    #    delete copper customer
+    #    delete google user
+    #    delete Stripe user
+    #    delete Mailchimp
+
+    cfile = "12.15stripe_users.csv"
+    cp = OWASPCopper()
+    ggl = OWASPGoogle()
+
+    with open(cfile) as csvfile:
+        reader = csv.DictReader(csvfile)
+        deleted = []
+        errors = []
+        for row in reader:
+            email = f"{row['Email']}".strip().lower()
+            customers = stripe.Customer.list(email=email, api_key=os.environ["STRIPE_SECRET"])
+            customer = None
+            if not customers.is_empty:
+                customer = customers.data[0]
+                metadata = customer.get('metadata', {})
+                if metadata:
+                    country = metadata.get('country', '')
+                    if country not in ['Ukraine', 'Israel', 'West Bank and Gaza']:
+                        continue
+            else:
+                continue
+
+
+            stripe.Customer.delete(customer['id'], api_key=os.environ["STRIPE_SECRET"])
+
+def unsuspend_google_user(owasp_email):
+    og = OWASPGoogle()
+    user = og.GetUser(owasp_email)
+    if user and user['suspended']:
+        for email in user['emails']:
+            if '@owasp.org' in email['address']:
+                if not og.UnsuspendUser(email['address']):
+                    logging.warn(f"Failed to unsuspend {email['address']}")
 
 def main():
+    values = {
+        "github-id" : {
+            "github-value" : { 
+                "value" : "1000"
+            }
+        }
+    }
+    
+
+    if 'github-id' in values and 'github-value' in values['github-id'] and 'value' in values['github-id']['github-value']:
+        print(values["github-id"]["github-value"]["value"])
+        
+    #cop = OWASPCopper()
+    #member = cop.FindPersonByEmailObj("harold.blankenship@owasp.com")
+    #if member:
+    #    res = cop.UpdatePerson(member[0]['id'], github_user="hblankenship")
+    #    print(res)
+    #     owasp_email = helperfuncs.get_owasp_email(member[0], cop)
+    #     helperfuncs.unsuspend_google_user(owasp_email)
+    
+    
+    #cleanup_complimentary_users_stripe()
+
+    #cleanup_google_users()
+    #validate_no_leaders()
+
     #jira_project_create('NFRSD-5714', ".", "no_response")
-    jira = JIRA(server="https://owasporg.atlassian.net", basic_auth=(os.environ["JIRA_USER"], os.environ["JIRA_API_TOKEN"]))
-    issue = jira.issue('NFRSD-5714')
+    #jira = JIRA(server="https://owasporg.atlassian.net", basic_auth=(os.environ["JIRA_USER"], os.environ["JIRA_API_TOKEN"]))
+    #issue = jira.issue('NFRSD-5714')
     
-
+    #cp = OWASPCopper()
+    #opp = cp.FindMemberOpportunity("harold.blankenship@owasp.com")
+    #print(opp)
     
-
-    # cp = OWASPCopper()
-    # fields = json.loads(cp.GetCustomFields())
-    # with open("all_copper_custom_properties_11.07.23.txt", "w+") as outf:
-    #     outf.writelines(json.dumps(fields, indent=4))
+    #fields = json.loads(cp.GetCustomFields())
+    #with open("all_copper_custom_properties_03.19.24.txt", "w+") as outf:
+    #    outf.writelines(json.dumps(fields, indent=4))
     
     # with open("projects.json") as infile:
     #     jsons = infile.read()

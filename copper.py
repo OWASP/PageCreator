@@ -571,6 +571,14 @@ class OWASPCopper:
         
         return pid
 
+    def DeletePerson(self, pid):
+        url = url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
+        r = requests.delete(url, headers=self.GetHeaders())
+        if r.ok:
+            return r.text
+    
+        return f"Failed to delete person: {r.text}"
+
     def UpdatePersonAddress(self, pid, address_data):
         logging.info("Copper Update Address")
         data = { 'address': address_data }
@@ -604,21 +612,36 @@ class OWASPCopper:
 
         return pid
     
-    def UpdatePerson(self, pid, subscription_data = None, stripe_id = None, other_email = None):
-        
+    def UpdatePerson(self, pid, subscription_data = None, stripe_id = None, other_email = None, github_user=None):
+        logging.info('Copper UpdatePerson')
+            
         data = {
         }
 
+        fields = []
         if subscription_data != None:
-            memend = None
-            memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
-            if 'membership_end' in subscription_data:
-                memend = self.GetDatetimeHelper(subscription_data['membership_end'])
-            if memstart == None:
-                # so we have no start...must calculate it
-                memstart = self.GetStartdateHelper(subscription_data)
+            membership_end = None
+            membership_start = None
+            try:
+                membership_end = datetime.strptime(subscription_data['membership_end'], "%m/%d/%Y")
+            except:
+                try:
+                    membership_end = datetime.strptime(subscription_data['membership_end'], "%Y-%m-%d")
+                except:
+                    logging.error(f'Membership end is {membership_end}')
+                    pass
+                pass
 
-            fields = []
+            try:
+                membership_start = datetime.strptime(subscription_data['membership_start'], "%m/%d/%Y")
+            except:
+                try:
+                    membership_start = datetime.strptime(subscription_data['membership_start'], "%Y-%m-%d")
+                except:
+                    logging.error(f'Membership start is {membership_start}')
+                    pass
+                pass
+            
             if subscription_data['membership_type'] == 'lifetime':
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership, 
@@ -635,16 +658,25 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': memend.strftime("%m/%d/%Y")
+                        'value': membership_end.strftime("%m/%d/%Y")
                     })
-            elif subscription_data['membership_type'] == 'honorary' or subscription_data['membership_type'] == 'complimentary':
+            elif subscription_data['membership_type'] == 'complimentary':
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership, 
                         'value': self.cp_person_membership_option_complimentary
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': memend.strftime("%m/%d/%Y")
+                        'value': membership_end.strftime("%m/%d/%Y")
+                    })
+            elif subscription_data['membership_type'] == 'honorary':
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership, 
+                        'value': self.cp_person_membership_option_honorary
+                    })
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_end, 
+                        'value': membership_end.strftime("%m/%d/%Y")
                     })
             elif subscription_data['membership_type'] == 'two':
                 fields.append({
@@ -653,7 +685,7 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': memend.strftime("%m/%d/%Y")
+                        'value': membership_end.strftime("%m/%d/%Y")
                     })
             elif subscription_data['membership_type'] == 'student':
                 fields.append({
@@ -662,23 +694,36 @@ class OWASPCopper:
                     })
                 fields.append({
                         'custom_field_definition_id' : self.cp_person_membership_end, 
-                        'value': memend.strftime("%m/%d/%Y")
+                        'value': membership_end.strftime("%m/%d/%Y")
                     })
-
-            if stripe_id != None:
+            
+            if 'leader_agreement' in subscription_data:
                 fields.append({
+                        'custom_field_definition_id' : self.cp_person_signed_leaderagreement, 
+                        'value': subscription_data['leader_agreement']
+                    })
+            if membership_start:
+                fields.append({
+                        'custom_field_definition_id' : self.cp_person_membership_start, 
+                        'value': membership_start.strftime("%m/%d/%Y")
+                    }) 
+                
+        if stripe_id:
+            fields.append({
                         'custom_field_definition_id' : self.cp_person_stripe_number, 
                         'value': f"https://dashboard.stripe.com/customers/{stripe_id}"
-                    })
-
+                    })               
+        
+        if github_user:
             fields.append({
-                        'custom_field_definition_id' : self.cp_person_membership_start, 
-                        'value': memstart.strftime("%m/%d/%Y")
-                    })        
-            data['custom_fields'] = fields
-
+                        'custom_field_definition_id' : self.cp_person_github_username, 
+                        'value': github_user
+                    })
+            
+        data['custom_fields'] = fields
+        
+    
         if other_email != None:
-            # first, we have to get all the emails from the person record....
             contact_json = self.GetPerson(pid)
             if contact_json != '':
                 pers = json.loads(contact_json)
@@ -686,7 +731,7 @@ class OWASPCopper:
                     data['emails'] = pers['emails']
                 else:
                     data['emails'] = []
-                data['emails'].append({'email':other_email, 'category':'other'})
+                data['emails'].append({ 'email':other_email, 'category':'other'})
 
         url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
         r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
@@ -694,8 +739,103 @@ class OWASPCopper:
         if r.ok:
             person = json.loads(r.text)
             pid = person['id']
-        
+        else:
+            logging.error(f'Copper Failed UpdatePerson: {r.text}')
+
         return pid
+    
+    # def UpdatePerson(self, pid, subscription_data = None, stripe_id = None, other_email = None):
+        
+    #     data = {
+    #     }
+
+    #     if subscription_data != None:
+    #         memend = None
+    #         memstart = self.GetDatetimeHelper(subscription_data['membership_start'])
+    #         if 'membership_end' in subscription_data:
+    #             memend = self.GetDatetimeHelper(subscription_data['membership_end'])
+    #         if memstart == None:
+    #             # so we have no start...must calculate it
+    #             memstart = self.GetStartdateHelper(subscription_data)
+
+    #         fields = []
+    #         if subscription_data['membership_type'] == 'lifetime':
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership, 
+    #                     'value': self.cp_person_membership_option_lifetime
+    #                 })
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership_end, 
+    #                     'value': None
+    #                 })
+    #         elif subscription_data['membership_type'] == 'one':
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership, 
+    #                     'value': self.cp_person_membership_option_oneyear
+    #                 })
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership_end, 
+    #                     'value': memend.strftime("%m/%d/%Y")
+    #                 })
+    #         elif subscription_data['membership_type'] == 'honorary' or subscription_data['membership_type'] == 'complimentary':
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership, 
+    #                     'value': self.cp_person_membership_option_complimentary
+    #                 })
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership_end, 
+    #                     'value': memend.strftime("%m/%d/%Y")
+    #                 })
+    #         elif subscription_data['membership_type'] == 'two':
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership, 
+    #                     'value': self.cp_person_membership_option_twoyear
+    #                 })
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership_end, 
+    #                     'value': memend.strftime("%m/%d/%Y")
+    #                 })
+    #         elif subscription_data['membership_type'] == 'student':
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership, 
+    #                     'value': self.cp_person_membership_option_student
+    #                 })
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership_end, 
+    #                     'value': memend.strftime("%m/%d/%Y")
+    #                 })
+
+    #         if stripe_id != None:
+    #             fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_stripe_number, 
+    #                     'value': f"https://dashboard.stripe.com/customers/{stripe_id}"
+    #                 })
+
+    #         fields.append({
+    #                     'custom_field_definition_id' : self.cp_person_membership_start, 
+    #                     'value': memstart.strftime("%m/%d/%Y")
+    #                 })        
+    #         data['custom_fields'] = fields
+
+    #     if other_email != None:
+    #         # first, we have to get all the emails from the person record....
+    #         contact_json = self.GetPerson(pid)
+    #         if contact_json != '':
+    #             pers = json.loads(contact_json)
+    #             if 'emails' in pers:
+    #                 data['emails'] = pers['emails']
+    #             else:
+    #                 data['emails'] = []
+    #             data['emails'].append({'email':other_email, 'category':'other'})
+
+    #     url = f'{self.cp_base_url}{self.cp_people_fragment}{pid}'
+    #     r = requests.put(url, headers=self.GetHeaders(), data=json.dumps(data))
+    #     pid = None
+    #     if r.ok:
+    #         person = json.loads(r.text)
+    #         pid = person['id']
+        
+    #     return pid
 
     def GetPersonTags(self, pid):
         pjson = self.GetPerson(pid)
@@ -749,6 +889,14 @@ class OWASPCopper:
             return r.text
         
         return ''
+    
+    def DeleteOpportunity(self, id):
+        url = url = f'{self.cp_base_url}{self.cp_opp_fragment}{id}'
+        r = requests.delete(url, headers=self.GetHeaders())
+        if r.ok:
+            return r.text
+    
+        return f"Failed to delete opportunity: {r.text}"
     
     def FindOpportunities(self, email):
         opps = []
